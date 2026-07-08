@@ -1,0 +1,39 @@
+# Arc & Ledger Tax Tools - remote MCP server (Cloudflare Worker).
+#
+# Deploy target: https://mcp.arcandledger.com/mcp  (Streamable HTTP, no auth).
+# Lives in the SAME Cloudflare account as the arcledger-website Pages project
+# (see .github/workflows/ci.yml -> CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN).
+#
+# To go live:
+#   1. `wrangler deploy` from this directory.
+#   2. Add the custom domain mcp.arcandledger.com (uncomment `routes` below, or
+#      attach it in the Cloudflare dashboard: Workers -> Triggers -> Custom Domains).
+#      Cloudflare provisions the DNS record + cert automatically since the zone
+#      arcandledger.com is already in this account.
+
+name = "arc-ledger-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Custom domain: wrangler deploy provisions the DNS record + cert automatically
+# since the zone arcandledger.com is already in this account.
+routes = [
+  { pattern = "mcp.arcandledger.com", custom_domain = true }
+]
+
+[observability]
+enabled = true
+
+[vars]
+# Bumped manually alongside package.json "version". Surfaced by GET /version.
+SERVER_VERSION = "0.5.0"
+
+# Native per-colo rate limiting (60 requests / 60s per IP). No resource to
+# provision; namespace_id is an arbitrary per-account slot. The worker layers a
+# short in-memory token bucket on top for burst control (see src/lib/rateLimit.ts).
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 60, period = 60 }

@@ -1,0 +1,25 @@
+Paired prompts for each carousel screenshot (kept separate per Anthropic's spec).
+
+01-decode_irs_notice.png
+  Prompt: I got an IRS CP2000 notice dated June 1, 2026 for about $4,200. What is it and what do I do?
+
+02-check_fbar_fatca.png
+  Prompt: I am single, live in the US, and my foreign accounts peaked around $65,000 this year. Do I have to file anything?
+
+03-compare_llc_scorp.png
+  Prompt: I am a freelancer expecting about $150,000 net profit in California. Would an S-corp save me money?
+
+04-estimate_quarterly_taxes.png
+  Prompt: I have made $60,000 net so far this year as a sole proprietor in CA. How much estimated tax should I pay?
+
+05-get_fee_quote.png
+  Prompt: What would you charge to do my individual return with 2 states and a rental?
+
+06-estimate_reasonable_comp.png
+  Prompt: My S-corp nets about $200,000 and it is mostly my own consulting work. How much salary should I pay myself?
+
+07-estimate_augusta_rule.png
+  Prompt: Can I rent my house to my S-corp for board meetings? Say $1,200 a day, 12 days a year, 32% bracket.
+
+08-estimate_accountable_plan.png
+  Prompt: I pay for my home office and drive 8,000 business miles in my own car. How do I get reimbursed by my S-corp?

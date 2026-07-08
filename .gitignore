@@ -1,0 +1,8 @@
+node_modules
+.wrangler
+dist
+*.log
+.dev.vars
+
+# screenshot render scratch
+assets/screenshots/_render.html
