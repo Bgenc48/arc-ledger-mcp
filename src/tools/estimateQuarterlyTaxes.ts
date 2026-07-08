@@ -188,7 +188,7 @@ export const estimateQuarterlyTaxes: ToolDef<typeof input> = {
   description:
     'Use this when a freelancer or business owner asks how much estimated tax to pay or whether they are underpaid for the year. Computes federal self-employment and income tax on annualized income, the safe-harbor target, per-quarter amounts and due dates, plus California\'s 30/40/0/30 installment timing.',
   input,
-  annotations: { title: 'Estimate quarterly taxes', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate quarterly taxes', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     entity: args.entity,
     state: isCalifornia(args.state) ? 'CA' : 'other',

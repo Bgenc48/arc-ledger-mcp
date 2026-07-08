@@ -77,7 +77,7 @@ export const estimateAugustaRule: ToolDef<typeof input> = {
   description:
     'Use this when a business owner asks about the "Augusta rule," renting their home to their own S-corp or C-corp, or the 14-day tax-free home rental (IRC 280A(g)). Given a fair daily rate and number of days, estimates the business deduction and tax-free income, warns about the 14-day limit, and lists the documentation needed to make it defensible.',
   input,
-  annotations: { title: 'Estimate the Augusta rule', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate the Augusta rule', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     within_limit: args.days_rented <= AUGUSTA_MAX_DAYS,
     has_marginal_rate: args.marginal_tax_rate_pct !== undefined,

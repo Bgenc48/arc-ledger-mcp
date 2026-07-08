@@ -31,12 +31,12 @@ lowest-friction review lane.
 - **Purchases in chat?** No. No checkout happens in the assistant; handoff links open the firm's own pages.
 - **Data collected / stored?** None stored. Inputs processed in memory; anonymous 30-day logs only. No PII, no health data.
 - **Regulated advice?** Informational only; not tax advice; no practitioner-client relationship (Circular 230 disclosure on every response and on the docs page).
-- **Testing:** tested in ChatGPT developer mode against the live endpoint (Phase 7). All twelve tools invoked with realistic prompts; transcripts saved.
+- **Testing:** tested in ChatGPT developer mode against the live endpoint (Phase 7). All 15 tools invoked with realistic prompts; transcripts saved.
 
 ## Testing steps (ChatGPT developer mode)
 1. Add the connector with URL `https://mcp.arcandledger.com/mcp` (no auth).
-2. Confirm the twelve tools (and four resources) appear with their titles and descriptions.
-3. Run one prompt per tool (see `listing-copy.md` example prompts).
+2. Confirm all 15 tools (and four data resources plus the widget resource) appear with their titles and descriptions.
+3. Run one prompt for each of the 15 tools (see `listing-copy.md` example prompts).
 4. Verify each response includes the disclaimer, a source_url, and a first-party next_step link.
 5. Save transcripts as the worked examples / screenshots.
 

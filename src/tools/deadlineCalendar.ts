@@ -174,7 +174,7 @@ export const deadlineCalendar: ToolDef<typeof input> = {
   description:
     'Use this when a US business owner or nonresident (especially a foreign founder of a US LLC or C-corp) asks what US forms they must file and when. Returns each required federal form, its due date and extension, and the penalty for missing it, including Form 5472, FBAR, and the BOI report. Especially useful for non-US founders of US companies.',
   input,
-  annotations: { title: 'US filing deadlines for founders', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'US filing deadlines for founders', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     entity_type: args.entity_type,
     has_fbar: args.has_foreign_bank_over_10k ?? false,

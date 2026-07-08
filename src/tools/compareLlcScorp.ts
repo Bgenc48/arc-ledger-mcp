@@ -134,7 +134,7 @@ export const compareLlcScorp: ToolDef<typeof input> = {
   description:
     'Use this when a self-employed user or single-member LLC owner asks whether an S-Corp election would save them money. Shows a side-by-side of self-employment tax vs salary-plus-distribution, payroll and compliance costs, California franchise taxes, and the break-even zone.',
   input,
-  annotations: { title: 'Compare LLC vs S-Corp', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Compare LLC vs S-Corp', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     state: isCalifornia(args.state) ? 'CA' : 'other',
     has_salary_estimate: args.owner_salary_estimate_usd !== undefined,

@@ -183,7 +183,7 @@ export const estimateRentalIncome: ToolDef<typeof input> = {
   description:
     'Use this when someone asks how much tax they owe on rental income (Airbnb/short-term or long-term), or whether a rental loss is deductible. Computes net rental income after operating expenses and straight-line depreciation, the passive-loss allowance and carryforward, the short-term 14-day rule, and the marginal federal tax effect.',
   input,
-  annotations: { title: 'Estimate rental property taxes', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate rental property taxes', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     rental_type: args.rental_type ?? 'long_term',
     filing_status: args.filing_status ?? 'single',

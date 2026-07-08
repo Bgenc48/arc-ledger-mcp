@@ -101,7 +101,7 @@ export const estimateIrsPenalty: ToolDef<typeof input> = {
   description:
     'Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains first-time penalty abatement.',
   input,
-  annotations: { title: 'Estimate IRS penalties and interest', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate IRS penalties and interest', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     return_filed: args.return_filed ?? false,
     months_late: args.months_late,

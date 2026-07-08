@@ -1,0 +1,260 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "Arc & Ledger Tax Tools",
+    "subtitle": "Tax calculators & explainers",
+    "description": "Arc & Ledger Tax Tools provides free, read-only tax calculators and explainers for IRS notices, FBAR and FATCA obligations, LLC versus S-Corp comparisons, estimated taxes, penalties, filing deadlines, ITIN eligibility, rental income, sales-tax nexus, and other small-business tax questions. Results are general information, not tax advice, and the app requires no account or login.",
+    "category": "FINANCE"
+  },
+  "tools": {
+    "decode_irs_notice": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Looks up the supplied notice code and computes explanatory deadlines without filing, storing, or changing anything.",
+        "open_world_justification": "Returns an explanation and first-party reference link without posting or sending data to an external system.",
+        "destructive_justification": "Does not delete, overwrite, revoke, file, pay, or perform any irreversible action."
+      }
+    },
+    "check_fbar_fatca": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes reporting thresholds from user-supplied balances and filing facts entirely in memory.",
+        "open_world_justification": "Does not file an FBAR or FATCA form or transmit account information to any third party.",
+        "destructive_justification": "Does not alter accounts, returns, filings, or external records."
+      }
+    },
+    "compare_llc_scorp": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Calculates a side-by-side tax estimate from supplied profit and salary assumptions without changing the business entity.",
+        "open_world_justification": "Does not submit an election, form an entity, or publish information externally.",
+        "destructive_justification": "Does not modify legal, payroll, tax, or business records."
+      }
+    },
+    "estimate_quarterly_taxes": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Calculates estimated tax, safe-harbor targets, installments, and due dates from supplied figures.",
+        "open_world_justification": "Does not initiate a tax payment, file a voucher, or transmit figures to a tax authority.",
+        "destructive_justification": "Does not debit funds or change any tax account or filing."
+      }
+    },
+    "estimate_rental_income": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes rental income, depreciation, and passive-loss treatment from supplied assumptions without saving property data.",
+        "open_world_justification": "Does not update property, accounting, listing, or tax systems.",
+        "destructive_justification": "Does not file a return, modify a ledger, or perform an irreversible action."
+      }
+    },
+    "deadline_calendar": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Returns applicable filing forms, dates, extensions, and penalty information from entity facts.",
+        "open_world_justification": "Does not submit forms, request extensions, or contact any government system.",
+        "destructive_justification": "Does not alter an entity, filing status, deadline, or external record."
+      }
+    },
+    "check_itin_eligibility": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Evaluates ITIN eligibility and document requirements from broad eligibility facts without requesting an SSN or passport number.",
+        "open_world_justification": "Does not submit Form W-7, transmit identity documents, or create an application.",
+        "destructive_justification": "Does not change immigration, identity, tax, or government records."
+      }
+    },
+    "estimate_irs_penalty": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Calculates estimated late-filing, late-payment, and interest amounts from supplied figures.",
+        "open_world_justification": "Does not request abatement, contact the IRS, file a return, or make a payment.",
+        "destructive_justification": "Does not change an IRS balance, penalty assessment, or taxpayer account."
+      }
+    },
+    "compare_formation_states": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Compares stored state fee and tax information and returns a recommendation from supplied preferences.",
+        "open_world_justification": "Does not form or register an entity or submit information to a state.",
+        "destructive_justification": "Does not change an existing entity or create an irreversible filing."
+      }
+    },
+    "check_sales_tax_nexus": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Compares supplied sales and transaction counts with stored state nexus thresholds.",
+        "open_world_justification": "Does not register for sales tax, contact a state, or update an ecommerce platform.",
+        "destructive_justification": "Does not change registrations, returns, collection settings, or external records."
+      }
+    },
+    "estimate_reasonable_comp": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes an illustrative owner salary range from profit and business-driver assumptions.",
+        "open_world_justification": "Does not run payroll, change compensation, or submit payroll tax filings.",
+        "destructive_justification": "Does not modify payroll, employment, accounting, or tax records."
+      }
+    },
+    "estimate_augusta_rule": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Calculates an illustrative home-rental deduction and exclusion from supplied rate and day assumptions.",
+        "open_world_justification": "Does not create a rental agreement, transfer funds, or record a transaction externally.",
+        "destructive_justification": "Does not alter property, accounting, banking, or tax records."
+      }
+    },
+    "estimate_accountable_plan": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Totals illustrative reimbursements and tax savings from supplied expense amounts.",
+        "open_world_justification": "Does not adopt a plan, reimburse expenses, run payroll, or send data to an accounting system.",
+        "destructive_justification": "Does not transfer money or modify payroll, expense, or tax records."
+      }
+    },
+    "get_fee_quote": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Calculates a published service price range without creating a quote record, engagement, or transaction.",
+        "open_world_justification": "Returns first-party informational links but does not submit a request or purchase a service.",
+        "destructive_justification": "Does not charge a payment method, create an obligation, or change any external record."
+      }
+    },
+    "book_consultation": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Returns consultation options, office information, and a first-party booking URL without creating an appointment.",
+        "open_world_justification": "Does not submit the booking form, reserve a time, send a message, or complete checkout.",
+        "destructive_justification": "Does not create, cancel, purchase, or modify any appointment or service."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Explain an IRS underreporting notice and identify the response deadline.",
+      "user_prompt": "I received an IRS CP2000 notice dated 2026-06-15 showing $4,200. What does it mean and what should I do?",
+      "file_attachment_urls": null,
+      "tools_triggered": "decode_irs_notice",
+      "expected_output": "Explains the CP2000, gives the response timing and practical next steps, and clearly states that the result is general information rather than tax advice.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Check both FBAR and FATCA thresholds for a US filer with foreign accounts.",
+      "user_prompt": "I am single, live in California, and my foreign accounts reached a combined maximum of $65,000 this year. Do I need FBAR or Form 8938?",
+      "file_attachment_urls": null,
+      "tools_triggered": "check_fbar_fatca",
+      "expected_output": "Separately evaluates FBAR and Form 8938 thresholds, explains applicable filing obligations, and provides catch-up context without filing anything.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Compare a California single-member LLC with an S-Corp election.",
+      "user_prompt": "My California consulting LLC expects $150,000 of net profit. Compare staying a disregarded LLC with electing S-Corp status using a $90,000 owner salary.",
+      "file_attachment_urls": null,
+      "tools_triggered": "compare_llc_scorp",
+      "expected_output": "Shows a side-by-side tax and compliance comparison, including payroll and California costs, assumptions, caveats, and an estimated break-even result.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Estimate quarterly taxes using the high-income prior-year safe harbor.",
+      "user_prompt": "I have $250,000 of year-to-date sole-proprietor net income, $10,000 of prior-year total tax, prior-year AGI of $200,000, and no withholding. Estimate my quarterly payments.",
+      "file_attachment_urls": null,
+      "tools_triggered": "estimate_quarterly_taxes",
+      "expected_output": "Calculates annualized federal estimates, applies the 110 percent prior-year safe harbor where applicable, and shows installment amounts and due dates.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Return filing deadlines for a foreign-owned single-member US LLC.",
+      "user_prompt": "I live in Turkey and own a single-member US LLC formed in Wyoming. What federal forms and deadlines apply for tax year 2026?",
+      "file_attachment_urls": null,
+      "tools_triggered": "deadline_calendar",
+      "expected_output": "Lists the applicable pro-forma Form 1120 and Form 5472 deadlines, extensions and penalties, and explains the BOI treatment for a US-formed entity.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not trigger for investment recommendations.",
+      "user_prompt": "Which technology stocks should I buy this week for the highest return?",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because investment selection and trading advice are outside its tax-calculation and tax-explainer workflows.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for preparing or filing a tax return.",
+      "user_prompt": "Prepare my complete Form 1040 and electronically file it with the IRS today.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it provides read-only general information and cannot prepare, sign, submit, or file a tax return.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for unrelated legal document drafting.",
+      "user_prompt": "Draft a residential eviction complaint for my tenant and file it in California court.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because legal drafting and court filing are outside its supported tax workflows.",
+      "expected_output_url": null
+    }
+  ]
+}

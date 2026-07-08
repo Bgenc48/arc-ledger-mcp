@@ -22,6 +22,9 @@ Runs as a stateless Cloudflare Worker; nothing is filed, purchased, or stored.
 | `estimate_irs_penalty` | Failure-to-file / failure-to-pay penalties + interest on a balance; abatement. |
 | `compare_formation_states` | Wyoming vs New Mexico vs Delaware vs California for a US LLC. |
 | `check_sales_tax_nexus` | Economic + physical (FBA) sales-tax nexus by state. |
+| `estimate_reasonable_comp` | Illustrative S-Corp owner salary range and employment-tax effect. |
+| `estimate_augusta_rule` | Home-rental deduction and 14-day exclusion estimate. |
+| `estimate_accountable_plan` | Tax-free reimbursement estimate for owner-paid business expenses. |
 | `get_fee_quote` | Published fee range and line items for firm services. |
 | `book_consultation` | First-party booking link + office identity. |
 
@@ -65,7 +68,7 @@ node scripts/gen-examples.mjs      # regenerate docs/worked-examples.json
 ```
 src/
   index.ts            Worker entry: /mcp, /healthz, /version, CORS, rate limit
-  registry.ts         The 6 tools + 3 prompts
+  registry.ts         The 15 tools + 5 prompts
   pricing.ts          Adapter -> website pricing.ts (SSOT for prices)
   rates.ts            Adapter -> taxConstants2026.ts + server-only tax constants
   lib/                mcp (protocol), response, logging, rateLimit, tax, dates, schemas

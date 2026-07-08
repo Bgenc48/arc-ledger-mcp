@@ -19,7 +19,7 @@ import {
   DISCLAIMER,
 } from './config';
 import { logToolCall } from './logging';
-import { toToolResult } from './response';
+import { BASE_OUTPUT_SCHEMA, toToolResult } from './response';
 import { sanitizeText } from './sanitize';
 import { resourceList, readResource } from '../resources';
 import { uiResourceList, readUiResource } from '../ui/registry';
@@ -68,6 +68,7 @@ function toolListEntry(tool: AnyToolDef) {
     title: tool.title,
     description: tool.description,
     inputSchema,
+    outputSchema: BASE_OUTPUT_SCHEMA,
     annotations: tool.annotations,
     // Apps SDK: advertise the widget template so ChatGPT pre-fetches it. The
     // `openai/*` keys are namespaced and ignored by clients that don't render

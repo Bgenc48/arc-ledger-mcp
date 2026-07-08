@@ -60,7 +60,8 @@ export interface ToolDef<TSchema extends z.ZodTypeAny = z.ZodTypeAny> {
   annotations: {
     title: string;
     readOnlyHint: true;
-    openWorldHint?: boolean;
+    openWorldHint: boolean;
+    destructiveHint: false;
   };
   logEnums: (input: z.infer<TSchema>) => Record<string, string | number | boolean>;
   run: (input: z.infer<TSchema>) => ToolOutput;
@@ -78,7 +79,7 @@ export interface AnyToolDef {
   title: string;
   description: string;
   input: z.ZodTypeAny;
-  annotations: { title: string; readOnlyHint: true; openWorldHint?: boolean };
+  annotations: { title: string; readOnlyHint: true; openWorldHint: boolean; destructiveHint: false };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logEnums: (input: any) => Record<string, string | number | boolean>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

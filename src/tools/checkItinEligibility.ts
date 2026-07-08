@@ -124,7 +124,7 @@ export const checkItinEligibility: ToolDef<typeof input> = {
   description:
     'Use this when someone (typically a non-US person, a foreign business owner, or the spouse/dependent of a US filer) asks whether they need or qualify for an ITIN, or what documents an ITIN application requires. Returns eligibility, the W-7 reason category, whether a tax return must be attached, and the documents needed. Notes that an Enrolled Agent prepares the Form W-7 and represents the applicant, and how documents are submitted.',
   input,
-  annotations: { title: 'Check ITIN eligibility', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Check ITIN eligibility', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     has_ssn: args.has_ssn,
     reason: args.reason,

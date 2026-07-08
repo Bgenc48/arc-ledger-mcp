@@ -31,6 +31,8 @@ describe('tools/list + prompts/list (directory requirements)', () => {
     for (const t of tools) {
       expect(t.title).toBeTruthy();
       expect(t.annotations.readOnlyHint).toBe(true);
+      expect(t.annotations.openWorldHint).toBe(false);
+      expect(t.annotations.destructiveHint).toBe(false);
       expect(t.annotations.title).toBeTruthy();
       expect(t.inputSchema.type).toBe('object');
       expect(t.description.toLowerCase()).toContain('use this when');

@@ -87,7 +87,7 @@ export const estimateAccountablePlan: ToolDef<typeof input> = {
   description:
     'Use this when an S-corp or C-corp owner asks how to deduct home office, mileage, cell phone, or other out-of-pocket business expenses, or asks about an "accountable plan." Totals the tax-free reimbursement, estimates the tax saving, and explains the three requirements (business connection, substantiation, return of excess) and why owner-employees get no deduction without one.',
   input,
-  annotations: { title: 'Estimate accountable-plan reimbursements', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate accountable-plan reimbursements', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     has_home_office: args.home_office_expense_usd !== undefined,
     has_mileage: args.business_miles !== undefined,

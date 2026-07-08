@@ -82,7 +82,7 @@ export const estimateReasonableComp: ToolDef<typeof input> = {
   description:
     'Use this when an S-corp owner asks how much salary they should pay themselves ("reasonable compensation," "am I paying myself right?"). Given net profit and what drives it, returns a starting salary RANGE, the distribution left over, the employment tax that classification avoids, and the facts-and-circumstances test the IRS actually applies. Emphasizes that a defensible figure needs a comp study.',
   input,
-  annotations: { title: 'Estimate S-corp reasonable compensation', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate S-corp reasonable compensation', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     profit_driver: args.profit_driver ?? 'primarily_owner_services',
   }),

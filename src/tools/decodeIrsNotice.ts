@@ -108,7 +108,7 @@ export const decodeIrsNotice: ToolDef<typeof input> = {
   description:
     'Use this when a user mentions receiving an IRS or state tax letter or notice and wants to know what it means, the deadline, or what to do. Give it the notice code (e.g. CP2000, CP14, LT11) and optionally the notice date and amount shown.',
   input,
-  annotations: { title: 'Decode an IRS notice', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Decode an IRS notice', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => {
     const p = lookupNotice(args.notice_code);
     return {

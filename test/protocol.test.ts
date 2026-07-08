@@ -34,6 +34,17 @@ describe('MCP protocol (stateless dispatch)', () => {
     expect(Array.isArray(res.result.tools)).toBe(true);
   });
 
+  it('advertises explicit safety annotations and an output schema for every tool', () => {
+    const res = dispatch(req('tools/list'), reg()) as any;
+    for (const tool of res.result.tools) {
+      expect(tool.annotations.readOnlyHint).toBe(true);
+      expect(tool.annotations.openWorldHint).toBe(false);
+      expect(tool.annotations.destructiveHint).toBe(false);
+      expect(tool.outputSchema?.type).toBe('object');
+      expect(tool.outputSchema?.required).toEqual(['disclaimer', 'source_url', 'next_step']);
+    }
+  });
+
   it('prompts/list returns an array', () => {
     const res = dispatch(req('prompts/list'), reg()) as any;
     expect(Array.isArray(res.result.prompts)).toBe(true);

@@ -51,3 +51,15 @@ export const ENVELOPE_OUTPUT_PROPERTIES = {
     required: ['label', 'url'],
   },
 } as const;
+
+/**
+ * Every tool returns this envelope plus tool-specific fields. Advertising the
+ * shared contract keeps tools/list truthful while allowing each calculator's
+ * additional structured fields.
+ */
+export const BASE_OUTPUT_SCHEMA = {
+  type: 'object',
+  properties: ENVELOPE_OUTPUT_PROPERTIES,
+  required: ['disclaimer', 'source_url', 'next_step'],
+  additionalProperties: true,
+} as const;

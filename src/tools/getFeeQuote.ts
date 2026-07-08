@@ -247,7 +247,7 @@ export const getFeeQuote: ToolDef<typeof input> = {
   description:
     'Use this when a user asks what Arc & Ledger charges, or wants a price estimate for tax preparation, bookkeeping, business formation, or IRS help. Returns a published price range and line items, never a single committed number, plus what is included and the next step by complexity.',
   input,
-  annotations: { title: 'Get a fixed-fee quote', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Get a fixed-fee quote', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     service: args.service,
     cross_border: (args.details?.foreign_accounts ?? 0) > 0 || args.service === 'international_form',
