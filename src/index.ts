@@ -147,6 +147,14 @@ export default {
       return json(result);
     }
 
+    // MCP Registry HTTP domain-ownership proof (https://modelcontextprotocol.io/registry/authentication)
+    if (path === '/.well-known/mcp-registry-auth' && request.method === 'GET') {
+      return new Response('v=MCPv1; k=ed25519; p=kN1wUOqGWbl4q37R8IuMFrs/AxrQAN+A+xm7KRxfq88=', {
+        status: 200,
+        headers: { 'content-type': 'text/plain', 'cache-control': 'public, max-age=3600', ...CORS_HEADERS },
+      });
+    }
+
     return json({ error: 'Not Found' }, 404);
   },
 };
