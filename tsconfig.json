@@ -16,17 +16,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  // `../src/data/pricing.ts` is the website's SINGLE SOURCE OF TRUTH for prices.
-  // We import it directly (it is pure TS with only a self-contained body) rather
-  // than duplicating any number into this package. See src/pricing.ts.
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts",
-    "../src/data/pricing.ts",
-    "../src/config/taxConstants2026.ts"
-  ],
-  // drift.test.ts imports the site's irsNotices.ts, whose type-only import of a
-  // .tsx component would drag React/JSX into this Worker typecheck. esbuild
-  // erases that import at runtime, so Vitest still runs it; only tsc skips it.
-  "exclude": ["test/drift.test.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

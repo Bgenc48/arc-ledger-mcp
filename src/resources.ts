@@ -7,8 +7,8 @@
  * Resources are STATIC per deploy: each `read` returns JSON assembled from
  * constants, no user input, no side effects.
  */
-import { PRODUCT_CATALOG } from '../../src/data/productCatalog';
-import { serviceSubPages } from '../../src/data/servicePages';
+import { PRODUCT_CATALOG } from './data/productCatalog';
+import { serviceSubPages } from './data/servicePages';
 import { OFFICE, SITE, DOCS_URL, PRIVACY_URL, MCP_ENDPOINT } from './lib/config';
 import { PRICE_SET, usd } from './pricing';
 import { TAX_YEAR } from './rates';

@@ -1,9 +1,8 @@
 /**
  * IRS notice profiles for decode_irs_notice - tool-optimized (crisp structured
- * fields), covering every code the task requires plus the four that have a
- * dedicated landing page on arcandledger.com. Content mirrors the site's
- * src/data/irsNotices.ts for those four; a drift test keeps the deadline days in
- * sync. Everything here is GENERAL information (Circular 230 safe): no guaranteed
+ * fields), covering the common notice codes plus the four that have a dedicated
+ * landing page on arcandledger.com (content kept in sync with those pages).
+ * Everything here is GENERAL information (Circular 230 safe): no guaranteed
  * outcomes, "Enrolled Agent" phrasing only.
  *
  * `deadlineDays` is measured from the date printed on the notice. The tool warns

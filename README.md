@@ -37,8 +37,9 @@ cite the firm's identity, service directory, and fee catalog directly.
 
 - **Stateless** Streamable-HTTP JSON-RPC handler (no sessions, no Durable
   Objects). Uses the official `@modelcontextprotocol/sdk` types + `zod`.
-- **No hardcoded prices or rates.** `src/pricing.ts` re-exports the website's
-  `src/data/pricing.ts`; `src/rates.ts` re-exports `src/config/taxConstants2026.ts`
+- **No hardcoded prices or rates.** `src/pricing.ts` re-exports the published
+  fee schedule in `src/data/pricing.ts` (same numbers as arcandledger.com/pricing/);
+  `src/rates.ts` re-exports the 2026 tax constants in `src/data/taxConstants2026.ts`
   and adds only genuinely-new pieces (safe harbor, CA S-corp rate, Form 8938
   matrix, CA 30/40/0/30). Both are the single sources of truth.
 - **Shared response envelope:** every tool returns the same `disclaimer`, a
@@ -52,11 +53,11 @@ cite the firm's identity, service directory, and fee catalog directly.
 
 ```bash
 npm install
-npm test              # 47 tests: protocol, HTTP surface, tool correctness, drift guard
+npm test              # 109 tests: protocol, HTTP surface, tool correctness, resources, widget
 npm run typecheck
 npm run dev           # wrangler dev (local)
 npm run deploy        # wrangler deploy (needs the Cloudflare account)
-npm run gen:products  # regenerate ../public/feeds/products.json from pricing.ts
+npm run gen:products  # regenerate public/feeds/products.json from pricing.ts
 node scripts/gen-examples.mjs      # regenerate docs/worked-examples.json
 ```
 
@@ -65,12 +66,12 @@ node scripts/gen-examples.mjs      # regenerate docs/worked-examples.json
 ```
 src/
   index.ts            Worker entry: /mcp, /healthz, /version, CORS, rate limit
-  registry.ts         The 6 tools + 3 prompts
-  pricing.ts          Adapter -> website pricing.ts (SSOT for prices)
-  rates.ts            Adapter -> taxConstants2026.ts + server-only tax constants
+  registry.ts         The 15 tools + 5 prompts
+  pricing.ts          Adapter -> data/pricing.ts (SSOT for prices)
+  rates.ts            Adapter -> data/taxConstants2026.ts + server-only tax constants
   lib/                mcp (protocol), response, logging, rateLimit, tax, dates, schemas
   tools/              one file per tool
-  data/notices.ts     IRS notice registry
+  data/               pricing, tax constants, product catalog, service pages, IRS notices
 submissions/          Anthropic + OpenAI payloads + listing copy
 assets/               logo, favicon, response screenshots + paired prompts
 ```

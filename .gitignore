@@ -6,3 +6,7 @@ dist
 
 # screenshot render scratch
 assets/screenshots/_render.html
+
+# generated feeds / examples (see scripts/)
+public/feeds/
+docs/worked-examples.json
