@@ -40,3 +40,16 @@ Diagnostic remediation, Phase 0 (launch-gate fixes).
   so any output is attributable to a specific release. (P0-3)
 - `rollToBusinessDay` / `isBusinessDay` helpers in `lib/dates.ts` with a federal
   + DC holiday calendar; date-roll fixtures for 2026-2029.
+
+### Release discipline (test harness)
+- **Determinism harness** (`test/golden.test.ts`): every tool, 20x with identical
+  inputs, must return byte-identical output, plus the review's boundary fixtures
+  (FBAR $10k, Form 8938 abroad flip, Augusta 14/15, deadline roll). (Phase 1)
+- **Schema-contract snapshot** (`test/schema.test.ts`): any tool input-schema
+  change fails CI until the snapshot is updated, which is the cue to bump the
+  version and add a changelog line. Closes the silent-enum-drift gap. (Phase 1)
+- **Content-governance gate** (`test/governance.test.ts`): banned-string (em
+  dash, "IRS-licensed", "IRS Enrolled Agent", "Certified Acceptance Agent",
+  "MST", a "$0 - $0" salary) and required-string (disclaimer, approved credential
+  line) checks over rendered tool/resource/prompt output. (Phase 2)
+- This CHANGELOG.

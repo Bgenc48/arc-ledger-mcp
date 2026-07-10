@@ -53,7 +53,8 @@ cite the firm's identity, service directory, and fee catalog directly.
 
 ```bash
 npm install
-npm test              # 109 tests: protocol, HTTP surface, tool correctness, resources, widget
+npm test              # protocol, HTTP surface, tool correctness, resources, widget,
+                      # determinism, schema-contract snapshot, content-governance gates
 npm run typecheck
 npm run dev           # wrangler dev (local)
 npm run deploy        # wrangler deploy (needs the Cloudflare account)
