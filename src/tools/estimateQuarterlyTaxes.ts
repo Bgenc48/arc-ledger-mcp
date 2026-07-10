@@ -28,7 +28,7 @@ const input = z.object({
   entity: z
     .enum(['sole_proprietor', 'single_member_llc', 'partnership', 's_corp_shareholder', 'other'])
     .describe('How the income is taxed. Sole proprietor / SMLLC / partnership pay self-employment tax; S-corp shareholders take wages (withheld) plus distributions.'),
-  state: z.string().max(40).optional().describe('US state. Defaults to CA. Only California installment timing is modeled specifically.'),
+  state: z.string().max(40).optional().describe('US state. Only California installment timing is modeled specifically; when omitted, no state is assumed and only federal figures are computed.'),
   ytd_withholding_usd: dollars().optional().describe('Federal tax already withheld this year (e.g. from a W-2 or S-corp salary). Counts toward the safe harbor.'),
   prior_year_total_tax_usd: dollars().optional().describe('Total federal tax on last year\'s return. Enables the prior-year safe harbor (often the easiest to hit).'),
   prior_year_agi_usd: dollars().optional().describe('Last year\'s adjusted gross income (AGI). If over $150,000 ($75,000 MFS), the prior-year safe harbor rises from 100% to 110%.'),
@@ -42,9 +42,14 @@ const NEXT_STEP = {
   url: GO.book15min,
 };
 
+function hasState(state?: string): boolean {
+  return state !== undefined && state.trim() !== '';
+}
+
+/** True only when the caller EXPLICITLY named California (never assumed from an omitted state). */
 function isCalifornia(state?: string): boolean {
-  if (!state) return true;
-  const s = state.trim().toLowerCase();
+  if (!hasState(state)) return false;
+  const s = state!.trim().toLowerCase();
   return s === 'ca' || s === 'california';
 }
 
@@ -155,7 +160,9 @@ function run(args: z.infer<typeof input>) {
         payment_link: CA_WEB_PAY,
         note: 'California income tax uses its own brackets (separate from federal) and is not computed here. Compute your CA annual estimated tax on Form 540-ES or with the Enrolled Agent, then apply the 30/40/0/30 weighting above to schedule the installments.',
       }
-    : { applies: false, note: `Only California installment timing is modeled here; ${sanitizeStateEcho(args.state, false) === 'unknown' ? 'your state' : sanitizeStateEcho(args.state, false)} has its own estimated-tax rules.` };
+    : hasState(args.state)
+      ? { applies: false, note: `Only California installment timing is modeled here; ${sanitizeStateEcho(args.state, false) === 'unknown' ? 'your state' : sanitizeStateEcho(args.state, false)} has its own estimated-tax rules.` }
+      : { applies: false, note: 'No state was provided, so no state estimated tax is modeled here (tell me your state to include it; California installment timing is modeled specifically). The federal figures above are unaffected.' };
 
   const fields = {
     tax_year: TAX_YEAR,
@@ -191,7 +198,7 @@ export const estimateQuarterlyTaxes: ToolDef<typeof input> = {
   annotations: { title: 'Estimate quarterly taxes', readOnlyHint: true, openWorldHint: false },
   logEnums: (args) => ({
     entity: args.entity,
-    state: isCalifornia(args.state) ? 'CA' : 'other',
+    state: !hasState(args.state) ? 'unspecified' : isCalifornia(args.state) ? 'CA' : 'other',
     has_withholding: args.ytd_withholding_usd !== undefined,
     has_prior_year: args.prior_year_total_tax_usd !== undefined,
   }),

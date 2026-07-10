@@ -65,24 +65,41 @@ function run(args: z.infer<typeof input>) {
   });
 
   const rec = FORMATION_STATES[recommended];
+
+  // The RECOMMENDATION rationale (why this state, given the inputs). Kept
+  // distinct from each state's `bestFor` PROFILE blurb: the profile describes
+  // when a state suits someone in general and must never be pasted into the
+  // recommendation slot (it reads as a self-contradiction, e.g. recommending
+  // California with California's "only when you operate here" profile).
+  const why = args.operates_in_california
+    ? 'California is the most expensive of these states, but it is still the right choice for you specifically: because you operate in or reside in California, California registration is generally required no matter where you form. Forming in a cheaper state would NOT save money here - it would only add a second (foreign-qualification) filing on top of the California one.'
+    : args.raising_venture_capital || priority === 'investor_ready'
+      ? 'You plan to raise venture capital, so Delaware is the investor-standard choice despite its higher annual cost.'
+      : priority === 'most_privacy'
+        ? 'You prioritized privacy, so New Mexico wins: no annual report and no public member/manager disclosure.'
+        : 'For a simple online business with no California footprint, Wyoming is the low-cost, private default.';
+
+  // P1-2: institutional VC almost always requires a Delaware C-corp, not an LLC.
+  // That entity decision precedes the state-of-formation question, so surface it
+  // whenever the caller says they are raising venture capital.
+  const ventureCapitalNote = args.raising_venture_capital
+    ? 'Institutional venture investors almost always require a Delaware C-corporation, not an LLC. That entity choice comes BEFORE the state-of-formation question; talk to an Enrolled Agent about entity selection before you file, so you do not have to unwind an LLC later.'
+    : undefined;
+
   const fields = {
     recommended_state: rec.label,
-    why: args.operates_in_california
-      ? 'California is the most expensive of these states, but it is still the right choice for you specifically: because you operate in or reside in California, California registration is generally required no matter where you form. Forming in a cheaper state would NOT save money here - it would only add a second (foreign-qualification) filing on top of the California one.'
-      : args.raising_venture_capital || priority === 'investor_ready'
-        ? 'You plan to raise venture capital, so Delaware is the investor-standard choice despite its higher annual cost.'
-        : priority === 'most_privacy'
-          ? 'You prioritized privacy, so New Mexico wins: no annual report and no public member/manager disclosure.'
-          : 'For a simple online business with no California footprint, Wyoming is the low-cost, private default.',
+    why,
+    ...(ventureCapitalNote ? { venture_capital_note: ventureCapitalNote } : {}),
     states,
     note: 'Government fees only; our formation service fee is separate. A foreign-owned US LLC also files Form 5472 every year regardless of state (a $25,000/year penalty if missed). State fees change - verify before filing.',
     disclaimer_context: 'General guidance to compare states, not legal or tax advice for your specific situation.',
   };
 
   const summary =
-    `For your situation the ${rec.label} route looks best: ${rec.bestFor} ` +
-    `First-year government fees are about ${usd(round0(firstYearGovtCost(recommended)))}. ` +
-    `Remember a foreign-owned US LLC files Form 5472 every year in any state.`;
+    `For your situation the ${rec.label} route looks best: ${why} ` +
+    `First-year government fees are about ${usd(round0(firstYearGovtCost(recommended)))}.` +
+    (ventureCapitalNote ? ` ${ventureCapitalNote}` : '') +
+    ` Remember a foreign-owned US LLC files Form 5472 every year in any state.`;
 
   return output(summary, fields, SOURCE.formation, NEXT_STEP);
 }

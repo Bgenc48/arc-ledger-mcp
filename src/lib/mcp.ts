@@ -200,7 +200,7 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
       try {
         const out = tool.run(parsed.data);
         logToolCall(tool.name, tool.logEnums(parsed.data));
-        const result = toToolResult(out);
+        const result = toToolResult(out, reg.version);
         // Bind the result to its widget template so ChatGPT renders the
         // structuredContent in-chat. Omitted for tools without a widget.
         if (tool.widget) {
@@ -216,7 +216,7 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
         const text = `This tool could not complete the request. Please adjust the inputs and try again.\n\n${DISCLAIMER}`;
         return ok(id, {
           content: [{ type: 'text', text }],
-          structuredContent: { disclaimer: DISCLAIMER },
+          structuredContent: { disclaimer: DISCLAIMER, server_version: reg.version },
           isError: true,
         });
       }

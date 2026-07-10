@@ -90,6 +90,8 @@ describe('every tool response carries the envelope', () => {
       expect(sc.disclaimer).toBe(DISCLAIMER);
       expect(sc.source_url).toMatch(FIRST_PARTY);
       expect(sc.next_step.url).toMatch(FIRST_PARTY);
+      // Every response is attributable to a server release (Phase 0.3).
+      expect(sc.server_version).toBe('0.1.0');
       // Disclaimer must also survive in the visible text.
       expect(res.result.content[0].text).toContain(DISCLAIMER);
     });
@@ -323,6 +325,17 @@ describe('deadline_calendar', () => {
     expect(f5472.penalty).toContain('$25,000');
   });
 
+  // P0-2: statutory dates must roll off weekends and legal holidays (IRC 7503).
+  it('rolls the TY2025 1120-S deadline off Sunday March 15 to Monday March 16, 2026', () => {
+    const out = deadlineCalendar.run({ entity_type: 's_corp', filing_year: 2025 });
+    expect((out.structured.deadlines as any[])[0].due).toBe('2026-03-16');
+  });
+
+  it('rolls an April 15 deadline through Emancipation Day (TY2027 -> April 18, 2028)', () => {
+    const out = deadlineCalendar.run({ entity_type: 'foreign_owned_llc', filing_year: 2027 });
+    expect((out.structured.deadlines as any[])[0].due).toBe('2028-04-18');
+  });
+
   it('a nonresident with no US wages is due June 15, with US wages April 15', () => {
     const noWages = deadlineCalendar.run({ entity_type: 'nonresident_individual', filing_year: 2026, has_us_source_wages: false });
     expect((noWages.structured.deadlines as any[])[0].due).toBe('2027-06-15');
@@ -476,8 +489,28 @@ describe('estimate_reasonable_comp', () => {
   });
 
   it('never suggests a salary above the profit', () => {
+    const out = estimateReasonableComp.run({ business_net_profit_usd: 30000, profit_driver: 'primarily_owner_services' });
+    expect(out.structured.suggested_salary_high as number).toBeLessThanOrEqual(30000);
+  });
+
+  // P0-1: reasonable comp is measured against services, not book profit.
+  it('returns NO numeric salary at $0 profit (audit-trigger guard)', () => {
+    const out = estimateReasonableComp.run({ business_net_profit_usd: 0, profit_driver: 'primarily_owner_services' });
+    expect(out.structured.suggested_salary_low).toBeUndefined();
+    expect(out.structured.suggested_salary_high).toBeUndefined();
+    expect(out.structured.midpoint_salary).toBeUndefined();
+    // The danger is a $0 salary RECOMMENDATION, not mentioning the $0 profit input.
+    expect(out.summary).not.toMatch(/\$0\s*-\s*\$0/);
+    expect(out.summary).not.toMatch(/salary likely STARTS/i);
+    expect(out.summary.toLowerCase()).toContain('not a percentage of profit');
+    expect(out.structured.salary_recommendation).toContain('not calculated');
+  });
+
+  it('returns NO numeric salary below the meaningful-profit floor', () => {
     const out = estimateReasonableComp.run({ business_net_profit_usd: 10000, profit_driver: 'primarily_owner_services' });
-    expect(out.structured.suggested_salary_high as number).toBeLessThanOrEqual(10000);
+    expect(out.structured.suggested_salary_high).toBeUndefined();
+    expect(out.summary.toLowerCase()).toContain('below the level');
+    expect(Array.isArray(out.structured.guidance)).toBe(true);
   });
 });
 
@@ -523,6 +556,54 @@ describe('estimate_accountable_plan', () => {
     const out = estimateAccountablePlan.run({});
     expect(out.structured.total_annual_reimbursement).toBe(0);
     expect(out.structured.estimated_annual_tax_saving).toBe(0);
+  });
+});
+
+describe('Phase 3 logic fixes', () => {
+  // P1-1: the recommendation rationale must not be the state PROFILE blurb.
+  it('gives California a recommendation rationale, not its profile blurb', () => {
+    const out = compareFormationStates.run({ operates_in_california: true, priority: 'investor_ready', raising_venture_capital: true });
+    expect(out.structured.why).toContain('required no matter where you form');
+    expect(out.summary).toContain('route looks best');
+    expect(out.summary).toContain('required no matter where you form');
+    // The self-contradictory profile phrase must NOT be pasted into the summary.
+    expect(out.summary).not.toContain('costliest choice otherwise');
+  });
+
+  // P1-2: VC founders get the Delaware C-corp caveat.
+  it('adds a Delaware C-corp note when raising venture capital', () => {
+    const out = compareFormationStates.run({ raising_venture_capital: true });
+    expect(out.structured.venture_capital_note).toContain('Delaware C-corporation');
+    expect(out.summary).toContain('Delaware C-corporation');
+  });
+  it('omits the VC note when not raising venture capital', () => {
+    const out = compareFormationStates.run({ priority: 'lowest_cost' });
+    expect(out.structured.venture_capital_note).toBeUndefined();
+    expect(out.summary).not.toContain('Delaware C-corporation');
+  });
+
+  // P2-1: no state must not silently assume California.
+  it('does not assume California when the state is omitted', () => {
+    const out = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor' });
+    expect((out.structured.california as any).applies).toBe(false);
+    expect((out.structured.california as any).note).toContain('No state');
+    expect(out.summary).not.toContain('30/40/0/30');
+  });
+  it('models California only when explicitly named', () => {
+    const tx = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'TX' });
+    expect((tx.structured.california as any).applies).toBe(false);
+    const ca = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'California' });
+    expect((ca.structured.california as any).applies).toBe(true);
+  });
+
+  // P2-6: FBAR boundary wording states the "exceeds" test and the exact-$10k case.
+  it('states the FBAR exceeds-$10,000 test at the boundary', () => {
+    const at = checkFbarFatca.run({ max_aggregate_foreign_balance_usd: 10000, filing_status: 'single', lives_abroad: false });
+    expect((at.structured.fbar as any).required).toBe(false);
+    expect(at.summary).toContain('EXCEED');
+    expect(at.summary.toLowerCase()).toContain('at exactly');
+    const over = checkFbarFatca.run({ max_aggregate_foreign_balance_usd: 10001, filing_status: 'single', lives_abroad: false });
+    expect((over.structured.fbar as any).required).toBe(true);
   });
 });
 

@@ -1,0 +1,487 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tool input-schema contract > matches the committed snapshot (on a diff: bump SERVER_VERSION + CHANGELOG, then vitest -u) 1`] = `
+{
+  "book_consultation": {
+    "additionalProperties": false,
+    "properties": {
+      "topic": {
+        "description": "A short subject line for the meeting (optional).",
+        "maxLength": 200,
+        "type": "string",
+      },
+      "type": {
+        "description": "Which consultation to book. Cross-border or multi-year situations suit the Specialist; a single IRS letter suits the notice review.",
+        "enum": [
+          "free_15min",
+          "discovery_standard_297",
+          "discovery_specialist_497",
+          "notice_review_199",
+        ],
+        "type": "string",
+      },
+    },
+    "required": [
+      "type",
+    ],
+    "type": "object",
+  },
+  "check_fbar_fatca": {
+    "additionalProperties": false,
+    "properties": {
+      "account_count": {
+        "description": "Number of foreign accounts, if known.",
+        "type": "number",
+      },
+      "filing_status": {
+        "description": "Your US tax filing status.",
+        "enum": [
+          "single",
+          "married_filing_jointly",
+          "married_filing_separately",
+          "head_of_household",
+        ],
+        "type": "string",
+      },
+      "lives_abroad": {
+        "description": "True if your tax home is outside the United States (higher Form 8938 thresholds apply).",
+        "type": "boolean",
+      },
+      "max_aggregate_foreign_balance_usd": {
+        "description": "The highest combined value of ALL your foreign financial accounts at any point during the year, in USD.",
+        "type": "number",
+      },
+      "unfiled_years": {
+        "description": "How many past years of FBARs you have NOT filed but should have. 0 or omitted if current.",
+        "type": "number",
+      },
+    },
+    "required": [
+      "max_aggregate_foreign_balance_usd",
+      "filing_status",
+      "lives_abroad",
+    ],
+    "type": "object",
+  },
+  "check_itin_eligibility": {
+    "additionalProperties": false,
+    "properties": {
+      "has_ssn": {
+        "description": "Whether you already have, or are eligible for, a US Social Security Number. If yes, you cannot get an ITIN.",
+        "type": "boolean",
+      },
+      "is_foreign_national": {
+        "description": "Whether you are a non-US citizen without US immigration status that grants an SSN. Defaults to true.",
+        "type": "boolean",
+      },
+      "reason": {
+        "description": "Why you need a US taxpayer ID. file_us_tax_return = you must file a US return; owner_of_us_llc = foreign owner of a US LLC/corp needing an ID for filings; claim_treaty_benefit = reduce withholding under a tax treaty; spouse_or_dependent = of a US filer; third_party_withholding = a payer/bank needs your ID (W-8BEN); open_us_bank_or_other = other reason.",
+        "enum": [
+          "file_us_tax_return",
+          "owner_of_us_llc",
+          "claim_treaty_benefit",
+          "spouse_or_dependent",
+          "third_party_withholding",
+          "open_us_bank_or_other",
+        ],
+        "type": "string",
+      },
+    },
+    "required": [
+      "has_ssn",
+      "reason",
+    ],
+    "type": "object",
+  },
+  "check_sales_tax_nexus": {
+    "additionalProperties": false,
+    "properties": {
+      "annual_sales_usd": {
+        "description": "Your total sales into the state(s) in the current or prior calendar year.",
+        "type": "number",
+      },
+      "states": {
+        "description": "US states to check, as 2-letter codes (e.g. ["CA","TX","NY"]). If omitted, the tool explains the general rule.",
+        "items": {
+          "maxLength": 20,
+          "type": "string",
+        },
+        "maxItems": 60,
+        "type": "array",
+      },
+      "transaction_count": {
+        "description": "Approximate number of separate sales transactions into the state(s). Some states count transactions as well as dollars.",
+        "type": "number",
+      },
+    },
+    "required": [
+      "annual_sales_usd",
+    ],
+    "type": "object",
+  },
+  "compare_formation_states": {
+    "additionalProperties": false,
+    "properties": {
+      "operates_in_california": {
+        "description": "Whether you (or the business) physically operate in, or are a resident of, California. If true, California registration is generally required regardless of where you form.",
+        "type": "boolean",
+      },
+      "priority": {
+        "description": "What matters most: lowest_cost, most_privacy, or investor_ready. Defaults to lowest_cost.",
+        "enum": [
+          "lowest_cost",
+          "most_privacy",
+          "investor_ready",
+        ],
+        "type": "string",
+      },
+      "raising_venture_capital": {
+        "description": "Whether you plan to raise venture capital or convert to a C-corp. If true, Delaware is usually preferred by investors.",
+        "type": "boolean",
+      },
+    },
+    "type": "object",
+  },
+  "compare_llc_scorp": {
+    "additionalProperties": false,
+    "properties": {
+      "currently_has_llc": {
+        "description": "Whether the business already operates as an LLC today. Defaults to true. A plain sole proprietorship (no LLC) does not owe the California $800 franchise tax.",
+        "type": "boolean",
+      },
+      "expected_net_profit_usd": {
+        "description": "Expected annual net profit (revenue minus business expenses), before any owner salary.",
+        "type": "number",
+      },
+      "owner_salary_estimate_usd": {
+        "description": "A reasonable W-2 salary you would pay yourself as an S-corp owner. If omitted, a neutral 50% split is used to illustrate the mechanic.",
+        "type": "number",
+      },
+      "state": {
+        "description": "US state, 2-letter or name. Defaults to CA. Only California franchise taxes are modeled (the SMLLC gross-receipts fee is excluded; see caveats).",
+        "maxLength": 40,
+        "type": "string",
+      },
+    },
+    "required": [
+      "expected_net_profit_usd",
+    ],
+    "type": "object",
+  },
+  "deadline_calendar": {
+    "additionalProperties": false,
+    "properties": {
+      "entity_type": {
+        "description": "Your US tax entity. foreign_owned_llc = a SINGLE-MEMBER US LLC owned by a non-US person (files pro-forma 1120 + 5472); a multi-member foreign-owned LLC is a partnership, use multi_member_llc. foreign_owned_c_corp = a US C-corp with foreign owners. nonresident_individual = a person filing Form 1040-NR.",
+        "enum": [
+          "foreign_owned_llc",
+          "foreign_owned_c_corp",
+          "multi_member_llc",
+          "s_corp",
+          "nonresident_individual",
+        ],
+        "type": "string",
+      },
+      "filing_year": {
+        "description": "The tax year whose deadlines you want (the year being reported). Defaults to the prior calendar year.",
+        "maximum": 2100,
+        "minimum": 2020,
+        "type": "integer",
+      },
+      "formed_in_us": {
+        "description": "Whether the entity was formed in the US (relevant to the BOI report, from which most US-formed companies are now exempt).",
+        "type": "boolean",
+      },
+      "has_foreign_bank_over_10k": {
+        "description": "Whether the aggregate of your foreign financial accounts exceeded $10,000 at any point (triggers FBAR).",
+        "type": "boolean",
+      },
+      "has_us_source_wages": {
+        "description": "Nonresident individuals only: whether you had US wages subject to withholding. Determines the 1040-NR due date (April 15 if yes, June 15 if no).",
+        "type": "boolean",
+      },
+    },
+    "required": [
+      "entity_type",
+    ],
+    "type": "object",
+  },
+  "decode_irs_notice": {
+    "additionalProperties": false,
+    "properties": {
+      "amount_shown": {
+        "description": "The dollar amount the notice proposes or bills, if any. Optional; used only for context, never stored.",
+        "type": "number",
+      },
+      "notice_code": {
+        "description": "The notice or letter code printed on the IRS mail, e.g. "CP2000", "CP 14", "LT11", "Letter 1058".",
+        "maxLength": 30,
+        "minLength": 1,
+        "type": "string",
+      },
+      "received_date": {
+        "description": "Date on the notice (YYYY-MM-DD). Used to compute the response deadline. The IRS clock runs from the notice date printed on the letter.",
+        "type": "string",
+      },
+    },
+    "required": [
+      "notice_code",
+    ],
+    "type": "object",
+  },
+  "estimate_accountable_plan": {
+    "additionalProperties": false,
+    "properties": {
+      "business_miles": {
+        "description": "Business miles you drive per year in your personal vehicle. Reimbursed at the IRS standard mileage rate.",
+        "type": "number",
+      },
+      "cell_internet_usd": {
+        "description": "Annual business-use portion of your cell phone and home internet.",
+        "type": "number",
+      },
+      "home_office_expense_usd": {
+        "description": "Annual business-use portion of your home costs (rent/mortgage interest, utilities, insurance x business-use %). If you only know square footage, use the simplified method: $5/sq ft up to 300 sq ft = $1,500 max.",
+        "type": "number",
+      },
+      "marginal_tax_rate_pct": {
+        "description": "Your combined marginal tax rate as a percent (e.g. 24, or 33 to include state). Used to estimate the tax saving. Defaults to 22.",
+        "type": "number",
+      },
+      "other_business_expense_usd": {
+        "description": "Other out-of-pocket business expenses you personally paid (supplies, travel, professional dues, etc.).",
+        "type": "number",
+      },
+    },
+    "type": "object",
+  },
+  "estimate_augusta_rule": {
+    "additionalProperties": false,
+    "properties": {
+      "days_rented": {
+        "description": "Number of days per year you rent your home to your business. The tax-free treatment ONLY applies at 14 days or fewer.",
+        "type": "number",
+      },
+      "fair_daily_rental_rate_usd": {
+        "description": "The FAIR-MARKET daily rate to rent your home for a comparable business event (e.g. what a hotel meeting room or event space of similar size would charge). Must be supportable with a written quote or comparable.",
+        "type": "number",
+      },
+      "marginal_tax_rate_pct": {
+        "description": "Your combined marginal tax rate as a percent (e.g. 24 for 24%, or 33 to include state). Used to translate the deduction into a tax saving. Defaults to 22.",
+        "type": "number",
+      },
+    },
+    "required": [
+      "fair_daily_rental_rate_usd",
+      "days_rented",
+    ],
+    "type": "object",
+  },
+  "estimate_irs_penalty": {
+    "additionalProperties": false,
+    "properties": {
+      "balance_owed_usd": {
+        "description": "The unpaid tax balance (the tax itself, before penalties and interest).",
+        "type": "number",
+      },
+      "months_late": {
+        "description": "Whole months past the deadline. The failure-to-file penalty counts any part of a month as a full month.",
+        "type": "number",
+      },
+      "return_filed": {
+        "description": "Whether you actually FILED the return (even if you did not pay). If false, the larger 5%/month failure-to-file penalty applies. Defaults to false (not filed).",
+        "type": "boolean",
+      },
+    },
+    "required": [
+      "balance_owed_usd",
+      "months_late",
+    ],
+    "type": "object",
+  },
+  "estimate_quarterly_taxes": {
+    "additionalProperties": false,
+    "properties": {
+      "entity": {
+        "description": "How the income is taxed. Sole proprietor / SMLLC / partnership pay self-employment tax; S-corp shareholders take wages (withheld) plus distributions.",
+        "enum": [
+          "sole_proprietor",
+          "single_member_llc",
+          "partnership",
+          "s_corp_shareholder",
+          "other",
+        ],
+        "type": "string",
+      },
+      "prior_year_agi_usd": {
+        "description": "Last year's adjusted gross income (AGI). If over $150,000 ($75,000 MFS), the prior-year safe harbor rises from 100% to 110%.",
+        "type": "number",
+      },
+      "prior_year_total_tax_usd": {
+        "description": "Total federal tax on last year's return. Enables the prior-year safe harbor (often the easiest to hit).",
+        "type": "number",
+      },
+      "state": {
+        "description": "US state. Only California installment timing is modeled specifically; when omitted, no state is assumed and only federal figures are computed.",
+        "maxLength": 40,
+        "type": "string",
+      },
+      "ytd_net_income_usd": {
+        "description": "Your net self-employment / business income so far THIS year (year to date), before tax.",
+        "type": "number",
+      },
+      "ytd_withholding_usd": {
+        "description": "Federal tax already withheld this year (e.g. from a W-2 or S-corp salary). Counts toward the safe harbor.",
+        "type": "number",
+      },
+    },
+    "required": [
+      "ytd_net_income_usd",
+      "entity",
+    ],
+    "type": "object",
+  },
+  "estimate_reasonable_comp": {
+    "additionalProperties": false,
+    "properties": {
+      "business_net_profit_usd": {
+        "description": "Annual net profit of the S-corp BEFORE any owner salary (revenue minus business expenses).",
+        "type": "number",
+      },
+      "profit_driver": {
+        "description": "What drives the profit: "primarily_owner_services" (consulting/agency/solo professional), "mixed" (your work plus staff/systems), or "capital_or_product" (product/capital/team, not your labor). Defaults to primarily_owner_services.",
+        "enum": [
+          "primarily_owner_services",
+          "mixed",
+          "capital_or_product",
+        ],
+        "type": "string",
+      },
+    },
+    "required": [
+      "business_net_profit_usd",
+    ],
+    "type": "object",
+  },
+  "estimate_rental_income": {
+    "additionalProperties": false,
+    "properties": {
+      "annual_rental_income_usd": {
+        "description": "Gross rent received this year, before expenses.",
+        "type": "number",
+      },
+      "filing_status": {
+        "description": "Federal filing status. Defaults to single.",
+        "enum": [
+          "single",
+          "married_filing_jointly",
+        ],
+        "type": "string",
+      },
+      "land_percent": {
+        "description": "Percent of the purchase price attributable to non-depreciable land (default 20). The building is depreciated over 27.5 years.",
+        "type": "number",
+      },
+      "operating_expenses_usd": {
+        "description": "Deductible operating expenses: mortgage interest, property tax, insurance, HOA, repairs, management, utilities, supplies. Excludes depreciation (computed for you).",
+        "type": "number",
+      },
+      "other_income_usd": {
+        "description": "Your other taxable income (e.g. wages, business) for the year. Sets the marginal rate applied to net rental income, and gates the passive-loss allowance.",
+        "type": "number",
+      },
+      "personal_use_days": {
+        "description": "Days YOU used the property personally (short-term only). Triggers the 14-day tax-free rule when a stay is rented 14 days or fewer and used more personally.",
+        "type": "number",
+      },
+      "property_purchase_price_usd": {
+        "description": "What you paid for the property (building + land). Used to compute straight-line depreciation.",
+        "type": "number",
+      },
+      "real_estate_professional": {
+        "description": "Whether you materially participate as a real-estate professional under IRC 469(c)(7). If true, rental losses are not passive-limited.",
+        "type": "boolean",
+      },
+      "rental_days": {
+        "description": "Days the property was rented at fair value (short-term only).",
+        "type": "number",
+      },
+      "rental_type": {
+        "description": "long_term (standard residential lease) or short_term (Airbnb/VRBO-style). Defaults to long_term.",
+        "enum": [
+          "long_term",
+          "short_term",
+        ],
+        "type": "string",
+      },
+    },
+    "required": [
+      "annual_rental_income_usd",
+    ],
+    "type": "object",
+  },
+  "get_fee_quote": {
+    "additionalProperties": false,
+    "properties": {
+      "details": {
+        "additionalProperties": false,
+        "properties": {
+          "crypto_txn_count": {
+            "description": "Approximate number of crypto transactions.",
+            "type": "number",
+          },
+          "entity_type": {
+            "description": "Entity type for a business return or formation.",
+            "enum": [
+              "s_corp",
+              "partnership",
+              "c_corp",
+              "llc",
+              "sole_prop",
+            ],
+            "type": "string",
+          },
+          "foreign_accounts": {
+            "description": "Number of foreign financial accounts (triggers FBAR/FATCA and cross-border scoping).",
+            "type": "number",
+          },
+          "k1s": {
+            "description": "Number of K-1s received (individual) or issued (business).",
+            "type": "number",
+          },
+          "rentals": {
+            "description": "Number of rental properties (Schedule E).",
+            "type": "number",
+          },
+          "states": {
+            "description": "Number of states to file BEYOND the first (each additional state).",
+            "type": "number",
+          },
+          "unfiled_years": {
+            "description": "Number of past-due / unfiled years (triggers multi-year scoping).",
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+      "service": {
+        "description": "The kind of work you want priced.",
+        "enum": [
+          "individual_return",
+          "business_return",
+          "formation",
+          "bookkeeping",
+          "resolution",
+          "international_form",
+          "other",
+        ],
+        "type": "string",
+      },
+    },
+    "required": [
+      "service",
+    ],
+    "type": "object",
+  },
+}
+`;

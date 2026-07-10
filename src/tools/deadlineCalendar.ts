@@ -9,7 +9,7 @@ import {
   CA_FRANCHISE_TAX_MINIMUM,
   TAX_YEAR,
 } from '../rates';
-import { todayUtc, parseIsoDate, humanDate, daysBetween } from '../lib/dates';
+import { todayUtc, parseIsoDate, humanDate, daysBetween, toIso, rollToBusinessDay } from '../lib/dates';
 import type { ToolDef } from '../lib/types';
 
 const input = z.object({
@@ -52,11 +52,18 @@ interface DeadlineRow {
   status?: string;
 }
 
-/** Resolve a {month, day} to an ISO date in the filing YEAR + 1 (returns filed the following year). */
+/**
+ * Resolve a {month, day} to an ISO date in the filing YEAR + 1 (returns are
+ * filed the following year), rolled forward per IRC 7503 when the statutory
+ * date lands on a weekend or legal holiday (e.g. TY2025 Form 1120-S is
+ * statutorily March 15, 2026, a Sunday, so it becomes Monday March 16, 2026).
+ */
 function dueIso(year: number, md: { month: number; day: number }): string {
   const mm = String(md.month).padStart(2, '0');
   const dd = String(md.day).padStart(2, '0');
-  return `${year + 1}-${mm}-${dd}`;
+  const statutory = parseIsoDate(`${year + 1}-${mm}-${dd}`);
+  if (!statutory) return `${year + 1}-${mm}-${dd}`;
+  return toIso(rollToBusinessDay(statutory));
 }
 
 function withCountdown(row: DeadlineRow): DeadlineRow {
@@ -158,7 +165,7 @@ function run(args: z.infer<typeof input>) {
           note: 'Companies formed in the US are exempt from the FinCEN BOI report under the March 2025 interim final rule. Foreign-formed entities registered to do US business may still report.',
         },
     state_note: `State filings are separate. For example, a California LLC or corporation owes the ${usd(CA_FRANCHISE_TAX_MINIMUM)} minimum franchise tax annually; Wyoming and New Mexico have their own annual-report rules.`,
-    important: 'Deadlines shift to the next business day when they fall on a weekend or holiday. Verify each date for your specific year and state.',
+    important: 'The dates above already roll to the next business day when the statutory deadline falls on a weekend or federal/DC holiday (IRC 7503). State deadlines are separate; verify each date for your specific situation.',
   };
 
   const summary = nextDue
