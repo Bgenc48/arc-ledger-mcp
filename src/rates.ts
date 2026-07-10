@@ -206,6 +206,16 @@ export const REASONABLE_COMP_SHARES = {
   mixed: { low: 0.28, high: 0.45, label: "A mix of your work plus employees, contractors, or systems" },
   capital_or_product: { low: 0.18, high: 0.32, label: "Profit is driven mostly by product, capital, or a team - not your personal labor" },
 } as const;
+/**
+ * Below this net profit the percentage-of-profit starting range is not
+ * meaningful: reasonable compensation is measured against services performed,
+ * not book profit, and an S election is usually not cost-effective at this
+ * level (compare_llc_scorp reaches the same break-even conclusion). At or below
+ * zero profit the tool must not emit a salary number at all - a shareholder who
+ * performs substantial services and takes distributions while reporting zero
+ * officer comp is the Watson v. Commissioner / Rev. Rul. 74-44 audit pattern.
+ */
+export const REASONABLE_COMP_MIN_PROFIT = 25_000;
 
 // ─── Augusta rule / IRC 280A(g) (estimate_augusta_rule) ──────────────────────
 /** A dwelling rented for THIS many days or fewer is excluded from income (IRC 280A(g)). Day 15 makes ALL of it taxable. */
