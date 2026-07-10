@@ -1,16 +1,16 @@
 /**
- * Versioned tax-rate adapter. Re-exports the website's single source of truth
- * for tax constants (src/config/taxConstants2026.ts, TAX_YEAR = 2026, verified
- * against Rev. Proc. 2025-32 / Notice 2026-10 / OBBBA) and adds the pieces the
- * MCP tools need that do NOT exist anywhere in the site codebase yet.
+ * Versioned tax-rate adapter. Re-exports the centralized 2026 tax constants
+ * (src/data/taxConstants2026.ts, TAX_YEAR = 2026, verified against Rev. Proc.
+ * 2025-32 / Notice 2026-10 / OBBBA) and adds the pieces the MCP tools need
+ * that are not general tax-year constants.
  *
- * Rule mirrors pricing: never hardcode a rate that already lives in the site
- * constants - import it. The additions below are genuinely new (safe-harbor
- * multipliers, the CA S-corp rate as a named constant, the full Form 8938
- * matrix, CA installment weighting) and are documented with their statutory
+ * Rule mirrors pricing: never hardcode a rate that already lives in the
+ * constants file - import it. The additions below (safe-harbor multipliers,
+ * the CA S-corp rate as a named constant, the full Form 8938 matrix, CA
+ * installment weighting, and friends) are documented with their statutory
  * source so a reviewer can verify them.
  */
-export * from '../../src/config/taxConstants2026';
+export * from './data/taxConstants2026';
 
 // ─── Estimated-tax safe harbor (IRC §6654) - NOT in the site codebase ────────
 /** Pay at least this share of CURRENT-year tax to avoid the underpayment penalty. */

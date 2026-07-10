@@ -1,10 +1,9 @@
 /**
- * Generates ../../public/feeds/products.json from the website's
- * src/data/productCatalog.ts (which reads prices from pricing.ts - the single
- * source of truth). This is the agentic-commerce staging feed: id, name,
- * description, price, currency, url, category per productized SKU and bundle.
+ * Generates public/feeds/products.json from src/data/productCatalog.ts (which
+ * reads prices from pricing.ts - the single source of truth). This is the
+ * agentic-commerce staging feed: id, name, description, price, currency, url,
+ * category per productized SKU and bundle.
  *
- * Run from the arc-ledger-mcp package (it has esbuild):
  *   npm run gen:products     (or: node scripts/gen-products-feed.mjs)
  * Re-run after any price change.
  */
@@ -14,15 +13,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const pkgRoot = join(here, '..'); // arc-ledger-mcp
-const repoRoot = join(pkgRoot, '..'); // website repo
+const pkgRoot = join(here, '..');
 const BASE_URL = 'https://www.arcandledger.com';
-const outFile = join(repoRoot, 'public', 'feeds', 'products.json');
+const outFile = join(pkgRoot, 'public', 'feeds', 'products.json');
 const tmp = join(pkgRoot, '.wrangler', 'products-catalog.bundle.mjs');
 
 mkdirSync(dirname(tmp), { recursive: true });
 await build({
-  entryPoints: [join(repoRoot, 'src', 'data', 'productCatalog.ts')],
+  entryPoints: [join(pkgRoot, 'src', 'data', 'productCatalog.ts')],
   bundle: true,
   format: 'esm',
   platform: 'node',
