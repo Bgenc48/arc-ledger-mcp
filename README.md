@@ -59,7 +59,6 @@ npm run typecheck
 npm run dev           # wrangler dev (local)
 npm run deploy        # wrangler deploy (needs the Cloudflare account)
 npm run gen:products  # regenerate public/feeds/products.json from pricing.ts
-node scripts/gen-examples.mjs      # regenerate docs/worked-examples.json
 ```
 
 ## Layout
@@ -73,7 +72,6 @@ src/
   lib/                mcp (protocol), response, logging, rateLimit, tax, dates, schemas
   tools/              one file per tool
   data/               pricing, tax constants, product catalog, service pages, IRS notices
-submissions/          Anthropic + OpenAI payloads + listing copy
-assets/               logo, favicon, response screenshots + paired prompts
+test/                 protocol, tools, resources, widget, determinism, schema, governance
 ```
 
