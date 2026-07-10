@@ -42,7 +42,7 @@ function run(args: z.infer<typeof input>) {
     threshold: FBAR_THRESHOLD,
     explanation: fbarRequired
       ? `Your highest aggregate foreign balance exceeds ${usd(FBAR_THRESHOLD)}, so an FBAR is required. It is filed electronically with FinCEN, separately from your tax return.`
-      : `Your highest aggregate foreign balance does not exceed ${usd(FBAR_THRESHOLD)}. If you are at or near ${usd(FBAR_THRESHOLD)}, or unsure, filing is free and prudent given the penalties.`,
+      : `FBAR is required only if the aggregate value of ALL your foreign accounts EXCEEDS ${usd(FBAR_THRESHOLD)} at any time during the year (at exactly ${usd(FBAR_THRESHOLD)} it is not triggered). The test is your true highest combined balance across every account, so confirm that intra-year peak. If you are at or near ${usd(FBAR_THRESHOLD)}, or unsure, filing is free and prudent given the penalties.`,
     due_date:
       'Due April 15 with an AUTOMATIC extension to October 15 - no extension request is needed, so a missed April deadline is not itself a late filing.',
   };
@@ -113,7 +113,7 @@ function run(args: z.infer<typeof input>) {
   }
 
   const parts: string[] = [];
-  parts.push(fbarRequired ? `FBAR: required (balance exceeds ${usd(FBAR_THRESHOLD)}).` : `FBAR: not triggered at your balance (threshold ${usd(FBAR_THRESHOLD)}).`);
+  parts.push(fbarRequired ? `FBAR: required (balance exceeds ${usd(FBAR_THRESHOLD)}).` : `FBAR: not triggered - it is required only if your foreign accounts EXCEED ${usd(FBAR_THRESHOLD)} at any time during the year (at exactly ${usd(FBAR_THRESHOLD)} it is not); confirm your true intra-year peak.`);
   parts.push(
     status === 'required'
       ? `Form 8938: required (over ${usd(t.anyTime)} any time).`

@@ -559,6 +559,54 @@ describe('estimate_accountable_plan', () => {
   });
 });
 
+describe('Phase 3 logic fixes', () => {
+  // P1-1: the recommendation rationale must not be the state PROFILE blurb.
+  it('gives California a recommendation rationale, not its profile blurb', () => {
+    const out = compareFormationStates.run({ operates_in_california: true, priority: 'investor_ready', raising_venture_capital: true });
+    expect(out.structured.why).toContain('required no matter where you form');
+    expect(out.summary).toContain('route looks best');
+    expect(out.summary).toContain('required no matter where you form');
+    // The self-contradictory profile phrase must NOT be pasted into the summary.
+    expect(out.summary).not.toContain('costliest choice otherwise');
+  });
+
+  // P1-2: VC founders get the Delaware C-corp caveat.
+  it('adds a Delaware C-corp note when raising venture capital', () => {
+    const out = compareFormationStates.run({ raising_venture_capital: true });
+    expect(out.structured.venture_capital_note).toContain('Delaware C-corporation');
+    expect(out.summary).toContain('Delaware C-corporation');
+  });
+  it('omits the VC note when not raising venture capital', () => {
+    const out = compareFormationStates.run({ priority: 'lowest_cost' });
+    expect(out.structured.venture_capital_note).toBeUndefined();
+    expect(out.summary).not.toContain('Delaware C-corporation');
+  });
+
+  // P2-1: no state must not silently assume California.
+  it('does not assume California when the state is omitted', () => {
+    const out = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor' });
+    expect((out.structured.california as any).applies).toBe(false);
+    expect((out.structured.california as any).note).toContain('No state');
+    expect(out.summary).not.toContain('30/40/0/30');
+  });
+  it('models California only when explicitly named', () => {
+    const tx = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'TX' });
+    expect((tx.structured.california as any).applies).toBe(false);
+    const ca = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'California' });
+    expect((ca.structured.california as any).applies).toBe(true);
+  });
+
+  // P2-6: FBAR boundary wording states the "exceeds" test and the exact-$10k case.
+  it('states the FBAR exceeds-$10,000 test at the boundary', () => {
+    const at = checkFbarFatca.run({ max_aggregate_foreign_balance_usd: 10000, filing_status: 'single', lives_abroad: false });
+    expect((at.structured.fbar as any).required).toBe(false);
+    expect(at.summary).toContain('EXCEED');
+    expect(at.summary.toLowerCase()).toContain('at exactly');
+    const over = checkFbarFatca.run({ max_aggregate_foreign_balance_usd: 10001, filing_status: 'single', lives_abroad: false });
+    expect((over.structured.fbar as any).required).toBe(true);
+  });
+});
+
 function round(n: number): number {
   return Math.round(n);
 }

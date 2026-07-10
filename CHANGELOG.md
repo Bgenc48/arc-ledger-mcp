@@ -20,6 +20,21 @@ Diagnostic remediation, Phase 0 (launch-gate fixes).
   DC Emancipation Day. TY2025 Form 1120-S now correctly reports March 16, 2026
   (statutory March 15 is a Sunday). (P0-2)
 
+- **compare_formation_states** no longer pastes a state's "profile" blurb into
+  the recommendation rationale (which read as a self-contradiction, e.g.
+  recommending California with its "only when you operate here" profile). The
+  recommendation rationale and the per-state profile are now separate. (P1-1)
+- **compare_formation_states** surfaces a Delaware C-corporation note when the
+  caller is raising venture capital (institutional VC requires a Delaware
+  C-corp, not an LLC; that entity choice precedes the state question). (P1-2)
+- **estimate_quarterly_taxes** no longer silently assumes California when the
+  `state` parameter is omitted; it models federal only and asks for the state,
+  so a non-California user is not shown California installment timing. (P2-1)
+- **check_fbar_fatca** boundary wording now states the "exceeds $10,000" test
+  explicitly and clarifies the exact-$10,000 case and intra-year peak. (P2-6)
+- **estimate_irs_penalty** summary now notes the interest figure is approximate
+  (compounds daily, rate resets quarterly), matching the structured detail. (P2-3)
+
 ### Added
 - Every tool response carries a `server_version` field (matches `GET /version`)
   so any output is attributable to a specific release. (P0-3)

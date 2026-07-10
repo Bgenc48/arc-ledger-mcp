@@ -89,8 +89,8 @@ function run(args: z.infer<typeof input>) {
   };
 
   const summary = filed
-    ? `On a ${usd(balance)} balance ${months} month(s) late (return filed): about ${usd(ftp)} failure-to-pay penalty plus roughly ${usd(int)} interest, for about ${usd(grandTotal)} total. First-time abatement may remove the penalty.`
-    : `On a ${usd(balance)} balance ${months} month(s) late (not filed): about ${usd(ftf)} failure-to-file + ${usd(ftp)} failure-to-pay penalties plus roughly ${usd(int)} interest, for about ${usd(grandTotal)} total. File now to stop the 5%/month clock.`;
+    ? `On a ${usd(balance)} balance ${months} month(s) late (return filed): about ${usd(ftp)} failure-to-pay penalty plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. First-time abatement may remove the penalty.`
+    : `On a ${usd(balance)} balance ${months} month(s) late (not filed): about ${usd(ftf)} failure-to-file + ${usd(ftp)} failure-to-pay penalties plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. File now to stop the 5%/month clock.`;
 
   return output(summary, fields, SOURCE.resolution, NEXT_STEP);
 }
