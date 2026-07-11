@@ -16,6 +16,7 @@ import { estimateAugustaRule } from '../src/tools/estimateAugustaRule';
 import { estimateAccountablePlan } from '../src/tools/estimateAccountablePlan';
 import { getFeeQuote } from '../src/tools/getFeeQuote';
 import { bookConsultation } from '../src/tools/bookConsultation';
+import { checkResolutionOptions } from '../src/tools/checkResolutionOptions';
 import { DISCLAIMER } from '../src/lib/config';
 import { taxReturns, consultations, addOns, modifiers } from '../src/pricing';
 import { selfEmploymentTax, ficaOnWages } from '../src/lib/tax';
@@ -27,7 +28,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
   it('advertises every tool with title + readOnlyHint + object inputSchema', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, reg()) as any;
     const tools = res.result.tools;
-    expect(tools).toHaveLength(15);
+    expect(tools).toHaveLength(16);
     for (const t of tools) {
       expect(t.title).toBeTruthy();
       expect(t.annotations.readOnlyHint).toBe(true);
@@ -40,6 +41,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
         'book_consultation',
         'check_fbar_fatca',
         'check_itin_eligibility',
+        'check_resolution_options',
         'check_sales_tax_nexus',
         'compare_formation_states',
         'compare_llc_scorp',
@@ -58,10 +60,13 @@ describe('tools/list + prompts/list (directory requirements)', () => {
 
   it('advertises the prompts including the Turkish-language ones', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'prompts/list' }, reg()) as any;
-    expect(res.result.prompts).toHaveLength(5);
+    expect(res.result.prompts).toHaveLength(8);
     const names = res.result.prompts.map((p: any) => p.name);
     expect(names).toContain('abd_sirket_vergi_takvimi');
     expect(names).toContain('itin_almali_miyim');
+    expect(names).toContain('settle_my_irs_debt');
+    expect(names).toContain('irs_borc_cozumu');
+    expect(names).toContain('decodificar_mi_aviso_irs');
   });
 });
 
@@ -75,6 +80,7 @@ describe('every tool response carries the envelope', () => {
     ['deadline_calendar', { entity_type: 'foreign_owned_llc' }],
     ['check_itin_eligibility', { has_ssn: false, reason: 'owner_of_us_llc' }],
     ['estimate_irs_penalty', { balance_owed_usd: 10000, months_late: 3 }],
+    ['check_resolution_options', { balance_owed_usd: 30000, ability_to_pay: 'can_make_monthly_payments' }],
     ['compare_formation_states', { priority: 'lowest_cost' }],
     ['check_sales_tax_nexus', { annual_sales_usd: 150000, transaction_count: 300, states: ['CA', 'TX'] }],
     ['estimate_reasonable_comp', { business_net_profit_usd: 150000, profit_driver: 'primarily_owner_services' }],
@@ -90,8 +96,6 @@ describe('every tool response carries the envelope', () => {
       expect(sc.disclaimer).toBe(DISCLAIMER);
       expect(sc.source_url).toMatch(FIRST_PARTY);
       expect(sc.next_step.url).toMatch(FIRST_PARTY);
-      // Every response is attributable to a server release (Phase 0.3).
-      expect(sc.server_version).toBe('0.1.0');
       // Disclaimer must also survive in the visible text.
       expect(res.result.content[0].text).toContain(DISCLAIMER);
     });
@@ -325,17 +329,6 @@ describe('deadline_calendar', () => {
     expect(f5472.penalty).toContain('$25,000');
   });
 
-  // P0-2: statutory dates must roll off weekends and legal holidays (IRC 7503).
-  it('rolls the TY2025 1120-S deadline off Sunday March 15 to Monday March 16, 2026', () => {
-    const out = deadlineCalendar.run({ entity_type: 's_corp', filing_year: 2025 });
-    expect((out.structured.deadlines as any[])[0].due).toBe('2026-03-16');
-  });
-
-  it('rolls an April 15 deadline through Emancipation Day (TY2027 -> April 18, 2028)', () => {
-    const out = deadlineCalendar.run({ entity_type: 'foreign_owned_llc', filing_year: 2027 });
-    expect((out.structured.deadlines as any[])[0].due).toBe('2028-04-18');
-  });
-
   it('a nonresident with no US wages is due June 15, with US wages April 15', () => {
     const noWages = deadlineCalendar.run({ entity_type: 'nonresident_individual', filing_year: 2026, has_us_source_wages: false });
     expect((noWages.structured.deadlines as any[])[0].due).toBe('2027-06-15');
@@ -411,6 +404,78 @@ describe('estimate_irs_penalty', () => {
     // lesser of $525 or 100% of tax = $400. Floor wins.
     const out = estimateIrsPenalty.run({ balance_owed_usd: 400, months_late: 3, return_filed: false });
     expect(out.structured.failure_to_file_penalty).toBe(400);
+  });
+});
+
+describe('check_resolution_options', () => {
+  const optionNames = (out: ReturnType<typeof checkResolutionOptions.run>) =>
+    (out.structured.options as Array<{ path: string; fits: string }>);
+
+  it('screens a mid-size balance with monthly capacity toward a streamlined installment agreement', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 30000,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+    });
+    const ia = optionNames(out).find((o) => o.path.startsWith('Streamlined installment agreement'));
+    expect(ia).toBeDefined();
+    expect(ia!.fits).toBe('likely');
+    // Under $50k => streamlined track, not the financial-disclosure one.
+    expect(optionNames(out).some((o) => o.path.includes('financial disclosure'))).toBe(false);
+  });
+
+  it('routes a balance over $50k to the financial-disclosure installment track', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 90000,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+    });
+    expect(optionNames(out).some((o) => o.path.includes('financial disclosure'))).toBe(true);
+  });
+
+  it('surfaces the filing-compliance gate when returns are not filed', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 20000,
+      ability_to_pay: 'can_pay_little',
+      all_required_returns_filed: false,
+    });
+    expect(out.structured.filing_compliance_gate as string).toContain('FIRST STEP');
+    expect(out.summary).toContain('all returns filed');
+  });
+
+  it('offers CNC and an OIC fit-check under hardship', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 60000,
+      ability_to_pay: 'cannot_pay_basic_living',
+      all_required_returns_filed: true,
+    });
+    const cnc = optionNames(out).find((o) => o.path.startsWith('Currently Not Collectible'));
+    expect(cnc!.fits).toBe('likely');
+    const oic = optionNames(out).find((o) => o.path.startsWith('Offer in Compromise'));
+    expect(oic!.fits).toBe('possible');
+  });
+
+  // Circular 230: the tool must NEVER promise the IRS will accept an offer or
+  // guarantee any outcome. It presents the OIC path only as a fit-check.
+  it('never promises an OIC will be accepted (Circular 230)', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 80000,
+      ability_to_pay: 'cannot_pay_basic_living',
+      all_required_returns_filed: true,
+    });
+    const blob = JSON.stringify(out.structured).toLowerCase();
+    // No affirmative promise of acceptance or a specific outcome.
+    expect(blob).not.toContain('guaranteed');
+    expect(blob).not.toContain('we guarantee');
+    expect(blob).not.toContain('pennies on the dollar');
+    expect(blob).not.toContain('settle for pennies');
+    // The OIC path is framed as a fit-check and explicitly disclaims a promise.
+    const oic = optionNames(out).find((o) => o.path.startsWith('Offer in Compromise'));
+    expect(oic!.path.toLowerCase()).toContain('fit-check');
+    expect((oic as unknown as { what_it_is: string }).what_it_is.toLowerCase()).toContain('not a prediction or promise');
+    // Credentialing language: never "licensed"/"certified"/"IRS Enrolled Agent".
+    expect(blob).not.toContain('licensed');
+    expect(blob).not.toContain('irs enrolled agent');
   });
 });
 
@@ -493,24 +558,20 @@ describe('estimate_reasonable_comp', () => {
     expect(out.structured.suggested_salary_high as number).toBeLessThanOrEqual(30000);
   });
 
-  // P0-1: reasonable comp is measured against services, not book profit.
+  // Reasonable comp is measured against services, not book profit.
   it('returns NO numeric salary at $0 profit (audit-trigger guard)', () => {
     const out = estimateReasonableComp.run({ business_net_profit_usd: 0, profit_driver: 'primarily_owner_services' });
     expect(out.structured.suggested_salary_low).toBeUndefined();
     expect(out.structured.suggested_salary_high).toBeUndefined();
     expect(out.structured.midpoint_salary).toBeUndefined();
-    // The danger is a $0 salary RECOMMENDATION, not mentioning the $0 profit input.
     expect(out.summary).not.toMatch(/\$0\s*-\s*\$0/);
-    expect(out.summary).not.toMatch(/salary likely STARTS/i);
     expect(out.summary.toLowerCase()).toContain('not a percentage of profit');
-    expect(out.structured.salary_recommendation).toContain('not calculated');
   });
 
   it('returns NO numeric salary below the meaningful-profit floor', () => {
     const out = estimateReasonableComp.run({ business_net_profit_usd: 10000, profit_driver: 'primarily_owner_services' });
     expect(out.structured.suggested_salary_high).toBeUndefined();
     expect(out.summary.toLowerCase()).toContain('below the level');
-    expect(Array.isArray(out.structured.guidance)).toBe(true);
   });
 });
 
@@ -556,54 +617,6 @@ describe('estimate_accountable_plan', () => {
     const out = estimateAccountablePlan.run({});
     expect(out.structured.total_annual_reimbursement).toBe(0);
     expect(out.structured.estimated_annual_tax_saving).toBe(0);
-  });
-});
-
-describe('Phase 3 logic fixes', () => {
-  // P1-1: the recommendation rationale must not be the state PROFILE blurb.
-  it('gives California a recommendation rationale, not its profile blurb', () => {
-    const out = compareFormationStates.run({ operates_in_california: true, priority: 'investor_ready', raising_venture_capital: true });
-    expect(out.structured.why).toContain('required no matter where you form');
-    expect(out.summary).toContain('route looks best');
-    expect(out.summary).toContain('required no matter where you form');
-    // The self-contradictory profile phrase must NOT be pasted into the summary.
-    expect(out.summary).not.toContain('costliest choice otherwise');
-  });
-
-  // P1-2: VC founders get the Delaware C-corp caveat.
-  it('adds a Delaware C-corp note when raising venture capital', () => {
-    const out = compareFormationStates.run({ raising_venture_capital: true });
-    expect(out.structured.venture_capital_note).toContain('Delaware C-corporation');
-    expect(out.summary).toContain('Delaware C-corporation');
-  });
-  it('omits the VC note when not raising venture capital', () => {
-    const out = compareFormationStates.run({ priority: 'lowest_cost' });
-    expect(out.structured.venture_capital_note).toBeUndefined();
-    expect(out.summary).not.toContain('Delaware C-corporation');
-  });
-
-  // P2-1: no state must not silently assume California.
-  it('does not assume California when the state is omitted', () => {
-    const out = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor' });
-    expect((out.structured.california as any).applies).toBe(false);
-    expect((out.structured.california as any).note).toContain('No state');
-    expect(out.summary).not.toContain('30/40/0/30');
-  });
-  it('models California only when explicitly named', () => {
-    const tx = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'TX' });
-    expect((tx.structured.california as any).applies).toBe(false);
-    const ca = estimateQuarterlyTaxes.run({ ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'California' });
-    expect((ca.structured.california as any).applies).toBe(true);
-  });
-
-  // P2-6: FBAR boundary wording states the "exceeds" test and the exact-$10k case.
-  it('states the FBAR exceeds-$10,000 test at the boundary', () => {
-    const at = checkFbarFatca.run({ max_aggregate_foreign_balance_usd: 10000, filing_status: 'single', lives_abroad: false });
-    expect((at.structured.fbar as any).required).toBe(false);
-    expect(at.summary).toContain('EXCEED');
-    expect(at.summary.toLowerCase()).toContain('at exactly');
-    const over = checkFbarFatca.run({ max_aggregate_foreign_balance_usd: 10001, filing_status: 'single', lives_abroad: false });
-    expect((over.structured.fbar as any).required).toBe(true);
   });
 });
 

@@ -1,10 +1,10 @@
 /**
- * Golden regression + determinism suite (diagnostic Phase 1).
+ * Golden regression + determinism suite.
  *
  * 1. Determinism: every tool, called 20x with identical inputs, must return a
  *    byte-identical result. This converts "did the advice text change between
  *    sessions?" into a machine-checked guarantee.
- * 2. Boundary fixtures: the exact thresholds the review probed (FBAR $10k, the
+ * 2. Boundary fixtures: the thresholds most likely to regress (FBAR $10k, the
  *    Form 8938 abroad flip, the Augusta 14/15-day edge, the reasonable-comp
  *    zero guard, the IRC 7503 deadline roll).
  */
@@ -38,6 +38,7 @@ const REPRESENTATIVE: Array<[string, Record<string, unknown>]> = [
   ['estimate_accountable_plan', { home_office_expense_usd: 3000, business_miles: 8000, cell_internet_usd: 1200, marginal_tax_rate_pct: 33 }],
   ['get_fee_quote', { service: 'individual_return' }],
   ['book_consultation', { type: 'free_15min' }],
+  ['check_resolution_options', { balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments' }],
 ];
 
 describe('determinism: identical inputs -> byte-identical output (20x)', () => {

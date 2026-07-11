@@ -1,7 +1,8 @@
 /**
- * Generates real worked-example tool responses for the /mcp docs page and the
- * submission screenshots. Bundles the TS tools with esbuild (already a dep) then
- * runs them, so the examples are exactly what the deployed server returns.
+ * Generates real worked-example tool responses (docs/worked-examples.json),
+ * used by the arcandledger.com/mcp docs page. Bundles the TS tools with
+ * esbuild (already a dep) then runs them, so the examples are exactly what
+ * the deployed server returns.
  *
  *   node scripts/gen-examples.mjs
  */

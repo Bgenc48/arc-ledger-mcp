@@ -4,6 +4,7 @@ import { output } from '../lib/response';
 import { sanitizeNoticeCodeEcho } from '../lib/sanitize';
 import { SOURCE, GO } from '../lib/config';
 import { consultations, usd } from '../pricing';
+import { IRS_NOTICE_WIDGET_URI } from '../ui/registry';
 import { lookupNotice, normalizeCode, COVERED_CODES } from '../data/notices';
 import { parseIsoDate, addDays, humanDate, daysBetween, todayUtc } from '../lib/dates';
 import type { ToolDef } from '../lib/types';
@@ -18,8 +19,8 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Book a flat-fee ${usd(consultations.irsNoticeReview)} IRS notice review with an Enrolled Agent (credited toward representation)`,
-  url: GO.noticeReview,
+  label: `Upload your notice for a flat-fee ${usd(consultations.irsNoticeReview)} Notice Rescue review with an Enrolled Agent - secure upload, credited toward resolution`,
+  url: GO.noticeRescue,
 };
 
 const GENERIC_HOW_TO_READ = [
@@ -118,4 +119,9 @@ export const decodeIrsNotice: ToolDef<typeof input> = {
     };
   },
   run,
+  widget: {
+    templateUri: IRS_NOTICE_WIDGET_URI,
+    invoking: 'Decoding your IRS notice...',
+    invoked: 'IRS notice decoded',
+  },
 };

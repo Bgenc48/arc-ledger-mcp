@@ -19,13 +19,13 @@ export const SUPPORT_EMAIL = 'info@arcandledger.com';
 
 /**
  * The single shared disclaimer. Exact string, defined once, attached to every
- * tool response (Phase 1.7). Do not paraphrase per-tool.
+ * tool response. Do not paraphrase per-tool.
  */
 export const DISCLAIMER =
   'General information, not tax advice. No practitioner-client relationship is created. Verify with a qualified tax professional.';
 
 /**
- * First-party redirect endpoints (Phase 3.4). Directory rules only honor links
+ * First-party redirect endpoints. Directory rules only honor links
  * on origins we own, so tool responses NEVER emit a raw cal.com / buy.stripe.com
  * URL. These /go/* paths live in the website's public/_worker.js, append
  * utm_source=mcp&utm_medium=ai_assistant, and forward to the real destination.
@@ -36,6 +36,7 @@ export const GO = {
   discoveryStandard: `${SITE}/go/discovery-standard`,
   discoverySpecialist: `${SITE}/go/discovery-specialist`,
   noticeReview: `${SITE}/go/notice-review`,
+  noticeRescue: `${SITE}/go/notice-rescue`,
 } as const;
 
 /** First-party pages that back tool answers (used as source_url). */

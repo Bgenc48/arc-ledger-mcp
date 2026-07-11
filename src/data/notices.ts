@@ -1,9 +1,10 @@
 /**
  * IRS notice profiles for decode_irs_notice - tool-optimized (crisp structured
- * fields), covering the common notice codes plus the four that have a dedicated
- * landing page on arcandledger.com (content kept in sync with those pages).
- * Everything here is GENERAL information (Circular 230 safe): no guaranteed
- * outcomes, "Enrolled Agent" phrasing only.
+ * fields), covering the common notice codes plus those with a dedicated
+ * landing page on arcandledger.com. Content is kept in sync with those pages
+ * (a drift test in the source monorepo guards the deadline days). Everything
+ * here is GENERAL information (Circular 230 safe): no guaranteed outcomes,
+ * "Enrolled Agent" phrasing only.
  *
  * `deadlineDays` is measured from the date printed on the notice. The tool warns
  * that this clock runs from the notice date, not the day the letter arrived.
@@ -127,7 +128,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Penalties and interest built on an underlying balance that was already wrong',
     ],
     urgency: 'moderate',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: 'cp501',
   },
 
   CP503: {
@@ -149,7 +151,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Underlying assessment errors carried forward from CP14',
     ],
     urgency: 'high',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: 'cp503',
   },
 
   CP504: {
@@ -172,7 +175,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Ignoring a balance that includes abatable penalties',
     ],
     urgency: 'high',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: 'cp504',
   },
 
   CP3219A: {

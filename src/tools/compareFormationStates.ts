@@ -79,7 +79,7 @@ function run(args: z.infer<typeof input>) {
         ? 'You prioritized privacy, so New Mexico wins: no annual report and no public member/manager disclosure.'
         : 'For a simple online business with no California footprint, Wyoming is the low-cost, private default.';
 
-  // P1-2: institutional VC almost always requires a Delaware C-corp, not an LLC.
+  // Institutional VC almost always requires a Delaware C-corp, not an LLC.
   // That entity decision precedes the state-of-formation question, so surface it
   // whenever the caller says they are raising venture capital.
   const ventureCapitalNote = args.raising_venture_capital

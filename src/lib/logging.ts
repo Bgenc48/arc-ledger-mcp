@@ -1,5 +1,5 @@
 /**
- * Privacy-preserving logging (Phase 1.5, load-bearing for the privacy policy).
+ * Privacy-preserving logging (load-bearing for the privacy policy).
  *
  * We log ONLY: tool name, an ISO timestamp, and coarse enum/boolean parameters
  * (e.g. notice code, entity type, filing status). We NEVER log free-text inputs

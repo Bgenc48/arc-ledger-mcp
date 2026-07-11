@@ -35,6 +35,17 @@ describe('Worker HTTP surface', () => {
     expect(body.protocol).toBeDefined();
   });
 
+  it('GET /.well-known/mcp-registry-auth serves the domain-ownership proof', async () => {
+    const res = await worker.fetch(
+      new Request('https://mcp.arcandledger.com/.well-known/mcp-registry-auth'),
+      env,
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('text/plain');
+    const text = await res.text();
+    expect(text).toMatch(/^v=MCPv1; k=ed25519; p=[A-Za-z0-9+/=]+$/);
+  });
+
   it('OPTIONS preflight returns CORS headers', async () => {
     const res = await worker.fetch(
       new Request('https://mcp.arcandledger.com/mcp', { method: 'OPTIONS' }),

@@ -18,6 +18,7 @@ import { estimateAugustaRule } from './tools/estimateAugustaRule';
 import { estimateAccountablePlan } from './tools/estimateAccountablePlan';
 import { getFeeQuote } from './tools/getFeeQuote';
 import { bookConsultation } from './tools/bookConsultation';
+import { checkResolutionOptions } from './tools/checkResolutionOptions';
 import { ALL_PROMPTS } from './prompts';
 
 export const TOOLS: AnyToolDef[] = [
@@ -29,6 +30,7 @@ export const TOOLS: AnyToolDef[] = [
   deadlineCalendar,
   checkItinEligibility,
   estimateIrsPenalty,
+  checkResolutionOptions,
   compareFormationStates,
   checkSalesTaxNexus,
   estimateReasonableComp,

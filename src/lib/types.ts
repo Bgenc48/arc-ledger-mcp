@@ -7,7 +7,7 @@ export interface NextStep {
 }
 
 /**
- * The envelope every tool's structured content shares (Phase 1.7). Tool-specific
+ * The envelope every tool's structured content shares. Tool-specific
  * fields are spread alongside these three required keys.
  */
 export interface ResponseEnvelope {
@@ -49,8 +49,8 @@ export interface WidgetBinding {
 /**
  * A tool definition. `input` is a zod schema used for BOTH runtime validation
  * and (via zod-to-json-schema) the advertised inputSchema, so the two never
- * drift. `logEnums` returns ONLY coarse enum/boolean fields safe to log
- * (Phase 1.5) - never free text or dollar amounts.
+ * drift. `logEnums` returns ONLY coarse enum/boolean fields safe to log -
+ * never free text or dollar amounts.
  */
 export interface ToolDef<TSchema extends z.ZodTypeAny = z.ZodTypeAny> {
   name: string;
@@ -86,7 +86,7 @@ export interface AnyToolDef {
   widget?: WidgetBinding;
 }
 
-/** An MCP prompt definition (Phase 2, directory-listable). */
+/** An MCP prompt definition (directory-listable). */
 export interface PromptDef {
   name: string;
   title: string;

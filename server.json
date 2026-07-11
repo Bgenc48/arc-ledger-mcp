@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.arcandledger/tax-tools",
+  "title": "Arc & Ledger Tax Tools",
+  "description": "Free tax tools from an Enrolled Agent firm: IRS notices, FBAR, LLC vs S-Corp, fee quotes.",
+  "version": "0.7.0",
+  "websiteUrl": "https://www.arcandledger.com/mcp",
+  "repository": {
+    "url": "https://github.com/Bgenc48/arc-ledger-mcp",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.arcandledger.com/mcp"
+    }
+  ]
+}
