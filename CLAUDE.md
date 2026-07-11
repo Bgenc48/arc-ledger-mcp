@@ -61,6 +61,23 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 - Tax-LAW figures (penalty amounts, statutory thresholds) are not service
   prices; they live in the rates modules with a statutory citation.
 
+## Release discipline
+
+- Every tool response carries `server_version` (matches `GET /version`), so any
+  output is attributable to a release. Bump `SERVER_VERSION` in `wrangler.toml`
+  and `version` in `package.json` together, and add a `CHANGELOG.md` entry.
+- `test/schema.test.ts` snapshots every tool's inputSchema. Any schema change
+  fails the build until the snapshot is updated (`vitest -u`) - the cue to bump
+  the version and add a changelog line. This keeps an enum/schema change from
+  shipping unnoticed.
+- `test/golden.test.ts` requires every tool to be deterministic (identical
+  inputs, byte-identical output) and pins boundary fixtures. Keep tool output
+  deterministic: no `Date.now()`/`Math.random()` leaking into a response.
+- `test/governance.test.ts` sweeps rendered output for banned strings (em dash,
+  "IRS-licensed", "IRS Enrolled Agent", "Certified Acceptance Agent", "MST", a
+  "$0 - $0" salary) and required strings (the disclaimer; the approved credential
+  line). Keep it green.
+
 ## Compliance rules (Circular 230)
 
 - Every tool response goes through the shared envelope (`src/lib/response.ts`):
