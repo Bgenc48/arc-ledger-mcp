@@ -4,29 +4,36 @@ Public, no-auth remote MCP server (Cloudflare Worker, Streamable HTTP) exposing
 the firm's free tax calculators and intake tools. Endpoint:
 `https://mcp.arcandledger.com/mcp`. Docs: `https://www.arcandledger.com/mcp`.
 
+## This repository is a GENERATED artifact
+
+Every file here except the git history is produced by an export script from a
+private source tree. Do not develop features in this repository: changes will
+be overwritten on the next export. Pull requests are used to sync releases;
+issues and review comments are welcome and get folded into the source.
+
 ## Commands
 
 ```bash
 npm ci                 # install (package-lock is authoritative)
-npm test               # vitest: protocol, HTTP surface, tool correctness, resources, widget
+npm test               # vitest: protocol, HTTP surface, tool correctness, determinism, schema snapshot, governance
 npm run typecheck      # tsc --noEmit (strict)
 npm run dev            # wrangler dev (local)
 npm run bundle-check   # wrangler deploy --dry-run (proves the worker bundles)
-npm run deploy         # wrangler deploy (needs the Cloudflare account)
 npm run gen:products   # regenerate public/feeds/products.json from the catalog
 node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 ```
 
 ## This repo is PUBLIC and must build standalone
 
-- Anyone can read this repository. Never commit secrets, internal strategy or
-  planning notes, price history ("was $X"), unlaunched products, or anything
-  referencing internal documents. Comments are part of the public surface -
-  keep them factual and neutral.
-- Every import must resolve inside this repo. Never add `../../` imports that
-  reach outside the package; vendored data lives in `src/data/`.
+- Anyone can read this repository. It never contains secrets, internal
+  strategy or planning notes, price history ("was $X"), unlaunched products,
+  or anything referencing internal documents. Comments are part of the public
+  surface - factual and neutral.
+- Every import resolves inside this repo. No import reaches outside the
+  package (the export pipeline enforces this); vendored data lives in
+  `src/data/`.
 - `npm run typecheck`, `npm test`, and `npm run bundle-check` must all pass on
-  a fresh clone before any push.
+  a fresh clone (CI enforces this on every push and pull request).
 
 ## Architecture
 
@@ -36,11 +43,16 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
   `src/lib/mcp.ts` implements the protocol; `src/registry.ts` lists the tools
   and prompts.
 - `src/tools/` - one file per tool. `src/resources.ts` - the four read-only
-  `arcledger://` resources. `src/ui/` - optional Apps SDK widgets.
+  `arcledger://` resources. `src/ui/` - Apps SDK widgets (IRS notice card,
+  formation-state comparison).
 - `src/data/` - the vendored single sources of truth: `pricing.ts` (published
   fee schedule), `taxConstants2026.ts` (tax-year constants), `notices.ts` (IRS
   notice registry), `productCatalog.ts` (fixed-fee SKUs), `servicePages.ts`
   (service directory).
+- `server.json` - the Official MCP Registry manifest; its `version` matches
+  `package.json` and `wrangler.toml` `SERVER_VERSION`.
+- `.github/workflows/ci.yml` - typecheck + tests + bundle check on every push
+  and pull request.
 
 ## Pricing and rates (single source of truth)
 
@@ -48,13 +60,10 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
   `src/pricing.ts` (adapter over `src/data/pricing.ts`); tax rates and
   thresholds come from `src/rates.ts` (adapter over
   `src/data/taxConstants2026.ts` plus server-only constants documented with
-  their statutory source). If a number is missing, add it to the data module
-  first.
+  their statutory source).
 - `src/data/pricing.ts` carries ONLY published numbers - the same figures shown
-  at arcandledger.com/pricing/ and served by the live endpoint. When the firm's
-  price list changes, sync the values here (numbers only, never internal
-  commentary), bump `SERVER_VERSION` in `wrangler.toml` and `version` in
-  `package.json`, and re-run the checks. `GET /version` exposes `PRICE_SET` and
+  at arcandledger.com/pricing/ and served by the live endpoint. It is synced
+  from the source tree on each release; `GET /version` exposes `PRICE_SET` and
   the tax year so drift is visible in production.
 - Formatters (`usd`, `usdRange`, `groupThousands`) format only - they never
   round, alter, or invent a value.
@@ -64,19 +73,18 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 ## Release discipline
 
 - Every tool response carries `server_version` (matches `GET /version`), so any
-  output is attributable to a release. Bump `SERVER_VERSION` in `wrangler.toml`
-  and `version` in `package.json` together, and add a `CHANGELOG.md` entry.
+  output is attributable to a release. `SERVER_VERSION` in `wrangler.toml`,
+  `version` in `package.json`, and `server.json` `version` move together.
 - `test/schema.test.ts` snapshots every tool's inputSchema. Any schema change
-  fails the build until the snapshot is updated (`vitest -u`) - the cue to bump
-  the version and add a changelog line. This keeps an enum/schema change from
+  fails the build until the snapshot is updated (`vitest -u`) - the cue for a
+  version bump and a changelog line. This keeps an enum/schema change from
   shipping unnoticed.
 - `test/golden.test.ts` requires every tool to be deterministic (identical
   inputs, byte-identical output) and pins boundary fixtures. Keep tool output
   deterministic: no `Date.now()`/`Math.random()` leaking into a response.
 - `test/governance.test.ts` sweeps rendered output for banned strings (em dash,
-  "IRS-licensed", "IRS Enrolled Agent", "Certified Acceptance Agent", "MST", a
-  "$0 - $0" salary) and required strings (the disclaimer; the approved credential
-  line). Keep it green.
+  non-compliant credential phrasing, a "$0 - $0" salary) and required strings
+  (the disclaimer; the approved credential line). Keep it green.
 
 ## Compliance rules (Circular 230)
 
@@ -101,3 +109,8 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
   keep them natural, not machine-translated.
 - Tests assert prices by importing from `src/pricing.ts`, never as literals, so
   a price sync cannot silently diverge from the tools.
+
+## License
+
+Source-available; see `LICENSE`. The live service is free to use through any
+MCP-capable client.

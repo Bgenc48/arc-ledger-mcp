@@ -107,7 +107,7 @@ function promptListEntry(p: PromptDef) {
 
 /**
  * Describe zod validation failures WITHOUT echoing the offending value
- * (Phase 3.3: never echo unvalidated input). We build messages from the field
+ * (never echo unvalidated input). We build messages from the field
  * path and the expected shape only.
  */
 function describeIssues(err: z.ZodError): string {

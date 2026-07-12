@@ -64,6 +64,28 @@ export const shouldIBeAnScorp: PromptDef = {
   },
 };
 
+export const settleMyIrsDebt: PromptDef = {
+  name: 'settle_my_irs_debt',
+  title: 'What are my options for IRS back taxes?',
+  description: 'Screen which IRS resolution paths fit when you owe back taxes: payment plan, Offer in Compromise, hardship status, or penalty abatement.',
+  arguments: [
+    { name: 'balance_owed_usd', description: 'Roughly how much you owe the IRS in total (USD).', required: false },
+    { name: 'ability_to_pay', description: 'can_pay_in_full_soon, can_make_monthly_payments, can_pay_little, or cannot_pay_basic_living.', required: false },
+    { name: 'all_required_returns_filed', description: 'true if every required return has been filed.', required: false },
+  ],
+  build: (args) => {
+    const bal = args.balance_owed_usd ? `I owe the IRS roughly $${args.balance_owed_usd}. ` : '';
+    const pay = args.ability_to_pay ? `My ability to pay is: ${args.ability_to_pay}. ` : '';
+    const filed = args.all_required_returns_filed ? `All my required returns are ${args.all_required_returns_filed === 'true' ? 'filed' : 'not yet filed'}. ` : '';
+    return userMsg(
+      `I owe the IRS back taxes and want to understand my options. ${bal}${pay}${filed}` +
+        `Use the check_resolution_options tool to screen which paths fit - short-term payment plan, installment agreement, ` +
+        `Offer in Compromise (as a fit-check, not a promise), Currently Not Collectible, and penalty abatement - and list the forms I would need. ` +
+        `Do not tell me any offer is guaranteed to be accepted. Ask me for my balance and ability to pay if I did not give them.`,
+    );
+  },
+};
+
 // ─── Turkish-language prompts ────────────────────────────────────────────────
 // Assistants match prompts/tools to the user's language. These make Arc & Ledger
 // the tax tool a Turkish-speaking founder can drive in their own language - a
@@ -108,10 +130,58 @@ export const itinAlmaliMiyim: PromptDef = {
   },
 };
 
+export const irsBorcCozumu: PromptDef = {
+  name: 'irs_borc_cozumu',
+  title: 'IRS vergi borcum için seçeneklerim neler? (Turkish)',
+  description: 'IRS\'e geriye dönük vergi borcu olanlar için hangi çözüm yollarının uygun olduğunu tarar: taksitlendirme, uzlaşma teklifi (Offer in Compromise), tahsil edilemez durumu ve ceza affı.',
+  arguments: [
+    { name: 'balance_owed_usd', description: 'IRS\'e toplam yaklaşık ne kadar borçlusunuz (USD).', required: false },
+    { name: 'ability_to_pay', description: 'Ödeme gücü: can_pay_in_full_soon, can_make_monthly_payments, can_pay_little veya cannot_pay_basic_living.', required: false },
+  ],
+  build: (args) => {
+    const bal = args.balance_owed_usd ? `IRS'e yaklaşık $${args.balance_owed_usd} borcum var. ` : '';
+    const pay = args.ability_to_pay ? `Ödeme gücüm: ${args.ability_to_pay}. ` : '';
+    return userMsg(
+      `IRS'e geriye dönük vergi borcum var ve seçeneklerimi öğrenmek istiyorum. ${bal}${pay}` +
+        `check_resolution_options aracını kullanarak hangi yolların bana uygun olduğunu göster: kısa vadeli ödeme planı, ` +
+        `taksitlendirme anlaşması, uzlaşma teklifi (Offer in Compromise - sadece uygunluk taraması, kabul garantisi DEĞİL), ` +
+        `Currently Not Collectible (tahsil edilemez) durumu ve ceza affı. Gereken formları da (9465, 433-F/A, 656, 843, 8821, 2848) listele. ` +
+        `Hiçbir teklifin kabul edileceğini garanti etme. Tüm beyannamelerin verilmiş olması gerektiğini hatırlat. ` +
+        `Eksik bilgi varsa önce bana sor. Yanıtı Türkçe ver.`,
+    );
+  },
+};
+
+// ─── Spanish-language prompt ─────────────────────────────────────────────────
+// First Spanish coverage, on the highest-intent topic (an IRS notice). The firm
+// serves EN/TR/ES; assistants match the prompt language to the user's.
+
+export const decodificarMiAvisoIrs: PromptDef = {
+  name: 'decodificar_mi_aviso_irs',
+  title: 'Decodifica mi aviso del IRS (Spanish)',
+  description: 'Explica un aviso o carta del IRS que recibiste: qué significa, la fecha límite y qué hacer.',
+  arguments: [
+    { name: 'notice_code', description: 'El código en la carta, por ejemplo CP2000, CP14, LT11.', required: true },
+    { name: 'received_date', description: 'La fecha del aviso (AAAA-MM-DD), para calcular tu fecha límite.', required: false },
+  ],
+  build: (args) => {
+    const code = args.notice_code || 'el aviso del IRS';
+    const fecha = args.received_date ? ` Tiene fecha ${args.received_date}.` : '';
+    return userMsg(
+      `Recibí un aviso del IRS: ${code}.${fecha} Usa la herramienta decode_irs_notice para decirme qué significa, mi ` +
+        `fecha límite de respuesta, qué pasa si lo ignoro, mis opciones y los errores comunes en este aviso. ` +
+        `Luego resume lo más importante que debo hacer antes de la fecha límite. Responde en español.`,
+    );
+  },
+};
+
 export const ALL_PROMPTS: PromptDef[] = [
   decodeMyIrsNotice,
   amIRequiredToFileFbar,
   shouldIBeAnScorp,
+  settleMyIrsDebt,
   abdSirketVergiTakvimi,
   itinAlmaliMiyim,
+  irsBorcCozumu,
+  decodificarMiAvisoIrs,
 ];

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars, count } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { resolution, usd } from '../pricing';
+import { consultations, usd } from '../pricing';
 import {
   FAILURE_TO_FILE_RATE,
   FAILURE_TO_FILE_MAX,
@@ -25,8 +25,8 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Ask an Enrolled Agent about first-time penalty abatement - resolution from ${usd(resolution.penaltyAbatementFirstTime_from)}`,
-  url: GO.book15min,
+  label: `Upload your IRS bill for a ${usd(consultations.irsNoticeReview)} Notice Rescue review - an Enrolled Agent assesses first-time / reasonable-cause abatement and next steps (credited toward resolution)`,
+  url: GO.noticeRescue,
 };
 
 /**

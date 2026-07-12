@@ -1,0 +1,26 @@
+# CI for the public arc-ledger-mcp repository: proves a fresh clone
+# typechecks, passes the full test suite, and bundles as a Cloudflare Worker.
+# No deploy step here; the worker is deployed from the source tree.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run bundle-check

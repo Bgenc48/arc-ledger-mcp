@@ -13,6 +13,7 @@
  * the widgets phone nowhere, matching the firm's no-data-harvesting stance.
  */
 import { FORMATION_STATES_WIDGET_HTML } from './formationStatesWidget';
+import { IRS_NOTICE_WIDGET_HTML } from './noticeWidget';
 
 export interface UiResourceDef {
   uri: string;
@@ -25,6 +26,7 @@ export interface UiResourceDef {
 }
 
 export const FORMATION_STATES_WIDGET_URI = 'ui://widget/formation-states.html';
+export const IRS_NOTICE_WIDGET_URI = 'ui://widget/irs-notice.html';
 
 export const UI_RESOURCES: UiResourceDef[] = [
   {
@@ -35,6 +37,15 @@ export const UI_RESOURCES: UiResourceDef[] = [
     html: FORMATION_STATES_WIDGET_HTML,
     widgetDescription:
       'A side-by-side comparison of US LLC formation states showing first-year government fees, annual cost, franchise tax, income tax, and approval time, with the recommended state highlighted.',
+  },
+  {
+    uri: IRS_NOTICE_WIDGET_URI,
+    name: 'irs_notice_widget',
+    title: 'Your IRS notice',
+    description: 'Notice card for decode_irs_notice: what the letter means, the deadline with days remaining, options, and one upload button.',
+    html: IRS_NOTICE_WIDGET_HTML,
+    widgetDescription:
+      'A card for an IRS notice showing the notice code, what it means in plain English, the response deadline with days remaining (color-coded by urgency), your options, and a single button to upload the notice for an Enrolled Agent review.',
   },
 ];
 

@@ -27,7 +27,7 @@ export const MEDICARE_SURTAX_MFJ = 250_000;
 export const STANDARD_DEDUCTION_SINGLE = 16_100;
 export const STANDARD_DEDUCTION_MFJ = 32_200;
 
-// ─── Federal Tax Brackets — 2026 (Single) ────────────────────
+// ─── Federal Tax Brackets - 2026 (Single) ────────────────────
 export const TAX_BRACKETS_SINGLE = [
   { limit: 12_400, rate: 0.10 },
   { limit: 50_400, rate: 0.12 },
@@ -38,7 +38,7 @@ export const TAX_BRACKETS_SINGLE = [
   { limit: Infinity, rate: 0.37 },
 ] as const;
 
-// ─── Federal Tax Brackets — 2026 (Married Filing Jointly) ─────
+// ─── Federal Tax Brackets - 2026 (Married Filing Jointly) ─────
 export const TAX_BRACKETS_MFJ = [
   { limit: 24_800, rate: 0.10 },
   { limit: 100_800, rate: 0.12 },
@@ -49,7 +49,7 @@ export const TAX_BRACKETS_MFJ = [
   { limit: Infinity, rate: 0.37 },
 ] as const;
 
-// ─── Capital Gains (Long-Term) — 2026 ─────────────────────────
+// ─── Capital Gains (Long-Term) - 2026 ─────────────────────────
 export const LTCG_RATES = {
   single: [
     { limit: 49_450, rate: 0.00 },

@@ -55,7 +55,7 @@ function run(args: z.infer<typeof input>) {
   const share = REASONABLE_COMP_SHARES[driver];
   const band = profitBand(profit);
 
-  // P0-1 guard: reasonable compensation is measured against SERVICES PERFORMED,
+  // Guard: reasonable compensation is measured against SERVICES PERFORMED,
   // not book profit. At or below zero profit we must not emit a salary number
   // (a $0 "reasonable salary" is the exact zero-comp-with-distributions audit
   // pattern); below the floor a percentage-of-profit range is not meaningful

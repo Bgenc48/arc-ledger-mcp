@@ -1,8 +1,10 @@
 /**
  * Versioned tax-rate adapter. Re-exports the centralized 2026 tax constants
- * (src/data/taxConstants2026.ts, TAX_YEAR = 2026, verified against Rev. Proc.
- * 2025-32 / Notice 2026-10 / OBBBA) and adds the pieces the MCP tools need
- * that are not general tax-year constants.
+ * (TAX_YEAR = 2026, verified against Rev. Proc. 2025-32 / Notice 2026-10 /
+ * OBBBA) and adds the pieces the MCP tools need that are not general tax-year
+ * constants. In the source monorepo the constants module is the website's
+ * `src/config/taxConstants2026.ts`; in the public mirror it is the vendored
+ * snapshot at `src/data/taxConstants2026.ts`.
  *
  * Rule mirrors pricing: never hardcode a rate that already lives in the
  * constants file - import it. The additions below (safe-harbor multipliers,

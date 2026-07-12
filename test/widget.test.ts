@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { dispatch } from '../src/lib/mcp';
 import { TOOLS, PROMPTS } from '../src/registry';
-import { UI_RESOURCES, FORMATION_STATES_WIDGET_URI } from '../src/ui/registry';
+import { UI_RESOURCES, FORMATION_STATES_WIDGET_URI, IRS_NOTICE_WIDGET_URI } from '../src/ui/registry';
 
 const reg = () => ({ tools: TOOLS, prompts: PROMPTS, version: '0.1.0' });
 const call = (method: string, params?: Record<string, unknown>) =>
@@ -60,5 +60,30 @@ describe('Apps SDK widget', () => {
     // The structured content the widget will read is still present and complete.
     expect(Array.isArray(res.result.structuredContent.states)).toBe(true);
     expect(res.result.structuredContent.recommended_state).toBeTruthy();
+  });
+
+  it('advertises the IRS notice widget and binds it to decode_irs_notice', () => {
+    const listed = call('resources/list').result.resources.find(
+      (r: any) => r.uri === IRS_NOTICE_WIDGET_URI,
+    );
+    expect(listed).toBeDefined();
+    expect(listed.mimeType).toBe('text/html+skybridge');
+
+    const tool = call('tools/list').result.tools.find((t: any) => t.name === 'decode_irs_notice');
+    expect(tool._meta['openai/outputTemplate']).toBe(IRS_NOTICE_WIDGET_URI);
+    expect(tool._meta['openai/toolInvocation/invoking']).toBeTruthy();
+  });
+
+  it('tools/call stamps the notice template and the deadline the widget reads', () => {
+    const res = call('tools/call', {
+      name: 'decode_irs_notice',
+      arguments: { notice_code: 'CP2000', received_date: '2026-06-01' },
+    });
+    expect(res.result._meta['openai/outputTemplate']).toBe(IRS_NOTICE_WIDGET_URI);
+    const sc = res.result.structuredContent;
+    expect(sc.recognized).toBe(true);
+    // The widget headlines the computed deadline + days remaining.
+    expect(typeof (sc.deadline as any).days_remaining).toBe('number');
+    expect((sc.deadline as any).computed_deadline).toBeTruthy();
   });
 });

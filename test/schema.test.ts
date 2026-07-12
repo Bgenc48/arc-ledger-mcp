@@ -1,12 +1,11 @@
 /**
- * Schema contract snapshot (diagnostic Phase 1).
+ * Schema contract snapshot.
  *
  * Every tool's advertised inputSchema is snapshotted here. Any change to a tool
  * input (a new enum value, a renamed field, a widened range) fails this test
  * until the snapshot is intentionally updated (`vitest -u`) - which is the cue
  * to bump SERVER_VERSION and add a CHANGELOG entry. This is what makes a silent
- * enum change (the kind that broke between review sessions) impossible to ship
- * unnoticed.
+ * enum change impossible to ship unnoticed.
  */
 import { describe, it, expect } from 'vitest';
 import { dispatch } from '../src/lib/mcp';

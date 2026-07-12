@@ -1,5 +1,5 @@
 /**
- * Content-governance gates (diagnostic Phase 2).
+ * Content-governance gates.
  *
  * Sweeps the ACTUAL rendered output of every tool (across representative and
  * edge inputs), every resource, and every prompt, and fails if any banned
@@ -33,6 +33,7 @@ const TOOL_INPUTS: Record<string, Array<Record<string, unknown>>> = {
   estimate_accountable_plan: [{ home_office_expense_usd: 3000, business_miles: 8000 }],
   get_fee_quote: [{ service: 'individual_return' }],
   book_consultation: [{ type: 'free_15min' }, { type: 'discovery_specialist_497' }],
+  check_resolution_options: [{ balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments' }],
 };
 
 /** Rendered text (summary + structured JSON) for every tool/input pair. */
@@ -59,7 +60,8 @@ function everyOtherOutput(): string[] {
 }
 
 const BANNED: Array<[string, RegExp]> = [
-  ['em dash (U+2014)', /—/],
+  // Written as an escape so this source file itself stays em-dash-free.
+  ['em dash (U+2014)', /\u2014/],
   ['"IRS-licensed"', /IRS-licensed/i],
   ['"licensed by the IRS"', /licensed by the IRS/i],
   ['"IRS Enrolled Agent" phrase', /IRS Enrolled Agent/i],

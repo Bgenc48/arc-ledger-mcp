@@ -6,6 +6,7 @@
  *   GET  /mcp      -> 405 (no server-initiated SSE stream; stateless by design)
  *   GET  /healthz  -> liveness
  *   GET  /version  -> server version + price-set/tax-year versions
+ *   GET  /.well-known/mcp-registry-auth -> MCP Registry domain-ownership proof
  *   *              -> 404 JSON
  *
  * No authentication. All tools are public and read-only.

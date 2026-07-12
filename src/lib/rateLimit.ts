@@ -1,7 +1,7 @@
 import type { Env } from './env';
 
 /**
- * Per-IP rate limiting (Phase 1.4): 60 requests/minute, burst 10.
+ * Per-IP rate limiting: 60 requests/minute, burst 10.
  *
  * Two layers:
  *   1. An in-memory token bucket (capacity 10 = burst, refill 1 token/sec =

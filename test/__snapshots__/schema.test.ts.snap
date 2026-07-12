@@ -93,6 +93,38 @@ exports[`tool input-schema contract > matches the committed snapshot (on a diff:
     ],
     "type": "object",
   },
+  "check_resolution_options": {
+    "additionalProperties": false,
+    "properties": {
+      "ability_to_pay": {
+        "description": "Your realistic ability to pay. can_pay_in_full_soon = you can clear the balance within about 120-180 days; can_make_monthly_payments = a monthly amount but not in full; can_pay_little = only a very small monthly amount; cannot_pay_basic_living = paying the IRS would leave you unable to cover basic living expenses (financial hardship).",
+        "enum": [
+          "can_pay_in_full_soon",
+          "can_make_monthly_payments",
+          "can_pay_little",
+          "cannot_pay_basic_living",
+        ],
+        "type": "string",
+      },
+      "all_required_returns_filed": {
+        "description": "Whether every required tax return has actually been FILED (even if the tax was not paid). The IRS will not approve any installment agreement, Offer in Compromise, or hardship status until you are filing-compliant. Defaults to false.",
+        "type": "boolean",
+      },
+      "balance_includes_penalties": {
+        "description": "Whether the balance includes failure-to-file or failure-to-pay penalties, so penalty abatement may reduce it. Defaults to true.",
+        "type": "boolean",
+      },
+      "balance_owed_usd": {
+        "description": "Total amount owed to the IRS including tax, penalties, and interest (a rough figure is fine).",
+        "type": "number",
+      },
+    },
+    "required": [
+      "balance_owed_usd",
+      "ability_to_pay",
+    ],
+    "type": "object",
+  },
   "check_sales_tax_nexus": {
     "additionalProperties": false,
     "properties": {

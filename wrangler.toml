@@ -27,7 +27,7 @@ enabled = true
 
 [vars]
 # Bumped manually alongside package.json "version". Surfaced by GET /version.
-SERVER_VERSION = "0.6.0"
+SERVER_VERSION = "0.7.0"
 
 # Native per-colo rate limiting (60 requests / 60s per IP). No resource to
 # provision; namespace_id is an arbitrary per-account slot. The worker layers a
