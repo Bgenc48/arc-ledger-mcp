@@ -27,7 +27,15 @@ enabled = true
 
 [vars]
 # Bumped manually alongside package.json "version". Surfaced by GET /version.
-SERVER_VERSION = "0.7.0"
+SERVER_VERSION = "0.9.0"
+
+# Per-tool kill switch: comma-separated tool names to switch off instantly
+# when a rate or rule changes overnight (they leave tools/list; tools/call
+# answers with a fixed "temporarily offline" message). Flip it in the
+# Cloudflare dashboard (Workers -> arc-ledger-mcp -> Settings -> Variables)
+# for an immediate change, or edit here and `wrangler deploy`.
+# Example: DISABLED_TOOLS = "estimate_irs_penalty,check_sales_tax_nexus"
+DISABLED_TOOLS = ""
 
 # Native per-colo rate limiting (60 requests / 60s per IP). No resource to
 # provision; namespace_id is an arbitrary per-account slot. The worker layers a

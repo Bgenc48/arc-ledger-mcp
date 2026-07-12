@@ -29,7 +29,7 @@ Menu names change between releases; the constant part is the endpoint URL and
 
 ## Tools
 
-All 16 tools are read-only and deterministic: the same inputs always produce
+All 18 tools are read-only and deterministic: the same inputs always produce
 the same answer.
 
 | Tool | Purpose |
@@ -48,6 +48,8 @@ the same answer.
 | `estimate_reasonable_comp` | S-corp reasonable-compensation starting range (facts-and-circumstances caveats included). |
 | `estimate_augusta_rule` | Renting your home to your business under IRC 280A(g): the 14-day exclusion, documentation, limits. |
 | `estimate_accountable_plan` | Accountable-plan reimbursement estimate: home office, mileage, cell/internet. |
+| `check_treaty_withholding` | US withholding for non-US payees: default rates, US-Turkey treaty rates, W-8BEN / W-8BEN-E / W-9 / Form 8233. |
+| `get_document_checklist` | Documents to gather per engagement (1040, Schedule C, 5472, 1120-S, 1065, FBAR catch-up, ITIN). |
 | `get_fee_quote` | Published fee range and line items for firm services. |
 | `book_consultation` | First-party booking link + office identity. |
 
@@ -59,6 +61,22 @@ Plus eight prompts (four English, three Turkish, one Spanish):
 And four read-only **resources** (`arcledger://office`, `arcledger://services`,
 `arcledger://fee-catalog`, `arcledger://tool-directory`) so an assistant can
 cite the firm's identity, service directory, and fee catalog directly.
+
+## Claude plugin (Skill + Connector)
+
+`plugin/` is an installable Claude plugin that bundles the
+`respond-to-your-irs-notice` Skill with this MCP server (via `.mcp.json`), so
+one install adds both the orchestration methodology and the tools it drives. The
+marketplace manifest lives at `.claude-plugin/marketplace.json`:
+
+```
+/plugin marketplace add Bgenc48/arc-ledger-mcp
+/plugin install arc-ledger-irs@arc-ledger
+```
+
+The Skill decodes an IRS notice, leads with the deadline, sizes penalties,
+screens resolution options, and hands off to an Enrolled Agent. Circular 230
+safe: general information only, never a guaranteed IRS outcome.
 
 ## Design
 
@@ -105,7 +123,7 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 ```
 src/
   index.ts            Worker entry: /mcp, /healthz, /version, /.well-known/mcp-registry-auth, CORS, rate limit
-  registry.ts         The 16 tools + 8 prompts
+  registry.ts         The 18 tools + 8 prompts
   pricing.ts          Adapter over the pricing data module (SSOT for prices)
   rates.ts            Adapter over the 2026 tax constants + server-only tax constants
   resources.ts        The four arcledger:// resources

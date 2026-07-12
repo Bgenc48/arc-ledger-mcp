@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { formation, usd } from '../pricing';
+import { usd } from '../pricing';
 import {
   FILING_DEADLINES,
   INFO_RETURN_PENALTIES,
@@ -38,7 +38,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Have an Enrolled Agent track every US deadline for your entity - formation + compliance from ${usd(formation.starter)}, or a free 15-minute call`,
+  label: 'Have an Enrolled Agent track every US deadline for your entity - free 15-minute call',
   url: GO.book15min,
 };
 
@@ -158,11 +158,18 @@ function run(args: z.infer<typeof input>) {
     boi_report: boiForeign
       ? {
           applies: true,
-          note: `As a foreign-formed entity registered to do business in the US, a FinCEN Beneficial Ownership Information report is generally still required. Penalty ${usd(INFO_RETURN_PENALTIES.boiReport)} per day of willful violation.`,
+          note: `As a foreign-formed entity registered to do business in the US, a FinCEN Beneficial Ownership Information report is generally still required. Penalty ${usd(INFO_RETURN_PENALTIES.boiReport)} per day of willful violation. New York adds its own state-level LLC disclosure (the NY LLC Transparency Act, effective 2026) for LLCs formed in or registered in New York.`,
+          caveat:
+            'The exemption rules come from a FinCEN interim final rule (March 2025); a final rule is pending and could change them. Being exempt from or subject to BOI does NOT change Form 5472 or any tax filing obligation - those are separate.',
         }
       : {
           applies: false,
-          note: 'Companies formed in the US are exempt from the FinCEN BOI report under the March 2025 interim final rule. Foreign-formed entities registered to do US business may still report.',
+          note:
+            args.formed_in_us === true
+              ? 'Your company was formed in the US, so it is exempt from the federal FinCEN BOI report under the March 2025 interim final rule. Foreign-formed entities registered to do US business may still report.'
+              : 'The federal BOI exemption turns on WHERE the company was formed, not who owns it: companies FORMED IN THE US (for example a Wyoming or Delaware LLC with foreign owners) are exempt under the March 2025 interim final rule, while a FOREIGN-FORMED company registered to do business in a US state generally must still file. Set formed_in_us for a specific answer.',
+          caveat:
+            'The exemption rules come from a FinCEN interim final rule (March 2025); a final rule is pending and could change them. Being exempt from BOI does NOT change Form 5472 or any tax filing obligation - those are separate.',
         },
     state_note: `State filings are separate. For example, a California LLC or corporation owes the ${usd(CA_FRANCHISE_TAX_MINIMUM)} minimum franchise tax annually; Wyoming and New Mexico have their own annual-report rules.`,
     important: 'The dates above already roll to the next business day when the statutory deadline falls on a weekend or federal/DC holiday (IRC 7503). State deadlines are separate; verify each date for your specific situation.',

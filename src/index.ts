@@ -18,7 +18,33 @@ import { SERVER_NAME, SERVER_SLUG, DOCS_URL, LATEST_PROTOCOL_VERSION } from './l
 import { TOOLS, PROMPTS } from './registry';
 import { PRICE_SET } from './pricing';
 import { TAX_YEAR } from './rates';
+import type { AnyToolDef } from './lib/types';
 import type { Env } from './lib/env';
+
+/**
+ * Per-tool kill switch. DISABLED_TOOLS (wrangler.toml [vars] or the Cloudflare
+ * dashboard) is a comma-separated list of tool names to switch off without a
+ * code change: they leave tools/list and tools/call answers with a fixed
+ * "temporarily offline" message, so one stale rate can be pulled within
+ * minutes without taking down the other tools. Memoized per var value because
+ * tools/list is cached by array identity.
+ */
+let gateKey: string | undefined;
+let gateValue: { active: AnyToolDef[]; disabled: ReadonlySet<string> } = { active: TOOLS, disabled: new Set() };
+function toolGate(env: Env): { active: AnyToolDef[]; disabled: ReadonlySet<string> } {
+  const raw = env.DISABLED_TOOLS ?? '';
+  if (raw !== gateKey) {
+    const disabled = new Set(
+      raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+    gateKey = raw;
+    gateValue = { active: disabled.size ? TOOLS.filter((t) => !disabled.has(t.name)) : TOOLS, disabled };
+  }
+  return gateValue;
+}
 
 /** Largest accepted POST body. Real MCP clients send a few KB at most. */
 const MAX_BODY_BYTES = 65_536;
@@ -39,6 +65,7 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}): 
 }
 
 function version(env: Env) {
+  const { active, disabled } = toolGate(env);
   return {
     name: SERVER_NAME,
     slug: SERVER_SLUG,
@@ -46,7 +73,8 @@ function version(env: Env) {
     protocol: LATEST_PROTOCOL_VERSION,
     price_set: PRICE_SET,
     tax_year: TAX_YEAR,
-    tools: TOOLS.length,
+    tools: active.length,
+    tools_disabled: disabled.size,
     prompts: PROMPTS.length,
     docs: DOCS_URL,
   };
@@ -138,7 +166,8 @@ export default {
         return json({ jsonrpc: '2.0', error: { code: -32700, message: 'Parse error' }, id: null }, 400);
       }
 
-      const registry = { tools: TOOLS, prompts: PROMPTS, version: env.SERVER_VERSION ?? '0.0.0' };
+      const { active, disabled } = toolGate(env);
+      const registry = { tools: active, prompts: PROMPTS, version: env.SERVER_VERSION ?? '0.0.0', disabled };
       const result = dispatch(body, registry);
 
       if (result === null) {

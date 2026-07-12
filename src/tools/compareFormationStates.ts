@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { formation, usd } from '../pricing';
+import { usd } from '../pricing';
 import { FORMATION_STATES } from '../rates';
 import { round0 } from '../lib/tax';
 import { FORMATION_STATES_WIDGET_URI } from '../ui/registry';
@@ -23,7 +23,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Form your US LLC with an Enrolled Agent firm (from ${usd(formation.starter)}, Form 5472 handled) - or a free 15-minute call`,
+  label: 'Form your US LLC with an Enrolled Agent firm - Form 5472 compliance handled from day one. Free 15-minute call',
   url: GO.book15min,
 };
 

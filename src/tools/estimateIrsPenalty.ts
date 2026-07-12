@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars, count } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { consultations, usd } from '../pricing';
+import { usd } from '../pricing';
 import {
   FAILURE_TO_FILE_RATE,
   FAILURE_TO_FILE_MAX,
@@ -24,10 +24,21 @@ const input = z.object({
     .describe('Whether you actually FILED the return (even if you did not pay). If false, the larger 5%/month failure-to-file penalty applies. Defaults to false (not filed).'),
 });
 
-const NEXT_STEP = {
-  label: `Upload your IRS bill for a ${usd(consultations.irsNoticeReview)} Notice Rescue review - an Enrolled Agent assesses first-time / reasonable-cause abatement and next steps (credited toward resolution)`,
-  url: GO.noticeRescue,
-};
+/**
+ * Handoff scales with the stakes: a meaningful penalty gets the abatement
+ * pointer, a small one gets a neutral offer. No prices in labels - fee ranges
+ * live in get_fee_quote and on the site (directory anti-upsell rules).
+ */
+const ABATEMENT_WORTHWHILE_FROM = 500;
+
+function nextStep(totalPenalty: number) {
+  return totalPenalty >= ABATEMENT_WORTHWHILE_FROM
+    ? {
+        label: 'Penalties this size can often be reduced. An Enrolled Agent can assess first-time and reasonable-cause abatement - free 15-minute call',
+        url: GO.book15min,
+      }
+    : { label: 'Questions about your balance? Free 15-minute call with an Enrolled Agent', url: GO.book15min };
+}
 
 /**
  * Failure-to-file: 5%/month of unpaid tax, capped at 25% (reached in 5 months).
@@ -92,7 +103,7 @@ function run(args: z.infer<typeof input>) {
     ? `On a ${usd(balance)} balance ${months} month(s) late (return filed): about ${usd(ftp)} failure-to-pay penalty plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. First-time abatement may remove the penalty.`
     : `On a ${usd(balance)} balance ${months} month(s) late (not filed): about ${usd(ftf)} failure-to-file + ${usd(ftp)} failure-to-pay penalties plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. File now to stop the 5%/month clock.`;
 
-  return output(summary, fields, SOURCE.resolution, NEXT_STEP);
+  return output(summary, fields, SOURCE.resolution, nextStep(totalPenalty));
 }
 
 export const estimateIrsPenalty: ToolDef<typeof input> = {

@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { TOOLS, PROMPTS } from '../src/registry';
 import { RESOURCES } from '../src/resources';
-import { DISCLAIMER, OFFICE } from '../src/lib/config';
+import { DISCLAIMER, RELAY_NOTE, OFFICE } from '../src/lib/config';
 
 // One or more inputs per tool, chosen to exercise the risky copy paths
 // (credential line, ITIN CAA history, the zero-profit comp guard).
@@ -31,6 +31,17 @@ const TOOL_INPUTS: Record<string, Array<Record<string, unknown>>> = {
   ],
   estimate_augusta_rule: [{ fair_daily_rental_rate_usd: 1000, days_rented: 20 }],
   estimate_accountable_plan: [{ home_office_expense_usd: 3000, business_miles: 8000 }],
+  check_treaty_withholding: [
+    { income_type: 'dividends', payee_country: 'turkey', payee_type: 'individual' },
+    { income_type: 'royalties', payee_country: 'turkey', payee_type: 'company' },
+    { income_type: 'personal_services', payee_country: 'other_non_us' },
+    { income_type: 'interest', payee_country: 'united_states' },
+  ],
+  get_document_checklist: [
+    { service: 'itin_application' },
+    { service: 'foreign_owned_llc_5472', first_year_client: true },
+    { service: 'fbar_streamlined_catchup' },
+  ],
   get_fee_quote: [{ service: 'individual_return' }],
   book_consultation: [{ type: 'free_15min' }, { type: 'discovery_specialist_497' }],
   check_resolution_options: [{ balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments' }],
@@ -83,6 +94,22 @@ describe('required-string gate', () => {
   it('every tool response carries the exact disclaimer', () => {
     for (const o of everyToolOutput()) {
       expect(o.structured.disclaimer).toBe(DISCLAIMER);
+    }
+  });
+
+  it('every tool response carries the exact relay note (verbatim-figures instruction)', () => {
+    for (const o of everyToolOutput()) {
+      expect(o.structured.relay).toBe(RELAY_NOTE);
+    }
+  });
+
+  it('both compensation tools state there is no safe harbor', () => {
+    for (const name of ['estimate_reasonable_comp', 'compare_llc_scorp']) {
+      const tool = TOOLS.find((t) => t.name === name)!;
+      for (const input of TOOL_INPUTS[name] ?? []) {
+        const r = tool.run(input as never);
+        expect(`${r.summary} ${JSON.stringify(r.structured)}`).toMatch(/safe.harbor/i);
+      }
     }
   });
 

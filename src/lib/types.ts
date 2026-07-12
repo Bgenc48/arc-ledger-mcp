@@ -8,10 +8,11 @@ export interface NextStep {
 
 /**
  * The envelope every tool's structured content shares. Tool-specific
- * fields are spread alongside these three required keys.
+ * fields are spread alongside these four required keys.
  */
 export interface ResponseEnvelope {
   disclaimer: string;
+  relay: string;
   source_url: string;
   next_step: NextStep;
 }

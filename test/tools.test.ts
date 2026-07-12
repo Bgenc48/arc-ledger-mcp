@@ -28,12 +28,16 @@ describe('tools/list + prompts/list (directory requirements)', () => {
   it('advertises every tool with title + readOnlyHint + object inputSchema', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, reg()) as any;
     const tools = res.result.tools;
-    expect(tools).toHaveLength(16);
+    expect(tools).toHaveLength(18);
     for (const t of tools) {
       expect(t.title).toBeTruthy();
       expect(t.annotations.readOnlyHint).toBe(true);
       expect(t.annotations.title).toBeTruthy();
       expect(t.inputSchema.type).toBe('object');
+      // ChatGPT's Apps SDK requires an outputSchema on every tool; ours is the
+      // shared envelope schema, which structuredContent satisfies by construction.
+      expect(t.outputSchema.type).toBe('object');
+      expect(t.outputSchema.required).toEqual(expect.arrayContaining(['disclaimer', 'source_url', 'next_step']));
       expect(t.description.toLowerCase()).toContain('use this when');
     }
     expect(tools.map((t: any) => t.name).sort()).toEqual(
@@ -43,6 +47,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
         'check_itin_eligibility',
         'check_resolution_options',
         'check_sales_tax_nexus',
+        'check_treaty_withholding',
         'compare_formation_states',
         'compare_llc_scorp',
         'deadline_calendar',
@@ -53,6 +58,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
         'estimate_quarterly_taxes',
         'estimate_reasonable_comp',
         'estimate_rental_income',
+        'get_document_checklist',
         'get_fee_quote',
       ].sort(),
     );

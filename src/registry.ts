@@ -16,6 +16,8 @@ import { checkSalesTaxNexus } from './tools/checkSalesTaxNexus';
 import { estimateReasonableComp } from './tools/estimateReasonableComp';
 import { estimateAugustaRule } from './tools/estimateAugustaRule';
 import { estimateAccountablePlan } from './tools/estimateAccountablePlan';
+import { checkTreatyWithholding } from './tools/checkTreatyWithholding';
+import { getDocumentChecklist } from './tools/getDocumentChecklist';
 import { getFeeQuote } from './tools/getFeeQuote';
 import { bookConsultation } from './tools/bookConsultation';
 import { checkResolutionOptions } from './tools/checkResolutionOptions';
@@ -36,6 +38,8 @@ export const TOOLS: AnyToolDef[] = [
   estimateReasonableComp,
   estimateAugustaRule,
   estimateAccountablePlan,
+  checkTreatyWithholding,
+  getDocumentChecklist,
   getFeeQuote,
   bookConsultation,
 ];

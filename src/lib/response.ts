@@ -1,17 +1,17 @@
-import { DISCLAIMER } from './config';
+import { DISCLAIMER, RELAY_NOTE } from './config';
 import type { NextStep, ResponseEnvelope, ToolOutput, McpToolResult } from './types';
 
 /**
- * Merge tool-specific structured fields with the three required envelope keys
- * (disclaimer / source_url / next_step). The disclaimer is stamped here so a
- * tool physically cannot forget it.
+ * Merge tool-specific structured fields with the four required envelope keys
+ * (disclaimer / relay / source_url / next_step). The disclaimer and the relay
+ * note are stamped here so a tool physically cannot forget them.
  */
 export function envelope(
   fields: Record<string, unknown>,
   source_url: string,
   next_step: NextStep,
 ): Record<string, unknown> & ResponseEnvelope {
-  return { ...fields, disclaimer: DISCLAIMER, source_url, next_step };
+  return { ...fields, disclaimer: DISCLAIMER, relay: RELAY_NOTE, source_url, next_step };
 }
 
 /** Build a ToolOutput (summary + structured) in one call. */
@@ -44,8 +44,9 @@ export function toToolResult(out: ToolOutput, serverVersion?: string): McpToolRe
 }
 
 /** JSON Schema fragment shared by every tool's outputSchema. */
-export const ENVELOPE_OUTPUT_PROPERTIES = {
+const ENVELOPE_OUTPUT_PROPERTIES = {
   disclaimer: { type: 'string', description: 'General-information disclaimer (identical on every response).' },
+  relay: { type: 'string', description: 'Instruction to the calling assistant: relay figures and dates verbatim (identical on every response).' },
   server_version: { type: 'string', description: 'Server release that produced this response (matches GET /version).' },
   source_url: { type: 'string', description: 'The arcandledger.com page that backs this answer.' },
   next_step: {
@@ -57,4 +58,18 @@ export const ENVELOPE_OUTPUT_PROPERTIES = {
     },
     required: ['label', 'url'],
   },
+} as const;
+
+/**
+ * The outputSchema advertised for EVERY tool on tools/list. ChatGPT's Apps SDK
+ * requires one per tool (the MCP spec makes it optional). It describes the
+ * envelope that envelope() stamps on every response - so structuredContent
+ * conforms by construction - while `additionalProperties: true` admits each
+ * tool's own result fields without hand-writing 16 schemas.
+ */
+export const ENVELOPE_OUTPUT_SCHEMA = {
+  type: 'object',
+  properties: ENVELOPE_OUTPUT_PROPERTIES,
+  required: ['disclaimer', 'relay', 'source_url', 'next_step'],
+  additionalProperties: true,
 } as const;
