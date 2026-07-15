@@ -18,6 +18,7 @@ const tmp = join(root, '.wrangler', 'gen-examples.bundle.mjs');
 
 const ENTRY = `
 import { decodeIrsNotice } from '../src/tools/decodeIrsNotice';
+import { explainTaxDocument } from '../src/tools/explainTaxDocument';
 import { checkFbarFatca } from '../src/tools/checkFbarFatca';
 import { compareLlcScorp } from '../src/tools/compareLlcScorp';
 import { estimateQuarterlyTaxes } from '../src/tools/estimateQuarterlyTaxes';
@@ -32,6 +33,10 @@ export const cases = [
     tool: 'decode_irs_notice',
     input: { notice_code: 'CP2000', received_date: '2026-06-01', amount_shown: 4200 },
     run: (i) => decodeIrsNotice.run(i) },
+  { prompt: 'I sell on Etsy and just got a 1099-K for $38,000 but I definitely did not make that much. What is this form?',
+    tool: 'explain_tax_document',
+    input: { document: '1099-K' },
+    run: (i) => explainTaxDocument.run(i) },
   { prompt: 'I am single, live in the US, and my foreign accounts peaked around $65,000 this year. Do I have to file anything?',
     tool: 'check_fbar_fatca',
     input: { max_aggregate_foreign_balance_usd: 65000, filing_status: 'single', lives_abroad: false },

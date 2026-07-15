@@ -17,9 +17,11 @@ import {
   SUPPORTED_PROTOCOL_VERSIONS,
   DOCS_URL,
   DISCLAIMER,
+  RELAY_NOTE,
+  GO,
 } from './config';
 import { logToolCall } from './logging';
-import { toToolResult } from './response';
+import { toToolResult, ENVELOPE_OUTPUT_SCHEMA } from './response';
 import { sanitizeText } from './sanitize';
 import { resourceList, readResource } from '../resources';
 import { uiResourceList, readUiResource } from '../ui/registry';
@@ -37,6 +39,31 @@ export interface Registry {
   tools: AnyToolDef[];
   prompts: PromptDef[];
   version: string;
+  /**
+   * Tool names currently switched off via the DISABLED_TOOLS kill switch. They
+   * are excluded from `tools`; tools/call for one of these names returns a
+   * fixed "temporarily offline" result instead of "Unknown tool".
+   */
+  disabled?: ReadonlySet<string>;
+}
+
+/** Fixed response for a kill-switched tool (never interpolates the tool name). */
+const TOOL_DISABLED_TEXT =
+  'This tool is temporarily offline while a rate or rule it depends on is re-verified. Every other tool remains available, or an Enrolled Agent can answer directly.';
+
+function disabledToolResult(version: string) {
+  return {
+    content: [{ type: 'text' as const, text: `${TOOL_DISABLED_TEXT}\n\n${DISCLAIMER}` }],
+    structuredContent: {
+      tool_status: 'temporarily_disabled',
+      detail: TOOL_DISABLED_TEXT,
+      disclaimer: DISCLAIMER,
+      relay: RELAY_NOTE,
+      source_url: DOCS_URL,
+      next_step: { label: 'Ask an Enrolled Agent directly - free 15-minute call', url: GO.book15min },
+      server_version: version,
+    },
+  };
 }
 
 interface JsonRpcRequest {
@@ -54,11 +81,13 @@ interface JsonRpcResponse {
 }
 
 const INSTRUCTIONS =
-  `${SERVER_NAME} exposes Arc & Ledger's free tax calculators and intake funnel: ` +
-  `decode an IRS notice, check FBAR/FATCA obligations, compare LLC vs S-Corp, estimate ` +
-  `quarterly taxes, get a fixed-fee quote, and book a consultation. Every answer is ` +
-  `general information (not tax advice) and ends with an optional handoff to an Enrolled ` +
-  `Agent enrolled to practice before the IRS. Full docs: ${DOCS_URL}.`;
+  `${SERVER_NAME} exposes Arc & Ledger's free tax tools: decode an IRS notice, screen ` +
+  `IRS back-tax resolution paths, check FBAR/FATCA obligations, compare LLC vs S-Corp, ` +
+  `estimate quarterly taxes, get a published fee quote, and book a consultation. Answers ` +
+  `are complete on their own; every response is general information (not tax advice) and ` +
+  `includes an optional link to the relevant guide or to an Enrolled Agent enrolled to ` +
+  `practice before the IRS. Some tools accept brief:true for shorter answers. ` +
+  `Full docs: ${DOCS_URL}.`;
 
 function toolListEntry(tool: AnyToolDef) {
   const inputSchema = zodToJsonSchema(tool.input, { $refStrategy: 'none' }) as Record<string, unknown>;
@@ -68,6 +97,10 @@ function toolListEntry(tool: AnyToolDef) {
     title: tool.title,
     description: tool.description,
     inputSchema,
+    // ChatGPT's Apps SDK requires an outputSchema per tool. Every response is
+    // built through envelope(), so the shared envelope schema is truthful for
+    // all tools; additionalProperties admits the tool-specific fields.
+    outputSchema: ENVELOPE_OUTPUT_SCHEMA,
     annotations: tool.annotations,
     // Apps SDK: advertise the widget template so ChatGPT pre-fetches it. The
     // `openai/*` keys are namespaced and ignored by clients that don't render
@@ -191,7 +224,10 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
       if (isNotification) return null;
       const name = msg.params?.name as string | undefined;
       const tool = reg.tools.find((t) => t.name === name);
-      if (!tool) return fail(id, ErrorCode.InvalidParams, 'Unknown tool');
+      if (!tool) {
+        if (name && reg.disabled?.has(name)) return ok(id, disabledToolResult(reg.version));
+        return fail(id, ErrorCode.InvalidParams, 'Unknown tool');
+      }
 
       const parsed = tool.input.safeParse(msg.params?.arguments ?? {});
       if (!parsed.success) {

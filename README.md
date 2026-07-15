@@ -29,12 +29,13 @@ Menu names change between releases; the constant part is the endpoint URL and
 
 ## Tools
 
-All 16 tools are read-only and deterministic: the same inputs always produce
+All 19 tools are read-only and deterministic: the same inputs always produce
 the same answer.
 
 | Tool | Purpose |
 |---|---|
-| `decode_irs_notice` | Explain an IRS notice, its deadline, and what to do. |
+| `decode_irs_notice` | Explain an IRS notice (28 covered codes), its deadline, and what to do. |
+| `explain_tax_document` | Explain a tax form you received (W-2, 1099 family, K-1, 1042-S, 1095-A...): key boxes, where it goes on the return, what to check, and what to do if it is wrong or missing. |
 | `check_fbar_fatca` | FBAR / Form 8938 obligations, thresholds, catch-up. |
 | `compare_llc_scorp` | SE tax vs salary+distribution, CA franchise, break-even. |
 | `estimate_quarterly_taxes` | Federal + CA quarterly estimates with safe harbor. |
@@ -48,17 +49,36 @@ the same answer.
 | `estimate_reasonable_comp` | S-corp reasonable-compensation starting range (facts-and-circumstances caveats included). |
 | `estimate_augusta_rule` | Renting your home to your business under IRC 280A(g): the 14-day exclusion, documentation, limits. |
 | `estimate_accountable_plan` | Accountable-plan reimbursement estimate: home office, mileage, cell/internet. |
+| `check_treaty_withholding` | US withholding for non-US payees: default rates, US-Turkey treaty rates, W-8BEN / W-8BEN-E / W-9 / Form 8233. |
+| `get_document_checklist` | Documents to gather per engagement (1040, Schedule C, 5472, 1120-S, 1065, FBAR catch-up, ITIN). |
 | `get_fee_quote` | Published fee range and line items for firm services. |
 | `book_consultation` | First-party booking link + office identity. |
 
-Plus eight prompts (four English, three Turkish, one Spanish):
-`decode_my_irs_notice`, `am_i_required_to_file_fbar`, `should_i_be_an_scorp`,
-`settle_my_irs_debt`, `abd_sirket_vergi_takvimi`, `itin_almali_miyim`,
-`irs_borc_cozumu`, `decodificar_mi_aviso_irs`.
+Plus ten prompts (five English, four Turkish, one Spanish):
+`decode_my_irs_notice`, `explain_my_tax_form`, `am_i_required_to_file_fbar`,
+`should_i_be_an_scorp`, `settle_my_irs_debt`, `abd_sirket_vergi_takvimi`,
+`bu_vergi_formu_ne`, `itin_almali_miyim`, `irs_borc_cozumu`,
+`decodificar_mi_aviso_irs`.
 
 And four read-only **resources** (`arcledger://office`, `arcledger://services`,
 `arcledger://fee-catalog`, `arcledger://tool-directory`) so an assistant can
 cite the firm's identity, service directory, and fee catalog directly.
+
+## Claude plugin (Skill + Connector)
+
+`plugin/` is an installable Claude plugin that bundles the
+`respond-to-your-irs-notice` Skill with this MCP server (via `.mcp.json`), so
+one install adds both the orchestration methodology and the tools it drives. The
+marketplace manifest lives at `.claude-plugin/marketplace.json`:
+
+```
+/plugin marketplace add Bgenc48/arc-ledger-mcp
+/plugin install arc-ledger-irs@arc-ledger
+```
+
+The Skill decodes an IRS notice, leads with the deadline, sizes penalties,
+screens resolution options, and hands off to an Enrolled Agent. Circular 230
+safe: general information only, never a guaranteed IRS outcome.
 
 ## Design
 
@@ -105,15 +125,16 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 ```
 src/
   index.ts            Worker entry: /mcp, /healthz, /version, /.well-known/mcp-registry-auth, CORS, rate limit
-  registry.ts         The 16 tools + 8 prompts
+  registry.ts         The 19 tools + 10 prompts
   pricing.ts          Adapter over the pricing data module (SSOT for prices)
   rates.ts            Adapter over the 2026 tax constants + server-only tax constants
   resources.ts        The four arcledger:// resources
   lib/                mcp (protocol), response, logging, rateLimit, tax, dates, schemas
   tools/              one file per tool
   ui/                 Apps SDK widgets (IRS notice card, formation-state comparison)
-  data/               data modules: IRS notices (and, in the public mirror, the
-                      vendored pricing / tax-constant / catalog / service-page snapshots)
+  data/               data modules: IRS notices, tax documents (and, in the public
+                      mirror, the vendored pricing / tax-constant / catalog /
+                      service-page snapshots)
 test/                 vitest suites + the tool input-schema snapshot
 ```
 

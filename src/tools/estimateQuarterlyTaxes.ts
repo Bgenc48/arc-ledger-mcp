@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { taxPlanning, usd } from '../pricing';
+import { usd } from '../pricing';
 import {
   STANDARD_DEDUCTION_SINGLE,
   TAX_BRACKETS_SINGLE,
@@ -38,7 +38,7 @@ const IRS_DIRECT_PAY = 'https://www.irs.gov/payments/direct-pay';
 const CA_WEB_PAY = 'https://www.ftb.ca.gov/pay/bank-account/index.asp';
 
 const NEXT_STEP = {
-  label: `Set up the quarterly estimated-tax service (${usd(taxPlanning.quarterlyEstimates_annual)}/yr) - book a free 15-minute call`,
+  label: 'Want the quarterly math computed and reminded for you each quarter? Free 15-minute call with an Enrolled Agent',
   url: GO.book15min,
 };
 
@@ -174,11 +174,9 @@ function run(args: z.infer<typeof input>) {
     federal,
     california,
     assumptions: [
-      'Single filer with the standard deduction (adjust for your actual filing status). The 0.9% Additional Medicare Tax uses the single $200,000 threshold.',
-      'Only the self-employment income you entered is modeled: W-2 wages, investment income, and other income are NOT included, which shifts both brackets and the Social Security wage base.',
-      'Does not apply the QBI (199A) deduction, which could lower the figure - so this errs on the safe side.',
-      'The prior-year safe harbor requires a filed prior-year return covering a full 12 months.',
-      'S-corp shareholders: salary withholding is handled through payroll and is separate from these estimates.',
+      'Single filer, standard deduction, single $200,000 Additional Medicare Tax threshold - adjust for your actual filing status.',
+      'Only the entered self-employment income is modeled (no W-2 wages or investment income) and the QBI (199A) deduction is not applied, so this errs on the safe side.',
+      'The prior-year safe harbor requires a filed prior-year return covering a full 12 months. S-corp salary withholding is separate from these estimates.',
     ],
   };
 

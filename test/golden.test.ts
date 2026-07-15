@@ -24,6 +24,7 @@ const callOnce = (name: string, args: Record<string, unknown>) =>
 // One representative, valid input per tool.
 const REPRESENTATIVE: Array<[string, Record<string, unknown>]> = [
   ['decode_irs_notice', { notice_code: 'CP2000', received_date: '2026-06-15' }],
+  ['explain_tax_document', { document: '1099-K' }],
   ['check_fbar_fatca', { max_aggregate_foreign_balance_usd: 65000, filing_status: 'single', lives_abroad: false }],
   ['compare_llc_scorp', { expected_net_profit_usd: 150000, state: 'CA' }],
   ['estimate_quarterly_taxes', { ytd_net_income_usd: 80000, entity: 'sole_proprietor', state: 'CA' }],
@@ -36,6 +37,8 @@ const REPRESENTATIVE: Array<[string, Record<string, unknown>]> = [
   ['estimate_reasonable_comp', { business_net_profit_usd: 200000, profit_driver: 'primarily_owner_services' }],
   ['estimate_augusta_rule', { fair_daily_rental_rate_usd: 1500, days_rented: 12, marginal_tax_rate_pct: 32 }],
   ['estimate_accountable_plan', { home_office_expense_usd: 3000, business_miles: 8000, cell_internet_usd: 1200, marginal_tax_rate_pct: 33 }],
+  ['check_treaty_withholding', { income_type: 'dividends', payee_country: 'turkey', payee_type: 'individual' }],
+  ['get_document_checklist', { service: 'foreign_owned_llc_5472', first_year_client: true }],
   ['get_fee_quote', { service: 'individual_return' }],
   ['book_consultation', { type: 'free_15min' }],
   ['check_resolution_options', { balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments' }],

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars, count, clamp } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { taxPlanning, usd } from '../pricing';
+import { usd } from '../pricing';
 import { STANDARD_MILEAGE_RATE, DEFAULT_MARGINAL_RATE } from '../rates';
 import { round0 } from '../lib/tax';
 import type { ToolDef } from '../lib/types';
@@ -20,7 +20,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Have an Enrolled Agent set up your accountable plan (tax-planning snapshot ${usd(taxPlanning.snapshot)})`,
+  label: 'Have an Enrolled Agent draft your accountable plan and expense-report system - free 15-minute call',
   url: GO.book15min,
 };
 
@@ -46,7 +46,7 @@ function run(args: z.infer<typeof input>) {
     },
     reimbursement_breakdown: {
       home_office: homeOffice,
-      mileage: `${mileageReimbursement} (${miles} miles x ${usd(STANDARD_MILEAGE_RATE)}/mile)`,
+      mileage: `${usd(mileageReimbursement)} (${miles} miles x ${(STANDARD_MILEAGE_RATE * 100).toFixed(1)} cents/mile)`,
       cell_and_internet: cellInternet,
       other: other,
     },

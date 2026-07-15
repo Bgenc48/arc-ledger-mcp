@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars, count } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { bookkeeping, usd } from '../pricing';
+import { usd } from '../pricing';
 import {
   RESIDENTIAL_DEPRECIATION_YEARS,
   PASSIVE_LOSS_SPECIAL_ALLOWANCE,
@@ -31,10 +31,8 @@ const input = z.object({
   rental_days: count(366).optional().describe('Days the property was rented at fair value (short-term only).'),
 });
 
-// Use the published regular monthly rate (not the promo rate) so the cited fee
-// is time-independent inside the stateless Worker.
 const NEXT_STEP = {
-  label: `Have an Enrolled Agent handle your Schedule E - bookkeeping from ${usd(bookkeeping.essentials.regular)}/mo, or a free 15-minute call`,
+  label: 'Have an Enrolled Agent handle your Schedule E and depreciation - free 15-minute call',
   url: GO.book15min,
 };
 
