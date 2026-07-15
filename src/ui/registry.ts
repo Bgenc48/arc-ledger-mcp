@@ -14,6 +14,7 @@
  */
 import { FORMATION_STATES_WIDGET_HTML } from './formationStatesWidget';
 import { IRS_NOTICE_WIDGET_HTML } from './noticeWidget';
+import { TAX_DOCUMENT_WIDGET_HTML } from './documentWidget';
 
 export interface UiResourceDef {
   uri: string;
@@ -27,6 +28,7 @@ export interface UiResourceDef {
 
 export const FORMATION_STATES_WIDGET_URI = 'ui://widget/formation-states.html';
 export const IRS_NOTICE_WIDGET_URI = 'ui://widget/irs-notice.html';
+export const TAX_DOCUMENT_WIDGET_URI = 'ui://widget/tax-document.html';
 
 export const UI_RESOURCES: UiResourceDef[] = [
   {
@@ -46,6 +48,15 @@ export const UI_RESOURCES: UiResourceDef[] = [
     html: IRS_NOTICE_WIDGET_HTML,
     widgetDescription:
       'A card for an IRS notice showing the notice code, what it means in plain English, the response deadline with days remaining (color-coded by urgency), your options, and a single button to upload the notice for an Enrolled Agent review.',
+  },
+  {
+    uri: TAX_DOCUMENT_WIDGET_URI,
+    name: 'tax_document_widget',
+    title: 'Your tax document',
+    description: 'Document card for explain_tax_document: what the form is, the boxes that matter, where it goes on the return, and what to do if it is wrong or missing.',
+    html: TAX_DOCUMENT_WIDGET_HTML,
+    widgetDescription:
+      'A card for a tax document (W-2, a 1099, a K-1, and similar) showing what the form is, who sends it and when, the boxes that matter, where it goes on your return, what to check before filing, what to do if it is wrong or missing, and a single button to ask an Enrolled Agent about it.',
   },
 ];
 

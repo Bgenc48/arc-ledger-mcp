@@ -5,6 +5,25 @@ All notable changes to the Arc & Ledger Tax Tools MCP server. Bump
 `GET /version` and every tool response's `server_version` expose the running
 release.
 
+## 0.11.0
+
+Document-widget and notice-landing-page release.
+
+### Added
+- `explain_tax_document` now renders an in-chat Apps SDK widget (a document
+  card: what the form is, who sends it and when, the boxes that matter, where
+  it goes on the return, what to check, what to do if it is wrong or missing,
+  and a single Enrolled Agent handoff). Third widget alongside the IRS notice
+  card and the formation-state comparison; fully self-contained, light and
+  dark themes, `openai/widgetCSP` declares zero external domains.
+
+### Changed
+- Four more notice codes now resolve `decode_irs_notice` `source_url` to their
+  own dedicated guide page instead of the notices hub: CP05 (refund review),
+  5071C (identity verification), CP523 (installment-agreement default), and
+  CP215 (civil penalty). The corresponding landing pages ship on the website;
+  the worker registry marks these `hasLandingPage: true`.
+
 ## 0.10.0
 
 Document-explanation release: the server now explains the tax documents people

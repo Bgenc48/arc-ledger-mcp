@@ -3,7 +3,7 @@
   "name": "com.arcandledger/tax-tools",
   "title": "Arc & Ledger Tax Tools",
   "description": "Free tax tools from an Enrolled Agent firm: IRS notices, FBAR, LLC vs S-Corp, fee quotes.",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "websiteUrl": "https://www.arcandledger.com/mcp",
   "repository": {
     "url": "https://github.com/Bgenc48/arc-ledger-mcp",
