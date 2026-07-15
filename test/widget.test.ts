@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { dispatch } from '../src/lib/mcp';
 import { TOOLS, PROMPTS } from '../src/registry';
-import { UI_RESOURCES, FORMATION_STATES_WIDGET_URI, IRS_NOTICE_WIDGET_URI } from '../src/ui/registry';
+import { UI_RESOURCES, FORMATION_STATES_WIDGET_URI, IRS_NOTICE_WIDGET_URI, TAX_DOCUMENT_WIDGET_URI } from '../src/ui/registry';
 
 const reg = () => ({ tools: TOOLS, prompts: PROMPTS, version: '0.1.0' });
 const call = (method: string, params?: Record<string, unknown>) =>
@@ -85,5 +85,31 @@ describe('Apps SDK widget', () => {
     // The widget headlines the computed deadline + days remaining.
     expect(typeof (sc.deadline as any).days_remaining).toBe('number');
     expect((sc.deadline as any).computed_deadline).toBeTruthy();
+  });
+
+  it('advertises the tax-document widget and binds it to explain_tax_document', () => {
+    const listed = call('resources/list').result.resources.find(
+      (r: any) => r.uri === TAX_DOCUMENT_WIDGET_URI,
+    );
+    expect(listed).toBeDefined();
+    expect(listed.mimeType).toBe('text/html+skybridge');
+
+    const tool = call('tools/list').result.tools.find((t: any) => t.name === 'explain_tax_document');
+    expect(tool._meta['openai/outputTemplate']).toBe(TAX_DOCUMENT_WIDGET_URI);
+    expect(tool._meta['openai/toolInvocation/invoking']).toBeTruthy();
+  });
+
+  it('tools/call stamps the document template and the fields the widget reads', () => {
+    const res = call('tools/call', {
+      name: 'explain_tax_document',
+      arguments: { document: '1099-K' },
+    });
+    expect(res.result._meta['openai/outputTemplate']).toBe(TAX_DOCUMENT_WIDGET_URI);
+    const sc = res.result.structuredContent;
+    expect(sc.recognized).toBe(true);
+    // The widget reads the document code, what it is, and the key boxes.
+    expect(sc.document).toBe('Form 1099-K');
+    expect(sc.what_it_is).toBeTruthy();
+    expect(Array.isArray(sc.key_boxes)).toBe(true);
   });
 });

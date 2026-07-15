@@ -363,7 +363,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Withholding or estimated payments that do not match IRS records',
     ],
     urgency: 'low',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: 'cp05',
   },
 
   CP05A: {
@@ -464,7 +465,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Trying to verify before having the exact return and prior-year return in front of you',
     ],
     urgency: 'high',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: '5071c',
   },
 
   '4883C': {
@@ -660,7 +662,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Assuming one missed payment cancels everything (it is usually curable inside the window)',
     ],
     urgency: 'high',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: 'cp523',
   },
 
   CP71C: {
@@ -713,7 +716,8 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Penalties assessed even though the form was filed: proof of timely filing reverses them',
     ],
     urgency: 'high',
-    hasLandingPage: false,
+    hasLandingPage: true,
+    slug: 'cp215',
   },
 };
 

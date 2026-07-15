@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { output } from '../lib/response';
 import { sanitizeNoticeCodeEcho } from '../lib/sanitize';
 import { SOURCE, GO } from '../lib/config';
+import { TAX_DOCUMENT_WIDGET_URI } from '../ui/registry';
 import { lookupTaxDocument, normalizeDocCode, COVERED_DOCUMENTS } from '../data/taxDocuments';
 import type { NextStep, ToolDef } from '../lib/types';
 
@@ -113,4 +114,9 @@ export const explainTaxDocument: ToolDef<typeof input> = {
     };
   },
   run,
+  widget: {
+    templateUri: TAX_DOCUMENT_WIDGET_URI,
+    invoking: 'Explaining your tax document...',
+    invoked: 'Tax document explained',
+  },
 };

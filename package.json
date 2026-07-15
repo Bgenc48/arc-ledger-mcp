@@ -1,6 +1,6 @@
 {
   "name": "arc-ledger-mcp",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "description": "Arc & Ledger Tax Tools - public, no-auth remote MCP server (Cloudflare Worker, Streamable HTTP)",
