@@ -23,6 +23,24 @@ export const decodeMyIrsNotice: PromptDef = {
   },
 };
 
+export const explainMyTaxForm: PromptDef = {
+  name: 'explain_my_tax_form',
+  title: 'Explain this tax form',
+  description: 'Understand a tax document you received (W-2, 1099-K, 1099-NEC, K-1, 1042-S, 1095-A, 1098-T...): what it is, where it goes on your return, and what to do if it is wrong or missing.',
+  arguments: [
+    { name: 'document', description: 'The form name as printed on it, e.g. W-2, 1099-K, Schedule K-1 (Form 1065), 1042-S.', required: true },
+  ],
+  build: (args) => {
+    const doc = args.document || 'the tax form';
+    return userMsg(
+      `I received a tax document: ${doc}. Use the explain_tax_document tool to tell me what it is, who sent it and why, ` +
+        `which boxes matter, where it goes on my return, what to double-check before filing, and what to do if it is ` +
+        `wrong or never arrived. Also explain how the IRS matches this form against my return. ` +
+        `Then summarize the single most important thing for me to verify.`,
+    );
+  },
+};
+
 export const amIRequiredToFileFbar: PromptDef = {
   name: 'am_i_required_to_file_fbar',
   title: 'Am I required to file FBAR?',
@@ -112,6 +130,24 @@ export const abdSirketVergiTakvimi: PromptDef = {
   },
 };
 
+export const buVergiFormuNe: PromptDef = {
+  name: 'bu_vergi_formu_ne',
+  title: 'Bu ABD vergi formu ne? (Turkish)',
+  description: 'Elinize ulaşan bir ABD vergi formunun (W-2, 1099-K, 1099-NEC, K-1, 1042-S...) ne olduğunu, beyannamenizde nereye girdiğini ve form hatalıysa ne yapmanız gerektiğini açıklar.',
+  arguments: [
+    { name: 'document', description: 'Formun üzerinde yazan ad, örn. W-2, 1099-K, Schedule K-1 (Form 1065), 1042-S.', required: true },
+  ],
+  build: (args) => {
+    const doc = args.document || 'bu vergi formu';
+    return userMsg(
+      `Elime bir ABD vergi formu ulaştı: ${doc}. explain_tax_document aracını kullanarak bu formun ne olduğunu, ` +
+        `kimin neden gönderdiğini, hangi kutuların önemli olduğunu, beyannamemde nereye girdiğini, beyan etmeden önce ` +
+        `neleri kontrol etmem gerektiğini ve form hatalıysa ya da hiç gelmediyse ne yapacağımı açıkla. ` +
+        `IRS'in bu formu beyannamemle nasıl eşleştirdiğini de belirt. Yanıtı Türkçe ver.`,
+    );
+  },
+};
+
 export const itinAlmaliMiyim: PromptDef = {
   name: 'itin_almali_miyim',
   title: 'ITIN almalı mıyım? (Turkish)',
@@ -177,10 +213,12 @@ export const decodificarMiAvisoIrs: PromptDef = {
 
 export const ALL_PROMPTS: PromptDef[] = [
   decodeMyIrsNotice,
+  explainMyTaxForm,
   amIRequiredToFileFbar,
   shouldIBeAnScorp,
   settleMyIrsDebt,
   abdSirketVergiTakvimi,
+  buVergiFormuNe,
   itinAlmaliMiyim,
   irsBorcCozumu,
   decodificarMiAvisoIrs,

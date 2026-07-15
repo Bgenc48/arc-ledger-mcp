@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars, count } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { addOns, usd } from '../pricing';
+import { usd } from '../pricing';
 import {
   SALES_TAX_NEXUS_DEFAULT,
   SALES_TAX_NEXUS_OVERRIDES,
@@ -22,7 +22,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Get a sales-tax nexus study + registration from an Enrolled Agent (${usd(addOns.salesTaxNexusAnalysis)})`,
+  label: 'Unsure where you owe? An Enrolled Agent can run a full nexus study for your sales map - free 15-minute call',
   url: GO.book15min,
 };
 
@@ -116,7 +116,7 @@ function run(args: z.infer<typeof input>) {
   const sales = args.annual_sales_usd;
   const txns = args.transaction_count;
 
-  const generalRule = `Most states use economic nexus: you must collect sales tax once you exceed ${usd(SALES_TAX_NEXUS_DEFAULT.salesUsd)} in sales OR ${SALES_TAX_NEXUS_DEFAULT.transactions} transactions in the current or prior year. Big states differ (California and Texas use ${usd(500_000)} with no transaction count; New York requires ${usd(500_000)} AND 100 transactions). Delaware, Montana, New Hampshire, Oregon, and Alaska have no statewide sales tax. Physical presence (inventory in an Amazon FBA warehouse, an office, or staff) also creates nexus regardless of sales.`;
+  const generalRule = `Most states use economic nexus: you must collect sales tax once you exceed ${usd(SALES_TAX_NEXUS_DEFAULT.salesUsd)} in sales OR ${SALES_TAX_NEXUS_DEFAULT.transactions} transactions in the current or prior year. Big states differ (California and Texas use ${usd(500_000)} with no transaction count; New York requires ${usd(500_000)} AND 100 transactions), and a growing number of states (Illinois and Utah among them) have repealed the transaction test entirely and use a dollar threshold only. Delaware, Montana, New Hampshire, Oregon, and Alaska have no statewide sales tax. Physical presence (inventory in an Amazon FBA warehouse, an office, or staff) also creates nexus regardless of sales.`;
 
   // Dedupe (case-insensitively) before evaluating so a caller can't pad the
   // response with repeated entries.

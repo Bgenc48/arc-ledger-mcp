@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { dollars, yearCount, count } from '../lib/schemas';
 import { output } from '../lib/response';
-import { SOURCE, GO } from '../lib/config';
-import { international, formation, consultations, usd } from '../pricing';
+import { SOURCE } from '../lib/config';
+import { usd } from '../pricing';
 import {
   FBAR_THRESHOLD,
   FBAR_NONWILLFUL_PENALTY,
@@ -22,8 +22,8 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Book a Discovery Session Specialist (${usd(consultations.discoverySpecialist)}, credited) for a cross-border review with an Enrolled Agent`,
-  url: GO.discoverySpecialist,
+  label: 'Cross-border filings carry steep penalties and time-sensitive catch-up options - review yours with an Enrolled Agent',
+  url: SOURCE.discovery,
 };
 
 /** Map filing status to the Form 8938 threshold bucket. */
@@ -89,24 +89,15 @@ function run(args: z.infer<typeof input>) {
   const unfiled = args.unfiled_years ?? 0;
   if (unfiled > 0) {
     fields.catch_up_options = {
-      note: 'The right path depends on whether you also under-reported income and whether your failure was non-willful. An Enrolled Agent confirms eligibility before you file anything.',
+      note: 'The right path depends on whether you also under-reported income and whether your failure was non-willful. An Enrolled Agent confirms eligibility before you file anything; published fee ranges are in get_fee_quote.',
       delinquent_fbar_submission: {
         when: 'You reported and paid tax on all income, but simply missed the FBARs (no unreported income).',
         how: 'File the delinquent FBARs electronically with a reasonable-cause statement.',
-        our_fee: `${usd(international.fbar_catchUpPerYear)} per catch-up year (US catalog), or a ${usd(formation.delinquentFbar)} flat delinquent-FBAR package in the international-founder funnel.`,
       },
       streamlined: {
         when: 'You have unreported foreign income and your failure to file was non-willful.',
-        domestic_sdop: {
-          for: 'Taxpayers who do NOT meet the non-residency test (generally living in the US).',
-          our_fee: usd(international.streamlinedDomestic),
-          note: 'SDOP carries a 5% Title 26 miscellaneous offshore penalty on the highest aggregate balance.',
-        },
-        foreign_sfop: {
-          for: 'Taxpayers who MEET the non-residency test (generally living abroad).',
-          our_fee: usd(international.streamlinedForeign),
-          note: 'SFOP has NO miscellaneous offshore penalty for those who qualify.',
-        },
+        domestic_sdop: 'For taxpayers who do NOT meet the non-residency test (generally living in the US). Carries a 5% Title 26 miscellaneous offshore penalty on the highest aggregate balance.',
+        foreign_sfop: 'For taxpayers who MEET the non-residency test (generally living abroad). No miscellaneous offshore penalty for those who qualify.',
         recommended_path: args.lives_abroad ? 'Streamlined Foreign (SFOP) if you meet the non-residency test' : 'Streamlined Domestic (SDOP) if you cannot meet the non-residency test',
       },
     };

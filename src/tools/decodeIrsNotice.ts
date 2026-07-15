@@ -2,12 +2,11 @@ import { z } from 'zod';
 import { dollars } from '../lib/schemas';
 import { output } from '../lib/response';
 import { sanitizeNoticeCodeEcho } from '../lib/sanitize';
-import { SOURCE, GO } from '../lib/config';
-import { consultations, usd } from '../pricing';
+import { SOURCE } from '../lib/config';
 import { IRS_NOTICE_WIDGET_URI } from '../ui/registry';
 import { lookupNotice, normalizeCode, COVERED_CODES } from '../data/notices';
 import { parseIsoDate, addDays, humanDate, daysBetween, todayUtc } from '../lib/dates';
-import type { ToolDef } from '../lib/types';
+import type { NextStep, ToolDef } from '../lib/types';
 
 const input = z.object({
   notice_code: z.string().min(1).max(30).describe('The notice or letter code printed on the IRS mail, e.g. "CP2000", "CP 14", "LT11", "Letter 1058".'),
@@ -16,12 +15,23 @@ const input = z.object({
     .optional()
     .describe('Date on the notice (YYYY-MM-DD). Used to compute the response deadline. The IRS clock runs from the notice date printed on the letter.'),
   amount_shown: dollars().optional().describe('The dollar amount the notice proposes or bills, if any. Optional; used only for context, never stored.'),
+  brief: z
+    .boolean()
+    .optional()
+    .describe('Set true for a shorter answer: skips the generic how-to-read guidance and common-error list.'),
 });
 
-const NEXT_STEP = {
-  label: `Upload your notice for a flat-fee ${usd(consultations.irsNoticeReview)} Notice Rescue review with an Enrolled Agent - secure upload, credited toward resolution`,
-  url: GO.noticeRescue,
-};
+/**
+ * The handoff points at the notice's own guide page (first-party), where the
+ * optional Enrolled Agent review lives - not at a checkout. Directory rules on
+ * both platforms treat an always-on paid pitch as advertising; a deadline-aware
+ * pointer to the relevant guide is the compliant (and better-converting) shape.
+ */
+function nextStep(urgent: boolean, url: string): NextStep {
+  return urgent
+    ? { label: 'Your response window is short. An Enrolled Agent can review and respond to this notice for you - start here', url }
+    : { label: 'Want a professional to handle the response? An Enrolled Agent can review your notice - guide and secure upload', url };
+}
 
 const GENERIC_HOW_TO_READ = [
   'Find the notice or letter code in the top-right or bottom-right corner (starts with CP or LT).',
@@ -43,14 +53,13 @@ function run(args: z.infer<typeof input>) {
       recognized: false,
       message:
         'We do not have a specific profile for this code, but here is how to read any IRS notice. If you can share the exact code, an Enrolled Agent can tell you precisely what it means.',
-      how_to_read_any_notice: GENERIC_HOW_TO_READ,
-      covered_codes: COVERED_CODES,
+      ...(args.brief ? {} : { how_to_read_any_notice: GENERIC_HOW_TO_READ, covered_codes: COVERED_CODES }),
     };
     const summary =
       `We do not have a specific profile for "${canonical}". Here is how to read any IRS notice: ` +
       `check the code and the response-by date (the clock runs from the notice date), compare the notice against your ` +
       `return line by line, and do not ignore it. An Enrolled Agent can decode your exact notice.`;
-    return output(summary, fields, SOURCE.noticesHub, NEXT_STEP);
+    return output(summary, fields, SOURCE.noticesHub, nextStep(false, SOURCE.noticesHub));
   }
 
   const sourceUrl = profile.hasLandingPage && profile.slug ? SOURCE.notice(profile.slug) : SOURCE.noticesHub;
@@ -81,6 +90,9 @@ function run(args: z.infer<typeof input>) {
     }
   }
 
+  const urgent =
+    deadline.status === 'past due' || deadline.status === 'urgent' || profile.urgency === 'high';
+
   const fields = {
     notice_code: profile.code,
     recognized: true,
@@ -90,8 +102,8 @@ function run(args: z.infer<typeof input>) {
     deadline,
     what_happens_if_ignored: profile.ifIgnored,
     your_options: profile.options,
-    common_errors: profile.commonErrors,
-    ...(args.amount_shown !== undefined
+    ...(args.brief ? {} : { common_errors: profile.commonErrors }),
+    ...(args.amount_shown !== undefined && !args.brief
       ? { amount_context: 'The amount on the notice is often a proposal, not a settled bill. Verify it before paying, especially where cost basis or payments may be missing.' }
       : {}),
   };
@@ -100,14 +112,14 @@ function run(args: z.infer<typeof input>) {
     `${profile.code}: ${profile.title}. ${profile.meaning} ${deadlineLine} ` +
     `If ignored: ${profile.ifIgnored}`;
 
-  return output(summary, fields, sourceUrl, NEXT_STEP);
+  return output(summary, fields, sourceUrl, nextStep(urgent, sourceUrl));
 }
 
 export const decodeIrsNotice: ToolDef<typeof input> = {
   name: 'decode_irs_notice',
   title: 'Decode an IRS notice',
   description:
-    'Use this when a user mentions receiving an IRS or state tax letter or notice and wants to know what it means, the deadline, or what to do. Give it the notice code (e.g. CP2000, CP14, LT11) and optionally the notice date and amount shown.',
+    'Use this when a user mentions receiving an IRS or state tax letter or notice and wants to know what it means, the deadline, or what to do. Give it the notice code (e.g. CP2000, CP14, LT11) and optionally the notice date and amount shown. Set brief:true for a shorter answer.',
   input,
   annotations: { title: 'Decode an IRS notice', readOnlyHint: true, openWorldHint: false },
   logEnums: (args) => {

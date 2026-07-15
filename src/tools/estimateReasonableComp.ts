@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { addOns, usd, usdRange } from '../pricing';
+import { usd, usdRange } from '../pricing';
 import { REASONABLE_COMP_SHARES, REASONABLE_COMP_MIN_PROFIT } from '../rates';
 import { ficaOnWages, additionalMedicareTax, round0 } from '../lib/tax';
 import type { ToolDef } from '../lib/types';
@@ -20,7 +20,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Get a defensible reasonable-compensation study from an Enrolled Agent (${usd(addOns.reasonableCompStudy)})`,
+  label: 'Document your salary with a defensible reasonable-compensation study - free 15-minute call with an Enrolled Agent',
   url: GO.book15min,
 };
 
@@ -71,7 +71,7 @@ function run(args: z.infer<typeof input>) {
       inputs: { net_profit: profit, profit_driver: driver, profit_driver_meaning: share.label },
       salary_recommendation: 'not calculated - see guidance below',
       guidance: [
-        'Reasonable compensation has NO formula in the law; it is measured against the services the owner performs, not against book profit.',
+        'Reasonable compensation has NO formula and NO safe-harbor percentage in the law; it is measured against the services the owner performs, not against book profit.',
         'A shareholder who performs substantial services and takes distributions while reporting little or no officer salary is a top IRS audit trigger, regardless of the profit for the year.',
         band === 'zero_or_negative'
           ? 'A company can owe reasonable compensation even in a break-even or loss year if the owner works in the business.'
@@ -105,10 +105,10 @@ function run(args: z.infer<typeof input>) {
     distribution_at_midpoint: round0(distributionAtMid),
     fica_on_midpoint_salary: ficaOnMid,
     employment_tax_avoided_on_distribution: employmentTaxOnDistribution,
-    how_this_is_estimated: `Reasonable compensation has NO formula in the law - it is a facts-and-circumstances test (your training, duties, hours, and what the market pays someone to do your job). This range is a STARTING point: ${Math.round(share.low * 100)}-${Math.round(share.high * 100)}% of net profit for a business where ${share.label.toLowerCase()}.`,
+    how_this_is_estimated: `Reasonable compensation has NO formula and NO safe-harbor percentage in the law - it is a facts-and-circumstances test (your training, duties, hours, and what the market pays someone to do your job). This range is a STARTING point: ${Math.round(share.low * 100)}-${Math.round(share.high * 100)}% of net profit for a business where ${share.label.toLowerCase()}.`,
     the_real_test: THE_REAL_TEST,
     caveats: [
-      'Setting salary too low to reduce payroll tax is one of the top S-corp audit triggers; the IRS can reclassify distributions as wages plus penalties and interest.',
+      'Setting salary too low to reduce payroll tax is one of the top S-corp audit triggers; the IRS can reclassify distributions as wages plus penalties and interest, and courts have upheld that reclassification (David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012)).',
       'A percentage of profit is only a starting proxy. A DEFENSIBLE number is anchored to comparable-wage data for your role and region (that is what a reasonable-compensation study provides).',
       'The 0.9% Additional Medicare Tax uses the single-filer $200,000 threshold here; married thresholds differ.',
       'This does not model federal or state income tax, QBI (199A), or employer payroll costs beyond FICA.',

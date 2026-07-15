@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { international, usd } from '../pricing';
 import type { ToolDef } from '../lib/types';
 
 const input = z.object({
@@ -25,7 +24,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Apply for your ITIN with an Enrolled Agent (${usd(international.itinCAA)}) - we prepare your Form W-7 and represent you before the IRS`,
+  label: 'Apply for your ITIN with an Enrolled Agent - we prepare your Form W-7 and represent you before the IRS. Free 15-minute call',
   url: GO.book15min,
 };
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { dispatch } from '../src/lib/mcp';
 import { TOOLS, PROMPTS } from '../src/registry';
 import { decodeIrsNotice } from '../src/tools/decodeIrsNotice';
+import { explainTaxDocument } from '../src/tools/explainTaxDocument';
 import { checkFbarFatca } from '../src/tools/checkFbarFatca';
 import { compareLlcScorp } from '../src/tools/compareLlcScorp';
 import { estimateQuarterlyTaxes } from '../src/tools/estimateQuarterlyTaxes';
@@ -28,12 +29,16 @@ describe('tools/list + prompts/list (directory requirements)', () => {
   it('advertises every tool with title + readOnlyHint + object inputSchema', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, reg()) as any;
     const tools = res.result.tools;
-    expect(tools).toHaveLength(16);
+    expect(tools).toHaveLength(19);
     for (const t of tools) {
       expect(t.title).toBeTruthy();
       expect(t.annotations.readOnlyHint).toBe(true);
       expect(t.annotations.title).toBeTruthy();
       expect(t.inputSchema.type).toBe('object');
+      // ChatGPT's Apps SDK requires an outputSchema on every tool; ours is the
+      // shared envelope schema, which structuredContent satisfies by construction.
+      expect(t.outputSchema.type).toBe('object');
+      expect(t.outputSchema.required).toEqual(expect.arrayContaining(['disclaimer', 'source_url', 'next_step']));
       expect(t.description.toLowerCase()).toContain('use this when');
     }
     expect(tools.map((t: any) => t.name).sort()).toEqual(
@@ -43,6 +48,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
         'check_itin_eligibility',
         'check_resolution_options',
         'check_sales_tax_nexus',
+        'check_treaty_withholding',
         'compare_formation_states',
         'compare_llc_scorp',
         'deadline_calendar',
@@ -53,6 +59,8 @@ describe('tools/list + prompts/list (directory requirements)', () => {
         'estimate_quarterly_taxes',
         'estimate_reasonable_comp',
         'estimate_rental_income',
+        'explain_tax_document',
+        'get_document_checklist',
         'get_fee_quote',
       ].sort(),
     );
@@ -60,19 +68,22 @@ describe('tools/list + prompts/list (directory requirements)', () => {
 
   it('advertises the prompts including the Turkish-language ones', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'prompts/list' }, reg()) as any;
-    expect(res.result.prompts).toHaveLength(8);
+    expect(res.result.prompts).toHaveLength(10);
     const names = res.result.prompts.map((p: any) => p.name);
     expect(names).toContain('abd_sirket_vergi_takvimi');
     expect(names).toContain('itin_almali_miyim');
     expect(names).toContain('settle_my_irs_debt');
     expect(names).toContain('irs_borc_cozumu');
     expect(names).toContain('decodificar_mi_aviso_irs');
+    expect(names).toContain('explain_my_tax_form');
+    expect(names).toContain('bu_vergi_formu_ne');
   });
 });
 
 describe('every tool response carries the envelope', () => {
   const cases: Array<[string, Record<string, unknown>]> = [
     ['decode_irs_notice', { notice_code: 'CP2000' }],
+    ['explain_tax_document', { document: '1099-K' }],
     ['check_fbar_fatca', { max_aggregate_foreign_balance_usd: 25000, filing_status: 'single', lives_abroad: false }],
     ['compare_llc_scorp', { expected_net_profit_usd: 120000 }],
     ['estimate_quarterly_taxes', { ytd_net_income_usd: 60000, entity: 'sole_proprietor' }],
@@ -125,6 +136,85 @@ describe('decode_irs_notice', () => {
     const out = decodeIrsNotice.run({ notice_code: 'CP9999' });
     expect(out.structured.recognized).toBe(false);
     expect(out.structured.source_url).toContain('/irs-notices/');
+  });
+
+  it('covers the expanded registry: reviews, identity, unfiled, adjustments, penalties', () => {
+    for (const code of ['CP05', 'CP05A', 'CP75', '12C', '5071C', '4883C', 'CP59', 'CP80', 'CP21A', 'CP22A', 'CP23', 'CP49', 'CP523', 'CP71C', 'CP215']) {
+      expect(decodeIrsNotice.run({ notice_code: code }).structured.recognized, `expected ${code} to be recognized`).toBe(true);
+    }
+  });
+
+  it('resolves the new aliases to their canonical profiles', () => {
+    expect(decodeIrsNotice.run({ notice_code: 'Letter 12C' }).structured.notice_code).toBe('12C');
+    expect(decodeIrsNotice.run({ notice_code: 'CP518' }).structured.notice_code).toBe('CP59');
+    expect(decodeIrsNotice.run({ notice_code: '5747C' }).structured.notice_code).toBe('5071C');
+    expect(decodeIrsNotice.run({ notice_code: 'CP15' }).structured.notice_code).toBe('CP215');
+    expect(decodeIrsNotice.run({ notice_code: 'CP75A' }).structured.notice_code).toBe('CP75');
+    expect(decodeIrsNotice.run({ notice_code: 'CP21B' }).structured.notice_code).toBe('CP21A');
+  });
+
+  it('computes the CP523 30-day termination window and the 12C 20-day reply window', () => {
+    const cp523 = decodeIrsNotice.run({ notice_code: 'CP523', received_date: '2026-06-01' });
+    expect((cp523.structured.deadline as any).computed_deadline).toBe('July 1, 2026');
+    const l12c = decodeIrsNotice.run({ notice_code: '12C', received_date: '2026-06-01' });
+    expect((l12c.structured.deadline as any).computed_deadline).toBe('June 21, 2026');
+  });
+});
+
+describe('explain_tax_document', () => {
+  it('resolves messy spellings to the same profile', () => {
+    for (const spelling of ['W-2', 'w2', 'Form W-2']) {
+      expect(explainTaxDocument.run({ document: spelling }).structured.document).toBe('Form W-2');
+    }
+    expect(explainTaxDocument.run({ document: '1099k' }).structured.document).toBe('Form 1099-K');
+    expect(explainTaxDocument.run({ document: 'Schedule K-1 (Form 1065)' }).structured.document).toBe('Schedule K-1 (Form 1065)');
+    expect(explainTaxDocument.run({ document: 'K-1' }).structured.document).toBe('Schedule K-1 (Form 1065)');
+    expect(explainTaxDocument.run({ document: '1120-S K-1' }).structured.document).toBe('Schedule K-1 (Form 1120-S)');
+  });
+
+  it('does not confuse W-2G with W-2 or 1095-C with 1095-A', () => {
+    expect(explainTaxDocument.run({ document: 'W-2G' }).structured.document).toBe('Form W-2G');
+    expect(explainTaxDocument.run({ document: '1095-C' }).structured.document).toBe('Form 1095-B / 1095-C');
+    expect(explainTaxDocument.run({ document: '1095-A' }).structured.document).toBe('Form 1095-A');
+  });
+
+  it('explains the 1099-K gross-vs-profit trap and CP2000 exposure', () => {
+    const out = explainTaxDocument.run({ document: '1099-K' });
+    const blob = JSON.stringify(out.structured);
+    expect(blob).toContain('GROSS');
+    expect(blob).toContain('CP2000');
+    expect(out.structured.source_url).toContain('/services/ecommerce/');
+  });
+
+  it('routes international documents to the international-tax page', () => {
+    expect(explainTaxDocument.run({ document: '1042-S' }).structured.source_url).toContain('/services/international-tax/');
+    expect(explainTaxDocument.run({ document: 'W-8BEN' }).structured.source_url).toContain('/services/international-tax/');
+  });
+
+  it('tells non-US persons the W-9 is the wrong form for them', () => {
+    const out = explainTaxDocument.run({ document: 'W-9' });
+    expect(JSON.stringify(out.structured)).toContain('W-8BEN');
+  });
+
+  it('brief:true drops the box guide and checklist but keeps the core answer', () => {
+    const brief = explainTaxDocument.run({ document: 'W-2', brief: true });
+    expect(brief.structured.key_boxes).toBeUndefined();
+    expect(brief.structured.check_before_filing).toBeUndefined();
+    expect(brief.structured.what_it_is).toBeTruthy();
+    expect(brief.structured.if_wrong_or_missing).toBeTruthy();
+  });
+
+  it('falls back gracefully for an unknown document and lists coverage', () => {
+    const out = explainTaxDocument.run({ document: 'XYZ-42' });
+    expect(out.structured.recognized).toBe(false);
+    expect(Array.isArray(out.structured.covered_documents)).toBe(true);
+    expect((out.structured.covered_documents as string[]).length).toBeGreaterThanOrEqual(25);
+  });
+
+  it('hands off to the free 15-minute call, never a checkout', () => {
+    const out = explainTaxDocument.run({ document: 'K-1' });
+    expect((out.structured.next_step as any).url).toContain('/go/book-15min');
+    expect((out.structured.next_step as any).label).not.toMatch(/\$\d/);
   });
 });
 

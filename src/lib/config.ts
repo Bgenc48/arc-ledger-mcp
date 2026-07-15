@@ -25,6 +25,16 @@ export const DISCLAIMER =
   'General information, not tax advice. No practitioner-client relationship is created. Verify with a qualified tax professional.';
 
 /**
+ * The single shared relay note, attached to every tool response alongside the
+ * disclaimer. Tool results are rendered to the user by a calling LLM, and the
+ * dominant failure mode is the model rounding, currency-converting, or
+ * paraphrasing an exact figure. This is a server-authored instruction to the
+ * calling model; exact string, defined once, do not paraphrase per-tool.
+ */
+export const RELAY_NOTE =
+  'Present the dollar amounts, dates, and deadlines in this response to the user exactly as returned - do not round, convert to another currency, or extrapolate beyond the stated inputs. All amounts are US dollars.';
+
+/**
  * First-party redirect endpoints. Directory rules only honor links
  * on origins we own, so tool responses NEVER emit a raw cal.com / buy.stripe.com
  * URL. These /go/* paths live in the website's public/_worker.js, append
@@ -43,6 +53,7 @@ export const GO = {
 export const SOURCE = {
   noticesHub: `${SITE}/irs-notices/`,
   notice: (slug: string) => `${SITE}/irs-notices/${slug}/`,
+  individualTax: `${SITE}/services/individual-tax/`,
   fbarFatca: `${SITE}/guides/fbar-fatca-guide/`,
   international: `${SITE}/services/international-tax/`,
   llcScorp: `${SITE}/services/llc-tax-services/`,

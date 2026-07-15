@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars, count, clamp } from '../lib/schemas';
 import { output } from '../lib/response';
 import { SOURCE, GO } from '../lib/config';
-import { taxPlanning, usd } from '../pricing';
+import { usd } from '../pricing';
 import { AUGUSTA_MAX_DAYS, DEFAULT_MARGINAL_RATE } from '../rates';
 import { round0 } from '../lib/tax';
 import type { ToolDef } from '../lib/types';
@@ -18,7 +18,7 @@ const input = z.object({
 });
 
 const NEXT_STEP = {
-  label: `Set up the Augusta strategy correctly with a tax-planning snapshot (${usd(taxPlanning.snapshot)})`,
+  label: 'Set up the Augusta strategy with defensible documentation - free 15-minute call with an Enrolled Agent',
   url: GO.book15min,
 };
 
@@ -53,7 +53,7 @@ function run(args: z.infer<typeof input>) {
       : `You entered ${requestedDays} days. At 15 days or more the exclusion is LOST and ALL of the rental income becomes taxable to you. Keep it to ${AUGUSTA_MAX_DAYS} days or fewer.`,
     requirements_to_make_it_stick: [
       `Keep it to ${AUGUSTA_MAX_DAYS} rental days per year or fewer.`,
-      'The rate must be FAIR MARKET value - get a written quote from a comparable venue (hotel meeting room, event space) and keep it.',
+      'The rate must be FAIR MARKET value - get written quotes from comparable venues (hotel meeting room, event space), ideally more than one, and keep them.',
       'There must be a genuine business purpose for each day (board meeting, strategy session, team offsite), with an agenda and minutes.',
       'The business should have a written rental agreement with you and actually pay you (a real transfer, documented).',
       'This fits a corporation or S-corp renting from the owner; a sole proprietor renting to themselves does not work (you cannot rent to yourself).',
@@ -61,6 +61,7 @@ function run(args: z.infer<typeof input>) {
     caveats: [
       'This estimates the income-tax benefit only, using the marginal rate you provided (or a 22% default). It does not model your full return.',
       'Aggressive or undocumented Augusta deductions are challenged; the fair-market rate and business-purpose documentation are what make it defensible.',
+      'The Tax Court has cut inflated Augusta deductions sharply: in Sinopoli v. Commissioner (T.C. Memo 2023-105) an S-corp deducted over $290,000 of home rent and the court allowed roughly $500 per meeting, because there was no comparable-venue evidence and no meeting records. The comparables and the minutes are what survive an exam.',
     ],
   };
 

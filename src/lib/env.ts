@@ -8,4 +8,10 @@ export interface Env {
   SERVER_VERSION?: string;
   /** Native per-colo rate limiter; optional (in-memory bucket is the fallback). */
   RATE_LIMITER?: RateLimiterBinding;
+  /**
+   * Per-tool kill switch: comma-separated tool names to disable instantly (see
+   * wrangler.toml [vars]). Disabled tools leave tools/list and answer
+   * tools/call with a fixed "temporarily offline" message.
+   */
+  DISABLED_TOOLS?: string;
 }

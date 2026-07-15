@@ -51,14 +51,6 @@ export const FORM_8938_THRESHOLDS = {
   },
 } as const;
 
-// ─── Reasonable-compensation modeling defaults (compare_llc_scorp) ───────────
-/**
- * A neutral default split used ONLY to illustrate the S-corp salary/distribution
- * mechanic when the caller gives no salary estimate. It is a modeling assumption,
- * not tax advice, and the tool states the reasonable-compensation caveat.
- */
-export const SCORP_DEFAULT_SALARY_SPLIT = 0.5;
-
 // ─── Residential rental depreciation + passive-loss (estimate_rental_income) ─
 /** Residential real property is depreciated straight-line over 27.5 years (IRC §168(c)). */
 export const RESIDENTIAL_DEPRECIATION_YEARS = 27.5;
@@ -108,10 +100,20 @@ export const INFO_RETURN_PENALTIES = {
  * constants (FAILURE_TO_FILE_RATE etc.).
  */
 export const IRS_UNDERPAYMENT_ANNUAL_RATE = 0.07; // ~7% (in effect since Q2 2025); IRC §6621, set quarterly - verify the current quarter
+/**
+ * The last day of the calendar quarter the rate above was verified for.
+ * A CI test (drift.test.ts) fails once this date passes, forcing a quarterly
+ * re-check against the IRS §6621 announcement (Rev. Rul., published ~1 month
+ * before each quarter). To clear the failure: confirm or update the rate,
+ * then advance this date to the end of the current quarter.
+ */
+export const IRS_RATE_VERIFIED_THROUGH = '2026-09-30';
 /** Failure-to-file is reduced by the failure-to-pay amount in any month both apply (IRC §6651(c)). */
 export const FTF_REDUCED_BY_FTP_RATE = 0.005;
 /** Minimum failure-to-file penalty when a return is >60 days late: lesser of this or 100% of the tax (IRC §6651(a), 2026). */
 export const FTF_MINIMUM_OVER_60_DAYS = 525;
+/** Offer in Compromise application fee (Form 656 booklet, 2026); waived with the low-income certification. */
+export const OIC_APPLICATION_FEE = 205;
 
 // ─── US formation-state comparison (compare_formation_states) ────────────────
 // Structured from the site's formationPages.ts cost tables (WY/NM/DE/CA), for
@@ -169,6 +171,10 @@ export const SALES_TAX_NEXUS_OVERRIDES: Record<string, { salesUsd: number; trans
   CA: { salesUsd: 500_000, transactions: null }, // sales only, no transaction count
   TX: { salesUsd: 500_000, transactions: null },
   NY: { salesUsd: 500_000, transactions: 100, both: true }, // BOTH sales AND transactions
+  IL: { salesUsd: 100_000, transactions: null }, // 200-txn test repealed eff. 2026-01-01 (IL FY2026 budget act; IDOR FY 2026-12)
+  UT: { salesUsd: 100_000, transactions: null }, // 200-txn test repealed eff. 2025-07-01
+  // KY drops its 200-transaction test 2026-08-01 (HB 775): flip to
+  // { salesUsd: 100_000, transactions: null } on that date.
 };
 /** States with NO statewide sales tax (no economic-nexus sales-tax exposure). */
 export const NO_SALES_TAX_STATES = ['DE', 'MT', 'NH', 'OR', 'AK'] as const;
@@ -218,6 +224,15 @@ export const REASONABLE_COMP_SHARES = {
  * officer comp is the Watson v. Commissioner / Rev. Rul. 74-44 audit pattern.
  */
 export const REASONABLE_COMP_MIN_PROFIT = 25_000;
+/**
+ * The illustrative salary share compare_llc_scorp uses when the caller gives no
+ * salary estimate: the midpoint of the owner-services starting range above, so
+ * both tools model from the same facts-and-circumstances framework. There is no
+ * IRS safe harbor at this or any other percentage (the tools say so); it exists
+ * only to make the salary/distribution mechanic concrete.
+ */
+export const SCORP_ILLUSTRATIVE_SALARY_SHARE =
+  (REASONABLE_COMP_SHARES.primarily_owner_services.low + REASONABLE_COMP_SHARES.primarily_owner_services.high) / 2;
 
 // ─── Augusta rule / IRC 280A(g) (estimate_augusta_rule) ──────────────────────
 /** A dwelling rented for THIS many days or fewer is excluded from income (IRC 280A(g)). Day 15 makes ALL of it taxable. */

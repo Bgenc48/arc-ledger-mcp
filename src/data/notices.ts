@@ -341,6 +341,380 @@ export const NOTICES: Record<string, NoticeProfile> = {
     urgency: 'low',
     hasLandingPage: false,
   },
+
+  CP05: {
+    code: 'CP05',
+    title: 'Your return is being reviewed and your refund is on hold',
+    meaning:
+      'The IRS is verifying items on your return (income, withholding, or credits claimed) before releasing your refund. It is a pre-refund review, not an audit, and the CP05 itself asks for nothing: it tells you to wait, typically up to 60 days.',
+    deadlineDays: null,
+    deadlineDescription: 'no response deadline on a CP05; the IRS asks you to allow up to 60 days for the review',
+    deadlineFor: 'waiting out the review (respond only if a follow-up letter asks for documents)',
+    ifIgnored:
+      'There is nothing to ignore yet. If the review finds a mismatch you will get a follow-up (a CP05A asking for documents, or an adjustment notice); if you hear nothing after 60 days you can contact the IRS or the Taxpayer Advocate Service.',
+    options: [
+      'Verify the return you filed matches your W-2s and 1099s so a follow-up holds no surprises',
+      'Watch for a CP05A, which DOES have a deadline and asks for proof of income and withholding',
+      'After 60 days with no letter and no refund, call the IRS or engage the Taxpayer Advocate Service',
+      'Check your IRS account transcript for a refund-freeze code update instead of calling',
+    ],
+    commonErrors: [
+      'An employer that filed W-2s late, so the IRS cannot verify your withholding yet',
+      'Withholding or estimated payments that do not match IRS records',
+    ],
+    urgency: 'low',
+    hasLandingPage: false,
+  },
+
+  CP05A: {
+    code: 'CP05A',
+    title: 'The refund review now needs your documents',
+    meaning:
+      'A follow-up to the CP05 refund review: the IRS could not verify something (usually income or withholding) from third-party records and is asking YOU to prove it before the refund is released.',
+    deadlineDays: 30,
+    deadlineDescription: '30 days from the notice date to send the requested documentation',
+    deadlineFor: 'sending proof of the income, withholding, or credits under review',
+    ifIgnored:
+      'The IRS can adjust the return without your input: the refund shrinks or disappears, and reversing that afterward is slower than answering the letter.',
+    options: [
+      'Send exactly what the notice lists: pay stubs, W-2s, 1099s, or a letter from the payer on letterhead',
+      'Use the fax number or upload tool on the notice and keep proof of transmission',
+      'If an employer never filed its W-2, get a wage letter from them; that is the usual sticking point',
+      'An Enrolled Agent can assemble and submit the response and speak to the IRS for you',
+    ],
+    commonErrors: [
+      'Withholding claimed from an employer whose payroll filings never reached the IRS',
+      'A household employer or small payer that issued a W-2 but filed nothing with the SSA',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  CP75: {
+    code: 'CP75',
+    aliases: ['CP75A', 'CP75D'],
+    title: 'Credit audit: refund frozen until you send proof (EITC and related credits)',
+    meaning:
+      'A correspondence audit of credits on your return, most often the Earned Income Tax Credit, Child Tax Credit, American Opportunity Credit, or Head of Household status. The refund portion tied to the credits is frozen until you substantiate them (CP75A and CP75D are variants of the same audit).',
+    deadlineDays: 30,
+    deadlineDescription: '30 days from the notice date to send the documentation listed',
+    deadlineFor: 'proving eligibility for the audited credits (the Form 886-H series lists acceptable documents)',
+    ifIgnored:
+      'The credits are disallowed, the refund is recalculated or reversed, and repeated disallowance can bar you from claiming the EITC for 2 to 10 years.',
+    options: [
+      'Match your documents to the Form 886-H checklists named in the notice (school, medical, or lease records proving a child lived with you; income proof for EITC)',
+      'Send copies (never originals) by the method the notice specifies and keep proof of delivery',
+      'If a document does not exist, send the closest substitute with a short explanation letter',
+      'An Enrolled Agent can manage the audit correspondence and appeal a disallowance',
+    ],
+    commonErrors: [
+      'A qualifying child claimed by two households (divorced or separated parents) without the tie-breaker rules applied',
+      'School or medical records that show a different address than the return',
+      'Self-employment income claimed for EITC without books or 1099s behind it',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  '12C': {
+    code: '12C',
+    aliases: ['L12C', 'LETTER12C'],
+    title: 'Letter 12C: your return is missing something (refund on hold until you reply)',
+    meaning:
+      'The IRS received your return but cannot finish processing it without more information. The most common trigger is marketplace health coverage: Form 1095-A was issued but the return is missing the Form 8962 premium tax credit reconciliation. Missing schedules, missing signatures, and unverified withholding are other classic causes.',
+    deadlineDays: 20,
+    deadlineDescription: '20 days from the letter date (the letter states the exact window)',
+    deadlineFor: 'sending the missing form, schedule, or verification so processing can resume',
+    ifIgnored:
+      'The return sits unprocessed and any refund stays frozen; eventually the IRS adjusts or rejects the claimed items (for the 8962 case, the advance premium credit gets reconciled against you by default).',
+    options: [
+      'Read the checkbox list carefully: send ONLY what is requested, with the letter (or its cover sheet) on top',
+      'For the 1095-A / 8962 case: pull your 1095-A from the marketplace account, complete Form 8962, and fax or upload both per the letter',
+      'Do NOT file an amended return to answer a 12C; reply to the letter itself',
+      'Keep proof of the fax or upload; processing typically resumes in 6 to 8 weeks',
+    ],
+    commonErrors: [
+      'Filing without Form 8962 after a year with marketplace coverage (often because a dependent was on a marketplace policy)',
+      'A blank or wrong second-lowest-cost-silver-plan column on the 1095-A carried into the 8962',
+      'An unsigned paper return or a missing schedule the software dropped',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  '5071C': {
+    code: '5071C',
+    aliases: ['L5071C', '5747C', 'L5747C', '6331C', 'L6331C'],
+    title: 'Identity verification hold: confirm it was really you who filed',
+    meaning:
+      'The IRS flagged a return filed under your SSN as potentially not yours and will not process it until you verify your identity. Letter 5071C offers online or phone verification; the 5747C variant requires an in-person appointment; 6331C works like 5071C. Your refund does not move until this is done.',
+    deadlineDays: null,
+    deadlineDescription: 'no fixed statutory clock, but the return is NOT processed until you verify; act promptly',
+    deadlineFor: 'verifying your identity (or reporting that the return is not yours)',
+    ifIgnored:
+      'The return is never processed: no refund, and a legitimate balance-due return counts as unfiled. If the return was a thief\'s, ignoring the letter also delays the identity-theft cleanup.',
+    options: [
+      'Use the IRS Identity Verification Service link in the letter (or the phone number it lists) with the letter, the tax return in question, and a prior-year return at hand',
+      'For a 5747C, book the in-person Taxpayer Assistance Center appointment it requires',
+      'If YOU did not file the return, say so during verification: the IRS pulls the fraudulent return and starts identity-theft procedures',
+      'Consider an Identity Protection PIN (IP PIN) going forward so paper filings under your SSN stop',
+    ],
+    commonErrors: [
+      'Treating the letter as a scam and ignoring it (verify through irs.gov, not links in emails or texts; the IRS letter arrives by postal mail)',
+      'Trying to verify before having the exact return and prior-year return in front of you',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  '4883C': {
+    code: '4883C',
+    aliases: ['L4883C'],
+    title: 'Identity verification by phone: call before your return is processed',
+    meaning:
+      'Like the 5071C, the IRS suspects a return filed under your SSN may not be yours, but this letter requires you to CALL the toll-free number it lists (there is no online option for a 4883C). Processing and any refund are paused until the call happens.',
+    deadlineDays: null,
+    deadlineDescription: 'no fixed statutory clock, but nothing processes until you call; act promptly',
+    deadlineFor: 'calling the number on the letter to confirm or deny the return',
+    ifIgnored: 'The return stays unprocessed indefinitely: no refund, and a real balance-due return is treated as unfiled.',
+    options: [
+      'Call the number ON THE LETTER with the letter, the flagged return, a prior-year return, and supporting documents (W-2s, 1099s) in front of you',
+      'If you did not file the return, tell the agent; the IRS removes it and begins identity-theft steps',
+      'Lines are busiest Mondays and mornings; midweek afternoons connect faster',
+      'An Enrolled Agent with authorization can work the identity and account issues with the IRS on your behalf',
+    ],
+    commonErrors: [
+      'Calling the general IRS line instead of the dedicated number on the letter',
+      'Not having the prior-year return available, which the agent uses for the quiz',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  CP59: {
+    code: 'CP59',
+    aliases: ['CP515', 'CP516', 'CP518'],
+    title: 'The IRS has no record of a required return (unfiled-return notice)',
+    meaning:
+      'The IRS believes you were required to file a return for the year shown and has no record of one. CP59 is the first notice; CP516 and CP518 are the escalating reminders. Third-party forms (W-2s, 1099s) under your SSN are usually what convinced the IRS a return is due.',
+    deadlineDays: null,
+    deadlineDescription: 'no single statutory clock; file or respond promptly, because the IRS can eventually file FOR you',
+    deadlineFor: 'filing the missing return, proving you already filed, or explaining why you are not required to file',
+    ifIgnored:
+      'The IRS can prepare a Substitute for Return (SFR) from the third-party forms: single or married-filing-separately status, zero deductions, zero basis on asset sales, then assess the inflated tax and start collection. Any refund from the real return is forfeited 3 years after the original due date.',
+    options: [
+      'File the actual return, even years late: a real return almost always beats the SFR math and replaces it',
+      'Already filed? Send a signed copy with proof of the original filing',
+      'Below the filing threshold? Respond with the explanation form the notice includes',
+      'Multiple unfiled years: pull IRS wage-and-income transcripts first so nothing reported is missed, then file them together (an Enrolled Agent can pull transcripts with authorization)',
+    ],
+    commonErrors: [
+      'Assuming no refund means no need to file (the refund dies after 3 years, and the SFR risk remains)',
+      'Filing the missing year without checking the other years the IRS also flagged',
+      'A return that was mailed but never processed and needs to be re-sent',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  CP80: {
+    code: 'CP80',
+    title: 'Payments are sitting on your account but no return was filed',
+    meaning:
+      'The IRS is holding credits for the year shown (withholding, estimated payments, or a payment you sent) but has no return on file to apply them to. Common after a mailed return went missing or was never processed.',
+    deadlineDays: null,
+    deadlineDescription:
+      'file before the refund statute closes: generally 3 years from the original due date, or the credit is lost',
+    deadlineFor: 'filing (or re-sending) the return so the credits are applied or refunded',
+    ifIgnored:
+      'The credit sits until the refund statute expires, then the money is forfeited even though the IRS is holding it. If a return was actually due, unfiled-return notices can follow too.',
+    options: [
+      'If you already filed, send a newly signed copy of the same return (write nothing changed) with proof of the original submission if you have it',
+      'If you never filed, file now to claim the credit before the 3-year window closes',
+      'Verify the credited amount against your own payment records and withholding',
+      'Use certified mail or e-file so the re-filed return cannot vanish the same way',
+    ],
+    commonErrors: [
+      'A paper return lost in processing while the payments posted',
+      'An extension payment or estimated payments made, then the return itself forgotten',
+    ],
+    urgency: 'moderate',
+    hasLandingPage: false,
+  },
+
+  CP21A: {
+    code: 'CP21A',
+    aliases: ['CP21B', 'CP21C', 'CP21E', 'CP21I'],
+    title: 'The IRS changed your return (CP21 series): confirm it matches what you expected',
+    meaning:
+      'Confirmation that the IRS adjusted the year shown. The version letter tells the direction: CP21A means the change created a balance due, CP21B a refund, CP21C no net change, CP21E a change from a recent audit. Usually it follows an amended return or a response you sent.',
+    deadlineDays: 21,
+    deadlineDescription: 'if a balance is due, the pay-by date on the notice, typically 21 days from the notice date',
+    deadlineFor: 'paying a resulting balance, or disputing the adjustment if it is not what you requested',
+    ifIgnored:
+      'A balance-due version rolls into the normal collection sequence (CP501, CP503, CP504) with growing penalties and interest. A refund version needs no action, but an unexpected adjustment left unchallenged becomes final.',
+    options: [
+      'Compare the adjustment line by line against the amended return or correspondence that triggered it',
+      'If it matches: pay any balance, or expect the refund (typically 2 to 3 weeks behind the notice)',
+      'If it does NOT match what you submitted, call the number on the notice or respond in writing with your copy',
+      'Check that penalties and interest were recomputed correctly after the change',
+    ],
+    commonErrors: [
+      'An amended return partially processed, so only some of the requested changes appear',
+      'An IRS-initiated change riding along with the one you asked for',
+    ],
+    urgency: 'moderate',
+    hasLandingPage: false,
+  },
+
+  CP22A: {
+    code: 'CP22A',
+    aliases: ['CP22E'],
+    title: 'Your return was changed based on information you provided, and you owe',
+    meaning:
+      'The IRS processed a change to your return (from an amended return, a response, or in the CP22E version, an examination) and the result is a balance due of $5 or more. It is a bill for the adjusted amount, including recalculated penalties and interest.',
+    deadlineDays: 21,
+    deadlineDescription: 'the pay-by date on the notice, typically 21 days from the notice date',
+    deadlineFor: 'paying the adjusted balance or disputing an adjustment you never requested',
+    ifIgnored: 'The balance enters the collection sequence (CP501, CP503, CP504, then a final levy notice) while penalties and interest accrue.',
+    options: [
+      'Verify the adjustment against what you actually submitted before paying',
+      'Pay online, or set up a short-term plan or installment agreement if you cannot pay in full',
+      'If the change is not what you requested, respond with your documentation immediately',
+      'Ask about first-time penalty abatement if you have a clean compliance history',
+    ],
+    commonErrors: [
+      'An amendment keyed differently than submitted (transposed figures)',
+      'Withholding or estimated payments dropped during the adjustment',
+    ],
+    urgency: 'moderate',
+    hasLandingPage: false,
+  },
+
+  CP23: {
+    code: 'CP23',
+    title: 'Estimated-payment mismatch: the IRS shows fewer payments than your return claimed',
+    meaning:
+      'The estimated tax payments claimed on your return do not match the payments posted to your IRS account, and the difference (plus any related penalty and interest) is billed as a balance due.',
+    deadlineDays: 21,
+    deadlineDescription: 'the pay-by date on the notice, typically 21 days from the notice date',
+    deadlineFor: 'paying the difference, or proving the missing payments were actually made',
+    ifIgnored: 'The balance moves into the collection sequence while penalties and interest grow, even when the real problem is a misapplied payment.',
+    options: [
+      'Pull your IRS account transcript and list every payment with dates and confirmation numbers before paying anything',
+      'The classic fix: a payment applied to the wrong tax YEAR or to the wrong SPOUSE\'s account on a joint return; ask the IRS to move it',
+      'Send proof of the missing payments (bank statements, EFTPS or Direct Pay confirmations) with the notice stub',
+      'If the notice is right, pay or set up a plan, and fix the estimated-payment schedule going forward',
+    ],
+    commonErrors: [
+      'A January Q4 payment recorded in the wrong tax year',
+      'Payments made under one spouse\'s SSN not credited to the joint return',
+      'A fourth-quarter payment claimed on the return but never actually made',
+    ],
+    urgency: 'moderate',
+    hasLandingPage: false,
+  },
+
+  CP49: {
+    code: 'CP49',
+    title: 'Your refund was applied to another tax debt you owe',
+    meaning:
+      'The IRS took some or all of this year\'s refund and applied it to a balance you owe for another tax year. The notice shows which year absorbed the money and any refund remainder being sent.',
+    deadlineDays: null,
+    deadlineDescription: 'no response deadline; informational unless you dispute the underlying debt',
+    deadlineFor: 'reviewing whether the debt the refund was applied to is actually correct',
+    ifIgnored: 'Nothing further happens from this notice itself, but an incorrect underlying balance keeps eating future refunds until challenged.',
+    options: [
+      'Check the year the refund was applied to: if that balance is wrong or already paid, dispute it with your records',
+      'If the offset balance is real, consider resolving it (payment plan or penalty abatement) so future refunds stop disappearing',
+      'Non-IRS offsets (state tax, child support, federal student loans) come through the Treasury Offset Program with a different notice; the dispute path runs through that agency',
+      'Injured-spouse relief (Form 8379) can recover a joint refund taken for a debt that is only your spouse\'s',
+    ],
+    commonErrors: [
+      'The underlying balance includes penalties that qualify for abatement',
+      'A refund offset against a year that was later corrected but never refreshed',
+    ],
+    urgency: 'low',
+    hasLandingPage: false,
+  },
+
+  CP523: {
+    code: 'CP523',
+    title: 'Your installment agreement is in default and the IRS intends to terminate it',
+    meaning:
+      'You have a payment plan with the IRS and something broke it: a missed installment, a new balance from a recent return, or an unfiled return. The IRS intends to terminate the agreement 30 days from the notice date, after which enforced collection (including levy) can resume.',
+    deadlineDays: 30,
+    deadlineDescription: '30 days from the notice date before the agreement terminates',
+    deadlineFor: 'curing the default (catching up payments or fixing the new issue) or contacting the IRS to reinstate or restructure',
+    ifIgnored:
+      'The agreement terminates, the full balance is due at once, and levy action can follow. Reinstating after termination is harder than curing the default inside the 30 days.',
+    options: [
+      'Fix the specific default named on the notice: make up the missed payments, file the missing return, or address the new balance',
+      'Call the number on the notice to reinstate or restructure the plan (a new balance can often be rolled into the existing agreement)',
+      'If the payment amount became unaffordable, ask about restructuring or Currently Not Collectible status instead of silently defaulting',
+      'You may have appeal rights (CAP) before termination takes effect; ask when you call',
+    ],
+    commonErrors: [
+      'A new year\'s balance created while the plan was active (the most common default trigger)',
+      'A direct-debit payment that failed after a bank change',
+      'Assuming one missed payment cancels everything (it is usually curable inside the window)',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
+
+  CP71C: {
+    code: 'CP71C',
+    aliases: ['CP71', 'CP71A', 'CP71D'],
+    title: 'Annual reminder of a balance you still owe',
+    meaning:
+      'The yearly statement the law requires the IRS to send while a balance remains: the amount owed for the year shown, updated with accrued penalties and interest. It is not a new assessment and usually not a new collection action.',
+    deadlineDays: null,
+    deadlineDescription: 'no new deadline; the balance simply continues to accrue penalties and interest',
+    deadlineFor: 'reviewing the balance and choosing a resolution path if you have not already',
+    ifIgnored:
+      'Nothing new happens because of this notice, but the balance keeps growing and the regular collection notices can resume or continue. Balances certified as seriously delinquent can also affect passport eligibility.',
+    options: [
+      'Verify the figure against your transcript, especially the penalty and interest accruals',
+      'If you are already in an installment agreement or Currently Not Collectible status, no action is needed; the reminder is statutory',
+      'Use it as the annual prompt to re-check resolution options: payment plan, penalty abatement, or an Offer in Compromise fit-check',
+      'Watch the collection statute: the IRS generally has 10 years from assessment to collect',
+    ],
+    commonErrors: [
+      'Penalties in the balance that qualify for first-time abatement and were never requested',
+      'Assuming the annual reminder means a levy is imminent (it is a statement, not a final notice)',
+    ],
+    urgency: 'low',
+    hasLandingPage: false,
+  },
+
+  CP215: {
+    code: 'CP215',
+    aliases: ['CP15'],
+    title: 'Civil penalty assessed (common for late or missing information returns)',
+    meaning:
+      'A civil penalty was charged to the business account for the year shown (CP15 is the individual version). Frequent causes: a late or incomplete Form 5472 for a foreign-owned US LLC or corporation ($25,000 per form), late Form 5471, late partnership or S-corp returns (a per-owner, per-month penalty), late W-2s or 1099s, and late Forms 3520/3520-A for foreign trusts and large foreign gifts.',
+    deadlineDays: null,
+    deadlineDescription:
+      'the pay-by date on the notice (interest runs from the assessment); penalty-relief requests should move quickly, and some penalties carry a short window for a formal protest',
+    deadlineFor: 'paying, or requesting abatement with a reasonable-cause statement (or appealing where the notice offers it)',
+    ifIgnored:
+      'The penalty enters normal collection (reminder notices, then levy notices) with interest accruing. International information-return penalties are actively assessed and do not fade with time.',
+    options: [
+      'Identify the exact penalty code and form behind it (the notice states the Internal Revenue Code section)',
+      'File the missing or corrected form immediately if it is still outstanding; relief is rarely available while the form is missing',
+      'Request abatement with a documented reasonable-cause statement (illness, disaster, reliance on wrong professional advice, first year of a new obligation)',
+      'First-time abatement can apply to late-filing penalties on income returns (1120, 1120-S, 1065) but generally NOT to international information-return penalties like the 5472; those need reasonable cause',
+      'These penalties are routinely contested: an Enrolled Agent can prepare the abatement case and represent the entity before the IRS',
+    ],
+    commonErrors: [
+      'A foreign-owned single-member LLC that did not know the pro-forma 1120 + Form 5472 filing existed',
+      'A partnership or S-corp return filed a few months late without an extension: the per-partner-per-month penalty multiplies fast',
+      'Penalties assessed even though the form was filed: proof of timely filing reverses them',
+    ],
+    urgency: 'high',
+    hasLandingPage: false,
+  },
 };
 
 /**

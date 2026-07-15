@@ -7,7 +7,7 @@ import { taxReturns, addOns, modifiers, usd } from '../pricing';
 import {
   CA_FRANCHISE_TAX_MINIMUM,
   CA_SCORP_TAX_RATE,
-  SCORP_DEFAULT_SALARY_SPLIT,
+  SCORP_ILLUSTRATIVE_SALARY_SHARE,
   SCORP_BREAKEVEN_ESTIMATE,
   SE_TAX_MULTIPLIER,
 } from '../rates';
@@ -17,12 +17,12 @@ import type { ToolDef } from '../lib/types';
 const input = z.object({
   expected_net_profit_usd: dollars().describe('Expected annual net profit (revenue minus business expenses), before any owner salary.'),
   state: z.string().max(40).optional().describe('US state, 2-letter or name. Defaults to CA. Only California franchise taxes are modeled (the SMLLC gross-receipts fee is excluded; see caveats).'),
-  owner_salary_estimate_usd: dollars().optional().describe('A reasonable W-2 salary you would pay yourself as an S-corp owner. If omitted, a neutral 50% split is used to illustrate the mechanic.'),
+  owner_salary_estimate_usd: dollars().optional().describe('A reasonable W-2 salary you would pay yourself as an S-corp owner. If omitted, the midpoint of the reasonable-compensation starting range for an owner-services business (about half of profit) illustrates the mechanic. That default is an illustration only - there is no IRS safe harbor at any percentage; use estimate_reasonable_comp for a starting range.'),
   currently_has_llc: z.boolean().optional().describe('Whether the business already operates as an LLC today. Defaults to true. A plain sole proprietorship (no LLC) does not owe the California $800 franchise tax.'),
 });
 
 const NEXT_STEP = {
-  label: `Book an entity-structuring consult (${usd(addOns.entityStructuringConsult)}) with an Enrolled Agent`,
+  label: 'Considering the election? An Enrolled Agent can confirm the numbers for your situation - S-corp election guide',
   url: SOURCE.sCorpElection,
 };
 
@@ -39,7 +39,7 @@ function run(args: z.infer<typeof input>) {
   const salary =
     args.owner_salary_estimate_usd !== undefined
       ? Math.min(args.owner_salary_estimate_usd, profit)
-      : round0(profit * SCORP_DEFAULT_SALARY_SPLIT);
+      : round0(profit * SCORP_ILLUSTRATIVE_SALARY_SHARE);
 
   // ── Employment tax ──
   const seEarnings = profit * SE_TAX_MULTIPLIER;
@@ -79,7 +79,10 @@ function run(args: z.infer<typeof input>) {
     inputs: {
       net_profit: profit,
       assumed_owner_salary: salary,
-      salary_basis: args.owner_salary_estimate_usd !== undefined ? 'your estimate' : 'neutral 50% illustration',
+      salary_basis:
+        args.owner_salary_estimate_usd !== undefined
+          ? 'your estimate'
+          : 'midpoint of the reasonable-comp starting range for an owner-services business (illustration only, not an IRS safe harbor)',
       state: sanitizeStateEcho(args.state, ca),
       currently_has_llc: hasLlc,
     },
@@ -111,7 +114,7 @@ function run(args: z.infer<typeof input>) {
           : 'Roughly break-even at this profit and salary',
     break_even_zone: `As a rule of thumb the S-corp election tends to pay off once net profit is durably above about ${usd(SCORP_BREAKEVEN_ESTIMATE)}, because the payroll cost, the ${ca ? 'CA 1.5% S-corp franchise tax, ' : ''}and the reasonable-comp administration have to be earned back by the self-employment-tax savings. The exact crossover moves with your salary and state.`,
     important_caveats: [
-      'The salary must be REASONABLE COMPENSATION for your role; setting it too low to dodge tax is a top IRS audit trigger.',
+      'The salary must be REASONABLE COMPENSATION for your role - a facts-and-circumstances test with NO safe-harbor percentage (at 50% or anywhere else). Setting it too low to dodge tax is a top IRS audit trigger, and courts reclassify distributions as wages (David E. Watson, P.C. v. United States). Use estimate_reasonable_comp for a starting range.',
       'This compares employment taxes plus our compliance fees. It holds federal income tax roughly constant and does not model your full 1040, the QBI (199A) interaction, or state income tax.',
       'The 0.9% Additional Medicare Tax uses the single-filer $200,000 threshold; married thresholds differ ($250,000 joint / $125,000 separate).',
       'Employer payroll taxes beyond FICA are NOT modeled and work against the S-corp: on a typical CA owner salary, unemployment insurance (UI/ETT), FUTA, and the employee-paid CA SDI add very roughly $1,000 to $1,500 per year.',
