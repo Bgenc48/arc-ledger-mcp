@@ -8,7 +8,7 @@
  * No em dashes in user-visible copy.
  */
 
-export const SERVER_NAME = 'Arc & Ledger Tax Tools';
+export const SERVER_NAME = 'Arc & Ledger Tax Help';
 export const SERVER_SLUG = 'arc-ledger-mcp';
 
 export const SITE = 'https://www.arcandledger.com';
@@ -82,7 +82,7 @@ export const OFFICE = {
     'Enrolled to practice before the IRS. The Enrolled Agent credential is issued by the U.S. Department of the Treasury.',
   established: 2016,
   address: '5183 Overland Avenue, Suite B, Culver City, CA 90230',
-  phone: '(310) 876-0249',
+  phone: '(323) 214-3812',
   whatsapp: '(310) 627-8169',
   email: SUPPORT_EMAIL,
   languages: ['English', 'Turkish', 'Spanish'],

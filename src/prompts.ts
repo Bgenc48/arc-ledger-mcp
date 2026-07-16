@@ -4,6 +4,26 @@ import { usd } from './pricing';
 
 const userMsg = (text: string) => [{ role: 'user' as const, content: { type: 'text' as const, text } }];
 
+export const helpWithMyTaxProblem: PromptDef = {
+  name: 'help_with_my_tax_problem',
+  title: 'Help with my tax problem',
+  description: 'Start here with any IRS or state tax problem: a letter, back taxes, unfiled years, a levy, an audit, or penalties. Builds an urgency-ranked action plan and picks the right tool to run next.',
+  arguments: [
+    { name: 'problem', description: 'What is going on: irs_notice, back_taxes_owed, unfiled_returns, levy_or_garnishment, audit_or_exam, penalties, identity_verification, payroll_tax_941, state_tax, or not_sure.', required: false },
+    { name: 'amount_band', description: 'Roughly how much is at stake: under_10k, from_10k_to_50k, over_50k, or not_sure.', required: false },
+  ],
+  build: (args) => {
+    const p = args.problem ? `My problem is: ${args.problem}. ` : '';
+    const b = args.amount_band ? `The amount at stake is roughly ${args.amount_band}. ` : '';
+    return userMsg(
+      `I have a tax problem and I am not sure where to start. ${p}${b}` +
+        `Use the triage_tax_problem tool to tell me how urgent this is, what to do this week and this month, ` +
+        `what not to do, and which tools to run next. Then run the recommended tools with my details. ` +
+        `Do not guarantee any IRS outcome. Ask me for anything missing first.`,
+    );
+  },
+};
+
 export const decodeMyIrsNotice: PromptDef = {
   name: 'decode_my_irs_notice',
   title: 'Decode my IRS notice',
@@ -110,6 +130,25 @@ export const settleMyIrsDebt: PromptDef = {
 // differentiator no other directory listing offers. Turkish terminology follows
 // the house rule: "beyanname/beyan" (never "dosyalama"), "bildirim" for FBAR.
 
+export const vergiSorunumVar: PromptDef = {
+  name: 'vergi_sorunum_var',
+  title: 'Vergi sorunum var, ne yapmalıyım? (Turkish)',
+  description: 'IRS veya eyalet vergi sorunu yaşayanlar için başlangıç noktası: mektup, vergi borcu, verilmemiş beyannameler, haciz veya ceza. Aciliyet düzeyini ve bu hafta / bu ay yapılacakları gösteren bir eylem planı oluşturur.',
+  arguments: [
+    { name: 'problem', description: 'Sorun türü: irs_notice, back_taxes_owed, unfiled_returns, levy_or_garnishment, audit_or_exam, penalties, identity_verification, payroll_tax_941, state_tax veya not_sure.', required: false },
+  ],
+  build: (args) => {
+    const sorun = args.problem ? `Sorunum: ${args.problem}. ` : '';
+    return userMsg(
+      `ABD'de bir vergi sorunum var ve nereden başlayacağımı bilmiyorum. ${sorun}` +
+        `triage_tax_problem aracını kullanarak durumun ne kadar acil olduğunu, bu hafta ve bu ay ne yapmam gerektiğini, ` +
+        `nelerden kaçınmam gerektiğini ve sırada hangi araçları çalıştırmam gerektiğini göster; sonra önerilen araçları bilgilerimle çalıştır. ` +
+        `Hiçbir IRS sonucunu garanti etme. Çözüm yolları için tüm beyannamelerin verilmiş olması gerektiğini hatırlat. ` +
+        `Eksik bilgi varsa önce bana sor. Yanıtı Türkçe ver.`,
+    );
+  },
+};
+
 export const abdSirketVergiTakvimi: PromptDef = {
   name: 'abd_sirket_vergi_takvimi',
   title: 'ABD şirketimin vergi takvimi (Turkish)',
@@ -212,11 +251,13 @@ export const decodificarMiAvisoIrs: PromptDef = {
 };
 
 export const ALL_PROMPTS: PromptDef[] = [
+  helpWithMyTaxProblem,
   decodeMyIrsNotice,
   explainMyTaxForm,
   amIRequiredToFileFbar,
   shouldIBeAnScorp,
   settleMyIrsDebt,
+  vergiSorunumVar,
   abdSirketVergiTakvimi,
   buVergiFormuNe,
   itinAlmaliMiyim,

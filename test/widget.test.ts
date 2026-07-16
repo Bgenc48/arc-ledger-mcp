@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { dispatch } from '../src/lib/mcp';
 import { TOOLS, PROMPTS } from '../src/registry';
-import { UI_RESOURCES, FORMATION_STATES_WIDGET_URI, IRS_NOTICE_WIDGET_URI, TAX_DOCUMENT_WIDGET_URI } from '../src/ui/registry';
+import { UI_RESOURCES, FORMATION_STATES_WIDGET_URI, IRS_NOTICE_WIDGET_URI, TAX_DOCUMENT_WIDGET_URI, ACTION_PLAN_WIDGET_URI } from '../src/ui/registry';
 
 const reg = () => ({ tools: TOOLS, prompts: PROMPTS, version: '0.1.0' });
 const call = (method: string, params?: Record<string, unknown>) =>
@@ -111,5 +111,30 @@ describe('Apps SDK widget', () => {
     expect(sc.document).toBe('Form 1099-K');
     expect(sc.what_it_is).toBeTruthy();
     expect(Array.isArray(sc.key_boxes)).toBe(true);
+  });
+
+  it('advertises the action-plan widget and binds it to triage_tax_problem', () => {
+    const listed = call('resources/list').result.resources.find(
+      (r: any) => r.uri === ACTION_PLAN_WIDGET_URI,
+    );
+    expect(listed).toBeDefined();
+    expect(listed.mimeType).toBe('text/html+skybridge');
+
+    const tool = call('tools/list').result.tools.find((t: any) => t.name === 'triage_tax_problem');
+    expect(tool._meta['openai/outputTemplate']).toBe(ACTION_PLAN_WIDGET_URI);
+    expect(tool._meta['openai/toolInvocation/invoking']).toBeTruthy();
+  });
+
+  it('tools/call stamps the action-plan template and the fields the widget reads', () => {
+    const res = call('tools/call', {
+      name: 'triage_tax_problem',
+      arguments: { problem: 'levy_or_garnishment' },
+    });
+    expect(res.result._meta['openai/outputTemplate']).toBe(ACTION_PLAN_WIDGET_URI);
+    const sc = res.result.structuredContent;
+    // The widget headlines the urgency banner and the this-week ledger list.
+    expect(sc.urgency).toBe('act_now');
+    expect(Array.isArray(sc.this_week)).toBe(true);
+    expect((sc.this_week as string[]).length).toBeGreaterThan(0);
   });
 });

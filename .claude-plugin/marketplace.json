@@ -1,0 +1,19 @@
+{
+  "name": "arc-ledger",
+  "owner": {
+    "name": "Arc & Ledger Accounting",
+    "url": "https://www.arcandledger.com"
+  },
+  "metadata": {
+    "description": "Arc & Ledger Tax Help: free tax tools plus IRS-notice and back-tax resolution Skills from an Enrolled Agent firm (est. 2016, enrolled to practice before the IRS).",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "arc-ledger-irs",
+      "source": "./plugin",
+      "description": "Triage a tax problem, respond to an IRS notice, or resolve back taxes: decode the notice, compute the deadline, estimate penalties, and screen resolution options, with an Enrolled Agent handoff. Bundles the Arc & Ledger Tax Help MCP server. General information, never a guaranteed IRS outcome.",
+      "category": "finance"
+    }
+  ]
+}

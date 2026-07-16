@@ -64,7 +64,7 @@ describe('Worker HTTP surface', () => {
   it('POST /mcp initialize works over HTTP', async () => {
     const res = await worker.fetch(post({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }), env);
     expect(res.status).toBe(200);
-    expect((await res.json() as any).result.serverInfo.title).toBe('Arc & Ledger Tax Tools');
+    expect((await res.json() as any).result.serverInfo.title).toBe('Arc & Ledger Tax Help');
   });
 
   it('POST /mcp notifications/initialized returns 202 with no body', async () => {

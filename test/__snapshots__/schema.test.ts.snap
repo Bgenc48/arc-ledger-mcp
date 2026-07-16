@@ -777,5 +777,67 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
     },
     "title": "Get a fixed-fee quote",
   },
+  "triage_tax_problem": {
+    "annotations": {
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Triage a tax problem",
+    },
+    "description": "Use this when someone has a tax problem and does not know where to start; call it FIRST, before the specific tools. Covers an IRS or state letter, back taxes they cannot pay, unfiled years, a levy or wage garnishment, an audit, penalties, an identity-verification letter, and payroll tax trouble. Returns an urgency level, a this-week and this-month action plan, what not to do, which tool to run next for the specifics, and the matching published-fee service. General information only; never a guaranteed IRS outcome. Set brief:true for a shorter answer.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_band": {
+          "description": "Roughly how much is at stake, if known. Bands only, never an exact figure. The $50,000 line matters: streamlined IRS installment agreements stop there.",
+          "enum": [
+            "under_10k",
+            "from_10k_to_50k",
+            "over_50k",
+            "not_sure",
+          ],
+          "type": "string",
+        },
+        "brief": {
+          "description": "Set true for a shorter answer: urgency, this-week actions, and the matching service only.",
+          "type": "boolean",
+        },
+        "has_deadline_soon": {
+          "description": "True if a letter shows a response or payment date within about two weeks. Raises the urgency. No dates are computed here; use decode_irs_notice for exact deadline math.",
+          "type": "boolean",
+        },
+        "problem": {
+          "description": "The tax problem, as close as it maps. irs_notice = any IRS or state letter; back_taxes_owed = a balance that cannot be paid in full; unfiled_returns = one or more years never filed; levy_or_garnishment = a bank levy, wage garnishment, or a final intent-to-levy letter; audit_or_exam = an IRS audit or examination letter; penalties = penalty charges on an account; identity_verification = a 5071C/4883C identity letter or suspected refund identity theft; payroll_tax_941 = unpaid or late employer payroll taxes; state_tax = a state tax agency problem; not_sure = anything else.",
+          "enum": [
+            "irs_notice",
+            "back_taxes_owed",
+            "unfiled_returns",
+            "levy_or_garnishment",
+            "audit_or_exam",
+            "penalties",
+            "identity_verification",
+            "payroll_tax_941",
+            "state_tax",
+            "not_sure",
+          ],
+          "type": "string",
+        },
+        "years_behind": {
+          "description": "For unfiled returns: how many years are unfiled. The IRS generally looks for the last six years filed to restore filing compliance.",
+          "enum": [
+            "one",
+            "two_to_three",
+            "four_to_six",
+            "more_than_six",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "problem",
+      ],
+      "type": "object",
+    },
+    "title": "Triage a tax problem",
+  },
 }
 `;

@@ -15,6 +15,7 @@
 import { FORMATION_STATES_WIDGET_HTML } from './formationStatesWidget';
 import { IRS_NOTICE_WIDGET_HTML } from './noticeWidget';
 import { TAX_DOCUMENT_WIDGET_HTML } from './documentWidget';
+import { ACTION_PLAN_WIDGET_HTML } from './triageWidget';
 
 export interface UiResourceDef {
   uri: string;
@@ -29,8 +30,18 @@ export interface UiResourceDef {
 export const FORMATION_STATES_WIDGET_URI = 'ui://widget/formation-states.html';
 export const IRS_NOTICE_WIDGET_URI = 'ui://widget/irs-notice.html';
 export const TAX_DOCUMENT_WIDGET_URI = 'ui://widget/tax-document.html';
+export const ACTION_PLAN_WIDGET_URI = 'ui://widget/action-plan.html';
 
 export const UI_RESOURCES: UiResourceDef[] = [
+  {
+    uri: ACTION_PLAN_WIDGET_URI,
+    name: 'action_plan_widget',
+    title: 'Your tax action plan',
+    description: 'Action-plan card for triage_tax_problem: urgency level, this-week and this-month steps, what not to do, and one consultation button.',
+    html: ACTION_PLAN_WIDGET_HTML,
+    widgetDescription:
+      'A card showing how urgent a tax problem is (act now, act this week, or plan this month), the actions to take this week and this month, what not to do, and a single button to talk to an Enrolled Agent.',
+  },
   {
     uri: FORMATION_STATES_WIDGET_URI,
     name: 'formation_states_widget',

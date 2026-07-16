@@ -1,9 +1,53 @@
 # Changelog
 
-All notable changes to the Arc & Ledger Tax Tools MCP server. Bump
+All notable changes to the Arc & Ledger Tax Help MCP server (formerly listed
+as Arc & Ledger Tax Tools; technical identifiers unchanged). Bump
 `SERVER_VERSION` in `wrangler.toml` and `version` in `package.json` together;
 `GET /version` and every tool response's `server_version` expose the running
 release.
+
+## 0.12.0
+
+Tax-problem front door release: the server now leads with help for people in
+trouble with the IRS, and the Claude plugin actually ships with the public
+repository.
+
+### Added
+- `triage_tax_problem` (tool 20): the front door for any tax problem. Takes a
+  coarse problem category (IRS or state letter, back taxes, unfiled years,
+  levy or garnishment, audit, penalties, identity verification, payroll tax,
+  state tax, or not sure) plus optional amount band, years behind, and a
+  deadline-soon flag, and returns an urgency level (act now / act this week /
+  plan this month), a this-week and this-month action plan, what not to do,
+  which tool to run next, and the matching published-fee service. Enums and
+  booleans only: no free text, no exact dollar amounts, fully deterministic.
+- A fourth Apps SDK widget: the tax action-plan card (urgency banner,
+  numbered this-week and this-month steps, what not to do, one Enrolled Agent
+  handoff button). Self-contained, light and dark themes, `openai/widgetCSP`
+  declares zero external domains.
+- Two new prompts (10 -> 12): `help_with_my_tax_problem` (English) and
+  `vergi_sorunum_var` (Turkish).
+- A second plugin Skill, `resolve-back-taxes`: tax debt and unfiled years,
+  sequence-first (filing compliance before any agreement), with a
+  resolution-path reference map. Plugin version 0.2.0.
+- The export script now ships `plugin/` and `.claude-plugin/marketplace.json`
+  to the public mirror, so `/plugin marketplace add Bgenc48/arc-ledger-mcp`
+  resolves; a structural self-check pins the install path, and the mirror
+  test suite sweeps the plugin files for forbidden content.
+
+### Changed
+- Display name is now **Arc & Ledger Tax Help** (initialize `serverInfo.title`,
+  `GET /version` name, registry manifest title, README, docs). Technical
+  identifiers are unchanged: the `arc-ledger-mcp` slug, the
+  `com.arcandledger/tax-tools` registry name, the endpoint, and the
+  `arc-ledger-irs` plugin id.
+- Tools are advertised tax-problems-first: triage, notice decoding,
+  resolution screening, and penalty math lead the list; formation and
+  planning tools follow; the fee quote and booking handoffs close it.
+- The initialize `instructions` now tell assistants to call
+  `triage_tax_problem` first when someone has a tax problem and does not know
+  where to start, and note that tools and prompts work in English, Turkish,
+  and Spanish.
 
 ## 0.11.0
 

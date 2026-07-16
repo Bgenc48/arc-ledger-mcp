@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "arc-ledger": {
+      "type": "http",
+      "url": "https://mcp.arcandledger.com/mcp"
+    }
+  }
+}
