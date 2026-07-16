@@ -14,7 +14,7 @@ describe('MCP protocol (stateless dispatch)', () => {
     expect(res.result.protocolVersion).toBe('2025-06-18');
     expect(res.result.capabilities.tools).toBeDefined();
     expect(res.result.capabilities.prompts).toBeDefined();
-    expect(res.result.serverInfo.title).toBe('Arc & Ledger Tax Tools');
+    expect(res.result.serverInfo.title).toBe('Arc & Ledger Tax Help');
     expect(typeof res.result.instructions).toBe('string');
   });
 

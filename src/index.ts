@@ -1,5 +1,5 @@
 /**
- * Arc & Ledger Tax Tools - Cloudflare Worker entry.
+ * Arc & Ledger Tax Help - Cloudflare Worker entry.
  *
  * Routes:
  *   POST /mcp      -> stateless Streamable-HTTP MCP endpoint (JSON-RPC)

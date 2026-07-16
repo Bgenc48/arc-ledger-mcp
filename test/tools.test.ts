@@ -18,8 +18,9 @@ import { estimateAccountablePlan } from '../src/tools/estimateAccountablePlan';
 import { getFeeQuote } from '../src/tools/getFeeQuote';
 import { bookConsultation } from '../src/tools/bookConsultation';
 import { checkResolutionOptions } from '../src/tools/checkResolutionOptions';
+import { triageTaxProblem } from '../src/tools/triageTaxProblem';
 import { DISCLAIMER } from '../src/lib/config';
-import { taxReturns, consultations, addOns, modifiers } from '../src/pricing';
+import { taxReturns, consultations, addOns, modifiers, resolution, usd } from '../src/pricing';
 import { selfEmploymentTax, ficaOnWages } from '../src/lib/tax';
 
 const reg = () => ({ tools: TOOLS, prompts: PROMPTS, version: '0.1.0' });
@@ -29,7 +30,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
   it('advertises every tool with title + readOnlyHint + object inputSchema', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, reg()) as any;
     const tools = res.result.tools;
-    expect(tools).toHaveLength(19);
+    expect(tools).toHaveLength(20);
     for (const t of tools) {
       expect(t.title).toBeTruthy();
       expect(t.annotations.readOnlyHint).toBe(true);
@@ -62,14 +63,22 @@ describe('tools/list + prompts/list (directory requirements)', () => {
         'explain_tax_document',
         'get_document_checklist',
         'get_fee_quote',
+        'triage_tax_problem',
       ].sort(),
     );
   });
 
+  it('advertises triage_tax_problem first (the tax-problem front door leads the list)', () => {
+    const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, reg()) as any;
+    expect(res.result.tools[0].name).toBe('triage_tax_problem');
+  });
+
   it('advertises the prompts including the Turkish-language ones', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'prompts/list' }, reg()) as any;
-    expect(res.result.prompts).toHaveLength(10);
+    expect(res.result.prompts).toHaveLength(12);
     const names = res.result.prompts.map((p: any) => p.name);
+    expect(names).toContain('help_with_my_tax_problem');
+    expect(names).toContain('vergi_sorunum_var');
     expect(names).toContain('abd_sirket_vergi_takvimi');
     expect(names).toContain('itin_almali_miyim');
     expect(names).toContain('settle_my_irs_debt');
@@ -82,6 +91,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
 
 describe('every tool response carries the envelope', () => {
   const cases: Array<[string, Record<string, unknown>]> = [
+    ['triage_tax_problem', { problem: 'back_taxes_owed' }],
     ['decode_irs_notice', { notice_code: 'CP2000' }],
     ['explain_tax_document', { document: '1099-K' }],
     ['check_fbar_fatca', { max_aggregate_foreign_balance_usd: 25000, filing_status: 'single', lives_abroad: false }],
@@ -111,6 +121,98 @@ describe('every tool response carries the envelope', () => {
       expect(res.result.content[0].text).toContain(DISCLAIMER);
     });
   }
+});
+
+describe('triage_tax_problem', () => {
+  const PROBLEMS = [
+    'irs_notice',
+    'back_taxes_owed',
+    'unfiled_returns',
+    'levy_or_garnishment',
+    'audit_or_exam',
+    'penalties',
+    'identity_verification',
+    'payroll_tax_941',
+    'state_tax',
+    'not_sure',
+  ] as const;
+
+  it('a levy or garnishment is always act_now', () => {
+    const out = triageTaxProblem.run({ problem: 'levy_or_garnishment' });
+    expect(out.structured.urgency).toBe('act_now');
+    expect((out.structured.next_step as any).label).toContain('levy');
+  });
+
+  it('has_deadline_soon raises any category to act_now and prepends the deadline warning', () => {
+    const calm = triageTaxProblem.run({ problem: 'back_taxes_owed' });
+    expect(calm.structured.urgency).toBe('plan_this_month');
+    const urgent = triageTaxProblem.run({ problem: 'back_taxes_owed', has_deadline_soon: true });
+    expect(urgent.structured.urgency).toBe('act_now');
+    expect((urgent.structured.this_week as string[])[0]).toContain('response window');
+  });
+
+  it('a notice is act_this_week and routes to the notice review handoff', () => {
+    const out = triageTaxProblem.run({ problem: 'irs_notice' });
+    expect(out.structured.urgency).toBe('act_this_week');
+    expect((out.structured.next_step as any).url).toContain('/go/notice-review');
+    expect(out.structured.source_url).toContain('/irs-notices/');
+  });
+
+  it('back-tax fee comes from the pricing module, never a literal', () => {
+    const out = triageTaxProblem.run({ problem: 'back_taxes_owed' });
+    const svc = out.structured.matching_service as any;
+    expect(svc.published_fee).toBe(usd(resolution.irsHealthCheck));
+  });
+
+  it('every recommended tool name exists in the registry', () => {
+    const registryNames = new Set(TOOLS.map((t) => t.name));
+    for (const problem of PROBLEMS) {
+      const out = triageTaxProblem.run({ problem });
+      for (const rec of out.structured.recommended_tools as Array<{ tool: string }>) {
+        expect(registryNames.has(rec.tool)).toBe(true);
+      }
+    }
+  });
+
+  it('every branch returns urgency, actions, a matching service, and caveats', () => {
+    for (const problem of PROBLEMS) {
+      const out = triageTaxProblem.run({ problem });
+      expect(['act_now', 'act_this_week', 'plan_this_month']).toContain(out.structured.urgency);
+      expect((out.structured.this_week as string[]).length).toBeGreaterThanOrEqual(2);
+      expect((out.structured.what_not_to_do as string[]).length).toBeGreaterThanOrEqual(2);
+      expect((out.structured.matching_service as any).service).toBeTruthy();
+      expect((out.structured.matching_service as any).published_fee).toBeTruthy();
+      expect((out.structured.caveats as string[]).join(' ')).toContain('general-information');
+    }
+  });
+
+  it('brief omits the month plan, avoid list, and tool recommendations', () => {
+    const out = triageTaxProblem.run({ problem: 'penalties', brief: true });
+    expect(out.structured.this_month).toBeUndefined();
+    expect(out.structured.what_not_to_do).toBeUndefined();
+    expect(out.structured.recommended_tools).toBeUndefined();
+    expect(out.structured.urgency).toBe('plan_this_month');
+    expect((out.structured.this_week as string[]).length).toBeGreaterThan(0);
+  });
+
+  it('not_sure offers the free call, never a formatted zero fee', () => {
+    const out = triageTaxProblem.run({ problem: 'not_sure' });
+    const svc = out.structured.matching_service as any;
+    expect(svc.published_fee).toBe('free');
+    expect(JSON.stringify(out.structured)).not.toMatch(/\$0\s*-\s*\$0/);
+  });
+
+  it('the $50,000 band note flips between streamlined and disclosure tracks', () => {
+    const small = triageTaxProblem.run({ problem: 'back_taxes_owed', amount_band: 'from_10k_to_50k' });
+    expect(small.structured.balance_note).toContain('streamlined');
+    const large = triageTaxProblem.run({ problem: 'back_taxes_owed', amount_band: 'over_50k' });
+    expect(large.structured.balance_note).toContain('433');
+  });
+
+  it('deep unfiled history cites the six-year compliance norm', () => {
+    const out = triageTaxProblem.run({ problem: 'unfiled_returns', years_behind: 'more_than_six' });
+    expect(out.structured.filing_note).toContain('5-133');
+  });
 });
 
 describe('decode_irs_notice', () => {

@@ -1,0 +1,11 @@
+{
+  "name": "arc-ledger-irs",
+  "description": "Arc & Ledger Tax Help: triage a tax problem, respond to an IRS notice, and resolve back taxes with an Enrolled Agent firm's tools. Decodes notices, computes deadlines, estimates penalties, and screens resolution options. General information, never a guaranteed outcome.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Arc & Ledger Accounting",
+    "url": "https://www.arcandledger.com"
+  },
+  "homepage": "https://www.arcandledger.com/mcp",
+  "license": "MIT"
+}

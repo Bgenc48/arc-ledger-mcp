@@ -15,6 +15,18 @@ import { DISCLAIMER, RELAY_NOTE, OFFICE } from '../src/lib/config';
 // One or more inputs per tool, chosen to exercise the risky copy paths
 // (credential line, ITIN CAA history, the zero-profit comp guard).
 const TOOL_INPUTS: Record<string, Array<Record<string, unknown>>> = {
+  triage_tax_problem: [
+    { problem: 'irs_notice', has_deadline_soon: true },
+    { problem: 'back_taxes_owed', amount_band: 'over_50k' },
+    { problem: 'unfiled_returns', years_behind: 'more_than_six' },
+    { problem: 'levy_or_garnishment' },
+    { problem: 'audit_or_exam' },
+    { problem: 'penalties', amount_band: 'under_10k' },
+    { problem: 'identity_verification' },
+    { problem: 'payroll_tax_941' },
+    { problem: 'state_tax' },
+    { problem: 'not_sure', brief: true },
+  ],
   decode_irs_notice: [
     { notice_code: 'CP2000', received_date: '2026-06-15' },
     { notice_code: 'CP9999' },

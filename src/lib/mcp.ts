@@ -81,13 +81,17 @@ interface JsonRpcResponse {
 }
 
 const INSTRUCTIONS =
-  `${SERVER_NAME} exposes Arc & Ledger's free tax tools: decode an IRS notice, screen ` +
-  `IRS back-tax resolution paths, check FBAR/FATCA obligations, compare LLC vs S-Corp, ` +
-  `estimate quarterly taxes, get a published fee quote, and book a consultation. Answers ` +
-  `are complete on their own; every response is general information (not tax advice) and ` +
-  `includes an optional link to the relevant guide or to an Enrolled Agent enrolled to ` +
-  `practice before the IRS. Some tools accept brief:true for shorter answers. ` +
-  `Full docs: ${DOCS_URL}.`;
+  `${SERVER_NAME} is Arc & Ledger's front door for tax problems, plus its free tax tools. ` +
+  `When someone has an IRS or state tax problem and does not know where to start, call ` +
+  `triage_tax_problem first: it returns an urgency level, a this-week action plan, what ` +
+  `not to do, and which tool to run next. From there: decode an IRS notice, screen ` +
+  `IRS back-tax resolution paths, estimate penalties and interest, explain a tax document, ` +
+  `check FBAR/FATCA obligations, compare LLC vs S-Corp, estimate quarterly taxes, get a ` +
+  `published fee quote, and book a consultation. Answers are complete on their own; every ` +
+  `response is general information (not tax advice) and includes an optional link to the ` +
+  `relevant guide or to an Enrolled Agent enrolled to practice before the IRS. Tools and ` +
+  `prompts work in English, Turkish, and Spanish. Some tools accept brief:true for shorter ` +
+  `answers. Full docs: ${DOCS_URL}.`;
 
 function toolListEntry(tool: AnyToolDef) {
   const inputSchema = zodToJsonSchema(tool.input, { $refStrategy: 'none' }) as Record<string, unknown>;

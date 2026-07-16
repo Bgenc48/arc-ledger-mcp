@@ -15,6 +15,7 @@ import { estimateAugustaRule } from '../src/tools/estimateAugustaRule';
 import { checkFbarFatca } from '../src/tools/checkFbarFatca';
 import { estimateReasonableComp } from '../src/tools/estimateReasonableComp';
 import { deadlineCalendar } from '../src/tools/deadlineCalendar';
+import { triageTaxProblem } from '../src/tools/triageTaxProblem';
 
 const reg = () => ({ tools: TOOLS, prompts: PROMPTS, version: '0.6.0' });
 
@@ -23,6 +24,7 @@ const callOnce = (name: string, args: Record<string, unknown>) =>
 
 // One representative, valid input per tool.
 const REPRESENTATIVE: Array<[string, Record<string, unknown>]> = [
+  ['triage_tax_problem', { problem: 'back_taxes_owed', amount_band: 'from_10k_to_50k' }],
   ['decode_irs_notice', { notice_code: 'CP2000', received_date: '2026-06-15' }],
   ['explain_tax_document', { document: '1099-K' }],
   ['check_fbar_fatca', { max_aggregate_foreign_balance_usd: 65000, filing_status: 'single', lives_abroad: false }],
@@ -71,6 +73,13 @@ describe('boundary fixtures', () => {
   it('Augusta rule qualifies at 14 days and voids at 15', () => {
     expect(estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 14 }).structured.qualifies_for_exclusion).toBe(true);
     expect(estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 15 }).structured.qualifies_for_exclusion).toBe(false);
+  });
+
+  it('triage urgency: levy is act_now, a soon deadline promotes, otherwise the base level holds', () => {
+    expect(triageTaxProblem.run({ problem: 'levy_or_garnishment' }).structured.urgency).toBe('act_now');
+    expect(triageTaxProblem.run({ problem: 'penalties' }).structured.urgency).toBe('plan_this_month');
+    expect(triageTaxProblem.run({ problem: 'penalties', has_deadline_soon: true }).structured.urgency).toBe('act_now');
+    expect(triageTaxProblem.run({ problem: 'irs_notice' }).structured.urgency).toBe('act_this_week');
   });
 
   it('reasonable comp: $0 emits no salary; $200k gives the 40-60% range', () => {

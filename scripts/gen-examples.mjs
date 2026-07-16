@@ -17,6 +17,7 @@ const outFile = join(root, 'docs', 'worked-examples.json');
 const tmp = join(root, '.wrangler', 'gen-examples.bundle.mjs');
 
 const ENTRY = `
+import { triageTaxProblem } from '../src/tools/triageTaxProblem';
 import { decodeIrsNotice } from '../src/tools/decodeIrsNotice';
 import { explainTaxDocument } from '../src/tools/explainTaxDocument';
 import { checkFbarFatca } from '../src/tools/checkFbarFatca';
@@ -29,6 +30,10 @@ import { estimateAugustaRule } from '../src/tools/estimateAugustaRule';
 import { estimateAccountablePlan } from '../src/tools/estimateAccountablePlan';
 
 export const cases = [
+  { prompt: 'I owe the IRS about $18,000 from 2023 and I have not filed 2024 yet. Where do I even start?',
+    tool: 'triage_tax_problem',
+    input: { problem: 'back_taxes_owed', amount_band: 'from_10k_to_50k' },
+    run: (i) => triageTaxProblem.run(i) },
   { prompt: 'I got an IRS CP2000 notice dated June 1, 2026 for about $4,200. What is it and what do I do?',
     tool: 'decode_irs_notice',
     input: { notice_code: 'CP2000', received_date: '2026-06-01', amount_shown: 4200 },

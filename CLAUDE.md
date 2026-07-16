@@ -1,8 +1,11 @@
-# Arc & Ledger Tax Tools - MCP server
+# Arc & Ledger Tax Help - MCP server
 
 Public, no-auth remote MCP server (Cloudflare Worker, Streamable HTTP) exposing
-the firm's free tax calculators and intake tools. Endpoint:
+the firm's tax-problem tools and free tax calculators. Endpoint:
 `https://mcp.arcandledger.com/mcp`. Docs: `https://www.arcandledger.com/mcp`.
+"Arc & Ledger Tax Help" is the display name; technical identifiers (the
+`arc-ledger-mcp` slug, the `com.arcandledger/tax-tools` registry name, the
+endpoint) are unchanged.
 
 ## This repository is a GENERATED artifact
 
@@ -43,8 +46,14 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
   `src/lib/mcp.ts` implements the protocol; `src/registry.ts` lists the tools
   and prompts.
 - `src/tools/` - one file per tool. `src/resources.ts` - the four read-only
-  `arcledger://` resources. `src/ui/` - Apps SDK widgets (IRS notice card,
-  formation-state comparison).
+  `arcledger://` resources. `src/ui/` - Apps SDK widgets (tax action plan, IRS
+  notice card, tax-document card, formation-state comparison).
+- `plugin/` + `.claude-plugin/marketplace.json` - the Claude Code plugin
+  (`arc-ledger-irs`): two Skills (respond to an IRS notice; resolve back
+  taxes) bundled with the remote MCP server via `plugin/.mcp.json`. Installed
+  with `/plugin marketplace add Bgenc48/arc-ledger-mcp` then
+  `/plugin install arc-ledger-irs@arc-ledger`. Generated like everything else
+  here; edit in the source tree, not in this repository.
 - `src/data/` - the vendored single sources of truth: `pricing.ts` (published
   fee schedule), `taxConstants2026.ts` (tax-year constants), `notices.ts` (IRS
   notice registry), `productCatalog.ts` (fixed-fee SKUs), `servicePages.ts`
