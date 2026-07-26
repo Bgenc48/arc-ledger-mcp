@@ -78,8 +78,10 @@ rough months late and whether the return was filed. Call
 ### 4. Screen general alternatives
 
 Call `check_resolution_options` with the rough balance, filing-compliance
-status, and broad ability-to-pay category. Present only the paths returned by
-the tool. Typical categories may include:
+status, broad ability-to-pay category, and the coarse tax-account type when the
+user knows it. Treat an omitted or uncertain account type as `unknown`; do not
+guess. Present only the paths returned by the tool. Typical categories may
+include:
 
 - short-term payment;
 - installment agreement;

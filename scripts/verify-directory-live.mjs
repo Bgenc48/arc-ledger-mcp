@@ -23,6 +23,7 @@ export const DIRECTORY_TOOL_FIXTURES = Object.freeze({
     balance_owed_usd: 25_000,
     ability_to_pay: 'can_make_monthly_payments',
     all_required_returns_filed: true,
+    tax_account_type: 'individual_income_tax',
   },
   estimate_irs_penalty: {
     balance_owed_usd: 10_000,

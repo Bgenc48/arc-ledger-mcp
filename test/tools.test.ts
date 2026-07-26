@@ -203,11 +203,12 @@ describe('triage_tax_problem', () => {
     expect(JSON.stringify(out.structured)).not.toMatch(/\$0\s*-\s*\$0/);
   });
 
-  it('the $50,000 band note flips between streamlined and disclosure tracks', () => {
+  it('the $50,000 band note uses current Simple Payment Plan terminology', () => {
     const small = triageTaxProblem.run({ problem: 'back_taxes_owed', amount_band: 'from_10k_to_50k' });
-    expect(small.structured.balance_note).toContain('streamlined');
+    expect(small.structured.balance_note).toContain('Simple Payment Plan');
+    expect(small.structured.balance_note).toContain('Account type');
     const large = triageTaxProblem.run({ problem: 'back_taxes_owed', amount_band: 'over_50k' });
-    expect(large.structured.balance_note).toContain('433');
+    expect(large.structured.balance_note).toContain('Collection Information Statement');
   });
 
   it('deep unfiled history cites the six-year compliance norm', () => {
@@ -607,26 +608,84 @@ describe('check_resolution_options', () => {
   const optionNames = (out: ReturnType<typeof checkResolutionOptions.run>) =>
     (out.structured.options as Array<{ path: string; fits: string }>);
 
-  it('screens a mid-size balance with monthly capacity toward a streamlined installment agreement', () => {
+  it('screens an individual mid-size balance toward the current Simple Payment Plan', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 30000,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+      tax_account_type: 'individual_income_tax',
+    });
+    const ia = optionNames(out).find((o) => o.path.startsWith('Simple Payment Plan'));
+    expect(ia).toBeDefined();
+    expect(ia!.fits).toBe('likely');
+    expect(optionNames(out).some((o) => o.path.includes('financial review'))).toBe(false);
+    expect(JSON.stringify(out.structured)).not.toContain('72 months');
+    expect(JSON.stringify(out.structured)).not.toContain('Streamlined installment');
+  });
+
+  it('does not call the simple-plan path likely when the account type is unknown', () => {
     const out = checkResolutionOptions.run({
       balance_owed_usd: 30000,
       ability_to_pay: 'can_make_monthly_payments',
       all_required_returns_filed: true,
     });
-    const ia = optionNames(out).find((o) => o.path.startsWith('Streamlined installment agreement'));
-    expect(ia).toBeDefined();
-    expect(ia!.fits).toBe('likely');
-    // Under $50k => streamlined track, not the financial-disclosure one.
-    expect(optionNames(out).some((o) => o.path.includes('financial disclosure'))).toBe(false);
+    const ia = optionNames(out).find((o) => o.path.startsWith('Simple Payment Plan'));
+    expect(ia?.fits).toBe('possible');
+    expect(out.summary).toContain('account type');
   });
 
-  it('routes a balance over $50k to the financial-disclosure installment track', () => {
+  it('routes a $30k business trust-fund balance to the financial-review track', () => {
+    const out = checkResolutionOptions.run({
+      balance_owed_usd: 30000,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+      tax_account_type: 'business_trust_fund',
+    });
+    expect(optionNames(out).some((o) => o.path.includes('financial review'))).toBe(true);
+  });
+
+  it('keeps the business trust-fund Simple Payment Plan boundary at $25k', () => {
+    const atBoundary = checkResolutionOptions.run({
+      balance_owed_usd: 25000,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+      tax_account_type: 'business_trust_fund',
+    });
+    const overBoundary = checkResolutionOptions.run({
+      balance_owed_usd: 25001,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+      tax_account_type: 'business_trust_fund',
+    });
+    expect(optionNames(atBoundary).some((o) => o.path === 'Simple Payment Plan (Business Trust Fund)')).toBe(true);
+    expect(optionNames(overBoundary).some((o) => o.path.includes('financial review'))).toBe(true);
+  });
+
+  it('uses the individual online short-term threshold cautiously', () => {
+    const under = checkResolutionOptions.run({
+      balance_owed_usd: 99999,
+      ability_to_pay: 'can_pay_in_full_soon',
+      all_required_returns_filed: true,
+      tax_account_type: 'individual_income_tax',
+    });
+    const at = checkResolutionOptions.run({
+      balance_owed_usd: 100000,
+      ability_to_pay: 'can_pay_in_full_soon',
+      all_required_returns_filed: true,
+      tax_account_type: 'individual_income_tax',
+    });
+    expect(optionNames(under).find((o) => o.path === 'Short-term payment plan')?.fits).toBe('likely');
+    expect(optionNames(at).find((o) => o.path === 'Short-term payment plan')?.fits).toBe('possible');
+  });
+
+  it('routes a balance over $50k to the financial-review installment track', () => {
     const out = checkResolutionOptions.run({
       balance_owed_usd: 90000,
       ability_to_pay: 'can_make_monthly_payments',
       all_required_returns_filed: true,
+      tax_account_type: 'individual_income_tax',
     });
-    expect(optionNames(out).some((o) => o.path.includes('financial disclosure'))).toBe(true);
+    expect(optionNames(out).some((o) => o.path.includes('financial review'))).toBe(true);
   });
 
   it('surfaces the filing-compliance gate when returns are not filed', () => {
@@ -636,7 +695,7 @@ describe('check_resolution_options', () => {
       all_required_returns_filed: false,
     });
     expect(out.structured.filing_compliance_gate as string).toContain('FIRST STEP');
-    expect(out.summary).toContain('all returns filed');
+    expect(out.summary).toContain('filing compliance');
   });
 
   it('offers CNC and an OIC fit-check under hardship', () => {

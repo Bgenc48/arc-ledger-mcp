@@ -10,9 +10,10 @@ import type { NextStep, ToolDef } from '../lib/types';
  * pricing.ts). These are tax-law figures, kept as literals like the penalty
  * rates in estimateIrsPenalty.ts.
  */
-const STREAMLINED_IA_CEILING = 50_000; // streamlined installment agreement ceiling - no financial-disclosure statement at or under this balance
-const FILING_COMPLIANCE_YEARS = 6;     // IRS Policy Statement 5-133 - delinquent-return enforcement generally covers the last six years
-const CDP_WINDOW_DAYS = 30;            // Collection Due Process hearing window after a final notice of intent to levy (IRC 6330)
+const SIMPLE_PAYMENT_PLAN_CEILING = 50_000;                // current general ceiling for eligible individual and non-trust-fund accounts
+const BUSINESS_TRUST_FUND_SIMPLE_PLAN_CEILING = 25_000;    // current ceiling for eligible business trust-fund accounts
+const FILING_COMPLIANCE_YEARS = 6;                         // IRS Policy Statement 5-133 - delinquent-return enforcement generally covers the last six years
+const CDP_WINDOW_DAYS = 30;                                // Collection Due Process hearing window after a final notice of intent to levy (IRC 6330)
 
 const input = z.object({
   problem: z
@@ -35,7 +36,7 @@ const input = z.object({
     .enum(['under_10k', 'from_10k_to_50k', 'over_50k', 'not_sure'])
     .optional()
     .describe(
-      'Roughly how much is at stake, if known. Bands only, never an exact figure. The $50,000 line matters: streamlined IRS installment agreements stop there.',
+      'Roughly how much is at stake, if known. Bands only, never an exact figure. Current IRS Simple Payment Plan balance criteria generally use a $50,000 ceiling for eligible individual and non-trust-fund accounts and a $25,000 ceiling for eligible business trust-fund accounts.',
     ),
   years_behind: z
     .enum(['one', 'two_to_three', 'four_to_six', 'more_than_six'])
@@ -454,9 +455,9 @@ function run(args: Input) {
 
   const balanceNote =
     args.amount_band === 'over_50k'
-      ? `Above ${usd(STREAMLINED_IA_CEILING)} the IRS generally asks for a collection information statement (Form 433-F or 433-A) before a payment plan, and federal tax lien exposure rises.`
+      ? `Above ${usd(SIMPLE_PAYMENT_PLAN_CEILING)}, the current IRS Simple Payment Plan balance criteria generally do not apply. The IRS ordinarily requires a Collection Information Statement for a payment agreement outside the simple-plan criteria.`
       : args.amount_band === 'under_10k' || args.amount_band === 'from_10k_to_50k'
-        ? `Balances of ${usd(STREAMLINED_IA_CEILING)} or less generally qualify for a streamlined installment agreement with no financial-disclosure statement.`
+        ? `Current IRS Simple Payment Plan criteria generally use a ${usd(SIMPLE_PAYMENT_PLAN_CEILING)} ceiling for eligible individual and non-trust-fund accounts and a ${usd(BUSINESS_TRUST_FUND_SIMPLE_PLAN_CEILING)} ceiling for eligible business trust-fund accounts. Account type, the collection expiration date, and current compliance determine whether a financial statement is required.`
         : args.amount_band === 'not_sure'
           ? 'Your IRS transcripts show the exact assessed balance by year; that number drives which paths fit.'
           : undefined;

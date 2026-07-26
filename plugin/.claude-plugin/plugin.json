@@ -1,7 +1,7 @@
 {
   "name": "arc-ledger-irs",
   "description": "Read-only US tax reference tools and procedural Skills for understanding IRS notices, estimating selected penalties, and screening general resolution paths. General information only.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Arc & Ledger Accounting",
     "url": "https://www.arcandledger.com"

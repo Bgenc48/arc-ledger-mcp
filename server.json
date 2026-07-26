@@ -3,7 +3,7 @@
   "name": "com.arcandledger/tax-tools",
   "title": "Arc & Ledger Tax Reference",
   "description": "Read-only US tax reference tools for IRS notices, tax documents, filing screens, official deadlines, and clearly labeled estimates. No account, filing, payment, upload, booking, or service purchase.",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "websiteUrl": "https://www.arcandledger.com/mcp/directory/",
   "repository": {
     "url": "https://github.com/Bgenc48/arc-ledger-mcp",
