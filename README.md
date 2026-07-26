@@ -15,7 +15,7 @@ The project exposes two surfaces:
 - Complete docs: https://www.arcandledger.com/mcp/
 - Directory docs: https://www.arcandledger.com/mcp/directory/
 - MCP privacy policy: https://www.arcandledger.com/mcp/privacy/
-- Support: https://www.arcandledger.com/contact/
+- Support: https://www.arcandledger.com/mcp/support/
 
 Every result is general information, not tax advice, and creates no
 practitioner-client relationship. The tools do not file, transmit, sign,

@@ -102,6 +102,19 @@ const PAGE_SPECS = Object.freeze([
       'https://mcp.arcandledger.com/directory/mcp',
       'No tool inputs, outputs, names, or per-call analytics',
     ],
+    forbiddenText: [
+      'Get a fixed-fee quote',
+      'Book a Call',
+      'Client Portal',
+      'ACCOUNTING & TAX SERVICES',
+    ],
+    forbiddenHtml: [
+      'connect.facebook.net',
+      'facebook.com/tr?',
+      'googletagmanager.com/gtag/js',
+      'data-site-marketing',
+      'client.crisp.chat',
+    ],
   },
   {
     label: 'MCP privacy policy',
@@ -110,6 +123,19 @@ const PAGE_SPECS = Object.freeze([
       'does not retain tool inputs or outputs',
       'do not sell personal information or MCP tool inputs',
       'no tool-call input, tool-call output, tool name, or per-call analytics log',
+    ],
+    forbiddenText: [
+      'Get a fixed-fee quote',
+      'Book a Call',
+      'Client Portal',
+      'ACCOUNTING & TAX SERVICES',
+    ],
+    forbiddenHtml: [
+      'connect.facebook.net',
+      'facebook.com/tr?',
+      'googletagmanager.com/gtag/js',
+      'data-site-marketing',
+      'client.crisp.chat',
     ],
   },
   {
@@ -122,8 +148,25 @@ const PAGE_SPECS = Object.freeze([
   },
   {
     label: 'support page',
-    path: '/contact/',
-    requiredText: ['Contact Information'],
+    path: '/mcp/support/',
+    requiredText: [
+      'Tax Reference support',
+      'Do not email Social Security numbers',
+      'Support requests do not create a practitioner-client relationship',
+    ],
+    forbiddenText: [
+      'Get a fixed-fee quote',
+      'Book a Call',
+      'Client Portal',
+      'ACCOUNTING & TAX SERVICES',
+    ],
+    forbiddenHtml: [
+      'connect.facebook.net',
+      'facebook.com/tr?',
+      'googletagmanager.com/gtag/js',
+      'data-site-marketing',
+      'client.crisp.chat',
+    ],
   },
 ]);
 
@@ -680,11 +723,24 @@ export async function verifyDirectoryRelease(options) {
       check(response.ok, `${spec.label} returned HTTP ${response.status}.`);
       const contentType = response.headers.get('content-type') ?? '';
       check(contentType.toLowerCase().includes('text/html'), `${spec.label} did not return HTML.`);
-      const pageText = normalizePageText(await response.text());
+      const pageHtml = await response.text();
+      const pageText = normalizePageText(pageHtml);
       for (const required of spec.requiredText) {
         check(
           pageText.toLowerCase().includes(required.toLowerCase()),
           `${spec.label} is missing required release text: "${required}".`,
+        );
+      }
+      for (const forbidden of spec.forbiddenText ?? []) {
+        check(
+          !pageText.toLowerCase().includes(forbidden.toLowerCase()),
+          `${spec.label} contains prohibited promotional text: "${forbidden}".`,
+        );
+      }
+      for (const forbidden of spec.forbiddenHtml ?? []) {
+        check(
+          !pageHtml.toLowerCase().includes(forbidden.toLowerCase()),
+          `${spec.label} contains prohibited tracking or marketing HTML: "${forbidden}".`,
         );
       }
     } catch (error) {

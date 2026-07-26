@@ -22,7 +22,7 @@ function fakePng(width = 512, height = 512) {
   return bytes;
 }
 
-function sitePage(path) {
+function sitePage(path, pageSuffix = '') {
   const textByPath = {
     '/mcp/directory/':
       'Arc & Ledger Tax Reference https://mcp.arcandledger.com/directory/mcp ' +
@@ -33,16 +33,18 @@ function sitePage(path) {
       'There is no tool-call input, tool-call output, tool name, or per-call analytics log.',
     '/terms-of-service/':
       'The directory connector does not need those items. They cannot prepare or file a return.',
-    '/contact/': 'Contact Information',
+    '/mcp/support/':
+      'Tax Reference support. Do not email Social Security numbers. ' +
+      'Support requests do not create a practitioner-client relationship.',
   };
   const text = textByPath[path];
-  return text ? new Response(`<html><body>${text}</body></html>`, {
+  return text ? new Response(`<html><body>${text}${pageSuffix}</body></html>`, {
     status: 200,
     headers: { 'content-type': 'text/html; charset=utf-8' },
   }) : new Response('Not Found', { status: 404 });
 }
 
-function buildFetch({ version = EXPECTED_VERSION, logo = fakePng() } = {}) {
+function buildFetch({ version = EXPECTED_VERSION, logo = fakePng(), pageSuffix = '' } = {}) {
   let directoryPosts = 0;
   const fetchImpl = async (input, init = {}) => {
     const url = new URL(String(input));
@@ -58,7 +60,7 @@ function buildFetch({ version = EXPECTED_VERSION, logo = fakePng() } = {}) {
     if (url.origin === SITE_ORIGIN && url.pathname === '/logos/monogram-ink.png') {
       return new Response(logo, { status: 200, headers: { 'content-type': 'image/png' } });
     }
-    if (url.origin === SITE_ORIGIN) return sitePage(url.pathname);
+    if (url.origin === SITE_ORIGIN) return sitePage(url.pathname, pageSuffix);
     return new Response('Not Found', { status: 404 });
   };
   return { fetchImpl, getDirectoryPosts: () => directoryPosts };
@@ -85,7 +87,7 @@ describe('live directory release verifier', () => {
     expect(report.negativeCapabilitiesVerified).toBe(3);
     expect(report.pagesVerified).toBe(4);
     expect(report.challengeChecked).toBe(true);
-    expect(report.checksRun).toBeGreaterThan(250);
+    expect(report.checksRun).toBe(1139);
     expect(getDirectoryPosts()).toBe(1);
   });
 
@@ -108,5 +110,22 @@ describe('live directory release verifier', () => {
       expect(error.failures).toContain('Initialize version must be 0.15.0.');
       expect(error.failures).toContain('decode_irs_notice server_version must be 0.15.0.');
     }
+  });
+
+  it('fails closed when a directory page contains a sales call to action', async () => {
+    const logo = fakePng();
+    const { fetchImpl } = buildFetch({ logo, pageSuffix: ' Get a fixed-fee quote' });
+
+    await expect(verifyDirectoryRelease({
+      fetchImpl,
+      mcpOrigin: MCP_ORIGIN,
+      siteOrigin: SITE_ORIGIN,
+      expectedVersion: EXPECTED_VERSION,
+      expectedLogoSha256: sha256Hex(logo),
+    })).rejects.toMatchObject({
+      failures: expect.arrayContaining([
+        'directory documentation contains prohibited promotional text: "Get a fixed-fee quote".',
+      ]),
+    });
   });
 });
