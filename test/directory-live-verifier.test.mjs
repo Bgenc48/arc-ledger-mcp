@@ -87,7 +87,7 @@ describe('live directory release verifier', () => {
     expect(report.negativeCapabilitiesVerified).toBe(3);
     expect(report.pagesVerified).toBe(4);
     expect(report.challengeChecked).toBe(true);
-    expect(report.checksRun).toBe(1139);
+    expect(report.checksRun).toBe(1142);
     expect(getDirectoryPosts()).toBe(1);
   });
 

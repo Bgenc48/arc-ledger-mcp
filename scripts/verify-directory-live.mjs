@@ -114,6 +114,7 @@ const PAGE_SPECS = Object.freeze([
       'googletagmanager.com/gtag/js',
       'data-site-marketing',
       'client.crisp.chat',
+      'static.cloudflareinsights.com/beacon.min.js',
     ],
   },
   {
@@ -136,6 +137,7 @@ const PAGE_SPECS = Object.freeze([
       'googletagmanager.com/gtag/js',
       'data-site-marketing',
       'client.crisp.chat',
+      'static.cloudflareinsights.com/beacon.min.js',
     ],
   },
   {
@@ -166,6 +168,7 @@ const PAGE_SPECS = Object.freeze([
       'googletagmanager.com/gtag/js',
       'data-site-marketing',
       'client.crisp.chat',
+      'static.cloudflareinsights.com/beacon.min.js',
     ],
   },
 ]);
