@@ -104,7 +104,7 @@ export const explainTaxDocument: ToolDef<typeof input> = {
   description:
     'Use this when a user receives a US tax form or information document and wants to know what it is, why they got it, which boxes matter, where it goes on their return, what to double-check, or what to do if it is wrong, duplicated, or never arrived. Covers W-2, W-2G, the 1099 family (NEC, MISC, K, INT, DIV, B, DA, R, G, C, S, SA, Q), Schedule K-1 (partnership 1065, S-corp 1120-S, estate/trust 1041), SSA-1099, 1042-S, 5498, 1098, 1098-T, 1098-E, 1095-A/B/C, and W-9 / W-8BEN requests. For IRS letters and notices (CP or LT codes) use decode_irs_notice instead. Set brief:true for a shorter answer.',
   input,
-  annotations: { title: 'Explain a tax document', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Explain a tax document', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => {
     const p = lookupTaxDocument(args.document);
     return {

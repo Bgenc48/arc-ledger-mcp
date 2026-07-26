@@ -110,7 +110,7 @@ export const compareFormationStates: ToolDef<typeof input> = {
   description:
     'Use this when someone (often a non-US founder) asks which US state to form their LLC or company in - Wyoming, New Mexico, Delaware, or California. Compares government fees, annual cost, franchise tax, privacy, and approval time, and recommends a state based on their situation.',
   input,
-  annotations: { title: 'Compare US formation states', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Compare US formation states', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   widget: {
     templateUri: FORMATION_STATES_WIDGET_URI,
     invoking: 'Comparing US formation states',

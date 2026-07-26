@@ -1,6 +1,6 @@
 {
   "name": "arc-ledger-mcp",
-  "version": "0.12.0",
+  "version": "0.15.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "description": "Arc & Ledger Tax Help - public, no-auth remote MCP server (Cloudflare Worker, Streamable HTTP)",
@@ -13,17 +13,22 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify:directory:live": "node scripts/verify-directory-live.mjs",
     "gen:products": "node scripts/gen-products-feed.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "zod": "^3.24.1",
+    "zod": "^3.25.76",
     "zod-to-json-schema": "^3.24.1"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250109.0",
-    "typescript": "^5.7.3",
-    "vitest": "^2.1.8",
-    "wrangler": "^3.99.0"
+    "@cloudflare/workers-types": "^5.20260724.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.114.0"
+  },
+  "overrides": {
+    "@hono/node-server": "2.0.12",
+    "fast-uri": "3.1.4"
   }
 }

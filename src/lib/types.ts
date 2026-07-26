@@ -50,8 +50,9 @@ export interface WidgetBinding {
 /**
  * A tool definition. `input` is a zod schema used for BOTH runtime validation
  * and (via zod-to-json-schema) the advertised inputSchema, so the two never
- * drift. `logEnums` returns ONLY coarse enum/boolean fields safe to log -
- * never free text or dollar amounts.
+ * drift. `logEnums` is a legacy categorization hook retained in individual
+ * definitions for compatibility. The Worker does not call it or write
+ * tool-call analytics.
  */
 export interface ToolDef<TSchema extends z.ZodTypeAny = z.ZodTypeAny> {
   name: string;
@@ -61,10 +62,13 @@ export interface ToolDef<TSchema extends z.ZodTypeAny = z.ZodTypeAny> {
   annotations: {
     title: string;
     readOnlyHint: true;
-    openWorldHint?: boolean;
+    openWorldHint: boolean;
+    destructiveHint: false;
   };
   logEnums: (input: z.infer<TSchema>) => Record<string, string | number | boolean>;
   run: (input: z.infer<TSchema>) => ToolOutput;
+  /** Optional surface-specific output schema advertised by tools/list. */
+  outputSchema?: Record<string, unknown>;
   widget?: WidgetBinding;
 }
 
@@ -79,11 +83,18 @@ export interface AnyToolDef {
   title: string;
   description: string;
   input: z.ZodTypeAny;
-  annotations: { title: string; readOnlyHint: true; openWorldHint?: boolean };
+  annotations: {
+    title: string;
+    readOnlyHint: true;
+    openWorldHint: boolean;
+    destructiveHint: false;
+  };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logEnums: (input: any) => Record<string, string | number | boolean>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   run: (input: any) => ToolOutput;
+  /** Optional surface-specific output schema advertised by tools/list. */
+  outputSchema?: Record<string, unknown>;
   widget?: WidgetBinding;
 }
 

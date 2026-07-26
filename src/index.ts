@@ -3,6 +3,7 @@
  *
  * Routes:
  *   POST /mcp      -> stateless Streamable-HTTP MCP endpoint (JSON-RPC)
+ *   POST /directory/mcp -> directory-safe educational MCP endpoint
  *   GET  /mcp      -> 405 (no server-initiated SSE stream; stateless by design)
  *   GET  /healthz  -> liveness
  *   GET  /version  -> server version + price-set/tax-year versions
@@ -13,9 +14,14 @@
  */
 import { dispatch } from './lib/mcp';
 import { checkRateLimit, clientIp } from './lib/rateLimit';
-import { logEvent } from './lib/logging';
 import { SERVER_NAME, SERVER_SLUG, DOCS_URL, LATEST_PROTOCOL_VERSION } from './lib/config';
 import { TOOLS, PROMPTS } from './registry';
+import {
+  DIRECTORY_DOCS_URL,
+  DIRECTORY_INSTRUCTIONS,
+  DIRECTORY_NAME,
+  DIRECTORY_TOOLS,
+} from './directory';
 import { PRICE_SET } from './pricing';
 import { TAX_YEAR } from './rates';
 import type { AnyToolDef } from './lib/types';
@@ -29,21 +35,34 @@ import type { Env } from './lib/env';
  * minutes without taking down the other tools. Memoized per var value because
  * tools/list is cached by array identity.
  */
-let gateKey: string | undefined;
-let gateValue: { active: AnyToolDef[]; disabled: ReadonlySet<string> } = { active: TOOLS, disabled: new Set() };
-function toolGate(env: Env): { active: AnyToolDef[]; disabled: ReadonlySet<string> } {
+interface ToolGateCache {
+  key: string;
+  value: { active: AnyToolDef[]; disabled: ReadonlySet<string> };
+}
+const toolGateCache = new WeakMap<AnyToolDef[], ToolGateCache>();
+
+function toolGate(
+  env: Env,
+  baseTools: AnyToolDef[],
+): { active: AnyToolDef[]; disabled: ReadonlySet<string> } {
   const raw = env.DISABLED_TOOLS ?? '';
-  if (raw !== gateKey) {
+  const cached = toolGateCache.get(baseTools);
+  if (!cached || raw !== cached.key) {
+    const allowedNames = new Set(baseTools.map((tool) => tool.name));
     const disabled = new Set(
       raw
         .split(',')
         .map((s) => s.trim())
-        .filter(Boolean),
+        .filter((name) => name.length > 0 && allowedNames.has(name)),
     );
-    gateKey = raw;
-    gateValue = { active: disabled.size ? TOOLS.filter((t) => !disabled.has(t.name)) : TOOLS, disabled };
+    const value = {
+      active: disabled.size ? baseTools.filter((tool) => !disabled.has(tool.name)) : baseTools,
+      disabled,
+    };
+    toolGateCache.set(baseTools, { key: raw, value });
+    return value;
   }
-  return gateValue;
+  return cached.value;
 }
 
 /** Largest accepted POST body. Real MCP clients send a few KB at most. */
@@ -65,7 +84,8 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}): 
 }
 
 function version(env: Env) {
-  const { active, disabled } = toolGate(env);
+  const { active, disabled } = toolGate(env, TOOLS);
+  const directory = toolGate(env, DIRECTORY_TOOLS);
   return {
     name: SERVER_NAME,
     slug: SERVER_SLUG,
@@ -75,6 +95,9 @@ function version(env: Env) {
     tax_year: TAX_YEAR,
     tools: active.length,
     tools_disabled: disabled.size,
+    directory_tools: directory.active.length,
+    directory_tools_disabled: directory.disabled.size,
+    directory_endpoint: '/directory/mcp',
     prompts: PROMPTS.length,
     docs: DOCS_URL,
   };
@@ -102,13 +125,15 @@ export default {
       return json({
         name: SERVER_NAME,
         endpoint: '/mcp',
+        directory_endpoint: '/directory/mcp',
         transport: 'streamable-http',
         auth: 'none',
         docs: DOCS_URL,
       });
     }
 
-    if (path === '/mcp') {
+    if (path === '/mcp' || path === '/directory/mcp') {
+      const directoryMode = path === '/directory/mcp';
       if (request.method === 'GET') {
         // No server-initiated stream on this stateless endpoint.
         return json(
@@ -125,7 +150,6 @@ export default {
       const ip = clientIp(request);
       const gate = await checkRateLimit(ip, env);
       if (!gate.allowed) {
-        logEvent('rate_limited');
         return json(
           { jsonrpc: '2.0', error: { code: -32029, message: 'Rate limit exceeded' }, id: null },
           429,
@@ -166,8 +190,28 @@ export default {
         return json({ jsonrpc: '2.0', error: { code: -32700, message: 'Parse error' }, id: null }, 400);
       }
 
-      const { active, disabled } = toolGate(env);
-      const registry = { tools: active, prompts: PROMPTS, version: env.SERVER_VERSION ?? '0.0.0', disabled };
+      const { active, disabled } = toolGate(env, directoryMode ? DIRECTORY_TOOLS : TOOLS);
+      const registry = directoryMode
+        ? {
+            tools: active,
+            prompts: [],
+            version: env.SERVER_VERSION ?? '0.0.0',
+            disabled,
+            instructions: DIRECTORY_INSTRUCTIONS,
+            serverTitle: DIRECTORY_NAME,
+            resourceMode: 'none' as const,
+            disabledSourceUrl: DIRECTORY_DOCS_URL,
+            disabledNextStep: {
+              label: 'Review the directory documentation and official source status',
+              url: DIRECTORY_DOCS_URL,
+            },
+          }
+        : {
+            tools: active,
+            prompts: PROMPTS,
+            version: env.SERVER_VERSION ?? '0.0.0',
+            disabled,
+          };
       const result = dispatch(body, registry);
 
       if (result === null) {
@@ -182,6 +226,21 @@ export default {
       return new Response('v=MCPv1; k=ed25519; p=kN1wUOqGWbl4q37R8IuMFrs/AxrQAN+A+xm7KRxfq88=', {
         status: 200,
         headers: { 'content-type': 'text/plain', 'cache-control': 'public, max-age=3600', ...CORS_HEADERS },
+      });
+    }
+
+    // OpenAI Plugins Directory domain-ownership proof. The portal generates
+    // this public token; serve exactly the token as plain text, never JSON.
+    if (path === '/.well-known/openai-apps-challenge' && request.method === 'GET') {
+      const token = env.OPENAI_APPS_CHALLENGE?.trim();
+      if (!token) return json({ error: 'Not Found' }, 404);
+      return new Response(token, {
+        status: 200,
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store',
+          ...CORS_HEADERS,
+        },
       });
     }
 

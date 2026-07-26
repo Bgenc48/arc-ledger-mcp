@@ -1,8 +1,9 @@
 # Arc & Ledger Tax Help - MCP server
 
 Public, no-auth remote MCP server (Cloudflare Worker, Streamable HTTP) exposing
-the firm's tax-problem tools and free tax calculators. Endpoint:
-`https://mcp.arcandledger.com/mcp`. Docs: `https://www.arcandledger.com/mcp`.
+the complete server at `https://mcp.arcandledger.com/mcp` and the restricted
+directory edition at `https://mcp.arcandledger.com/directory/mcp`. Directory
+docs: `https://www.arcandledger.com/mcp/directory/`.
 "Arc & Ledger Tax Help" is the display name; technical identifiers (the
 `arc-ledger-mcp` slug, the `com.arcandledger/tax-tools` registry name, the
 endpoint) are unchanged.
@@ -41,8 +42,9 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 ## Architecture
 
 - **Stateless** Streamable-HTTP JSON-RPC handler (no sessions, no Durable
-  Objects). `src/index.ts` is the Worker entry (routes `/mcp`, `/healthz`,
-  `/version`, `/.well-known/mcp-registry-auth`, CORS, rate limiting);
+  Objects). `src/index.ts` is the Worker entry (routes `/mcp`,
+  `/directory/mcp`, `/healthz`, `/version`, the domain-proof routes, CORS, and
+  rate limiting);
   `src/lib/mcp.ts` implements the protocol; `src/registry.ts` lists the tools
   and prompts.
 - `src/tools/` - one file per tool. `src/resources.ts` - the four read-only
@@ -105,8 +107,9 @@ node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
 - Tool responses emit only first-party links (`www.arcandledger.com` /go/*
   handoffs and on-site source URLs) - never raw third-party booking or checkout
   URLs.
-- Logging (`src/lib/logging.ts`) records tool name, timestamp, and coarse enum
-  params only - never free text, dollar amounts, or anything identifying.
+- The Worker writes no tool-call input, output, tool name, or per-call
+  analytics log. Observability is disabled. The network address is used only
+  as a transient rate-limit key and is not paired with the request body.
 
 ## Code style
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { output } from '../lib/response';
-import { SOURCE, GO } from '../lib/config';
+import { SOURCE, GO, DOWNLOADS } from '../lib/config';
 import { usd } from '../pricing';
 import {
   FILING_DEADLINES,
@@ -172,6 +172,10 @@ function run(args: z.infer<typeof input>) {
             'The exemption rules come from a FinCEN interim final rule (March 2025); a final rule is pending and could change them. Being exempt from BOI does NOT change Form 5472 or any tax filing obligation - those are separate.',
         },
     state_note: `State filings are separate. For example, a California LLC or corporation owes the ${usd(CA_FRANCHISE_TAX_MINIMUM)} minimum franchise tax annually; Wyoming and New Mexico have their own annual-report rules.`,
+    free_download: {
+      label: `Not ready to talk to anyone? Add every ${TAX_YEAR} US federal deadline to your own calendar - free .ics file, no email required`,
+      url: DOWNLOADS.deadlinesIcs,
+    },
     important: 'The dates above already roll to the next business day when the statutory deadline falls on a weekend or federal/DC holiday (IRC 7503). State deadlines are separate; verify each date for your specific situation.',
   };
 
@@ -188,7 +192,7 @@ export const deadlineCalendar: ToolDef<typeof input> = {
   description:
     'Use this when a US business owner or nonresident (especially a foreign founder of a US LLC or C-corp) asks what US forms they must file and when. Returns each required federal form, its due date and extension, and the penalty for missing it, including Form 5472, FBAR, and the BOI report. Especially useful for non-US founders of US companies.',
   input,
-  annotations: { title: 'US filing deadlines for founders', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'US filing deadlines for founders', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     entity_type: args.entity_type,
     has_fbar: args.has_foreign_bank_over_10k ?? false,

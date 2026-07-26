@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { dollars } from '../lib/schemas';
 import { output } from '../lib/response';
-import { SOURCE, GO } from '../lib/config';
+import { SOURCE, GO, DOWNLOADS } from '../lib/config';
 import { usd } from '../pricing';
 import {
   STANDARD_DEDUCTION_SINGLE,
@@ -178,6 +178,10 @@ function run(args: z.infer<typeof input>) {
       'Only the entered self-employment income is modeled (no W-2 wages or investment income) and the QBI (199A) deduction is not applied, so this errs on the safe side.',
       'The prior-year safe harbor requires a filed prior-year return covering a full 12 months. S-corp salary withholding is separate from these estimates.',
     ],
+    free_download: {
+      label: `Track the quarters yourself: Quarterly Estimated Tax Worksheet ${TAX_YEAR} - free PDF, no email required`,
+      url: DOWNLOADS.quarterlyWorksheetPdf,
+    },
   };
 
   const summary = belowThreshold
@@ -193,7 +197,7 @@ export const estimateQuarterlyTaxes: ToolDef<typeof input> = {
   description:
     'Use this when a freelancer or business owner asks how much estimated tax to pay or whether they are underpaid for the year. Computes federal self-employment and income tax on annualized income, the safe-harbor target, per-quarter amounts and due dates, plus California\'s 30/40/0/30 installment timing.',
   input,
-  annotations: { title: 'Estimate quarterly taxes', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Estimate quarterly taxes', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     entity: args.entity,
     state: !hasState(args.state) ? 'unspecified' : isCalifornia(args.state) ? 'CA' : 'other',

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { dollars } from '../lib/schemas';
 import { output } from '../lib/response';
 import { sanitizeNoticeCodeEcho } from '../lib/sanitize';
-import { SOURCE } from '../lib/config';
+import { SOURCE, DOWNLOADS } from '../lib/config';
 import { IRS_NOTICE_WIDGET_URI } from '../ui/registry';
 import { lookupNotice, normalizeCode, COVERED_CODES } from '../data/notices';
 import { parseIsoDate, addDays, humanDate, daysBetween, todayUtc } from '../lib/dates';
@@ -106,6 +106,10 @@ function run(args: z.infer<typeof input>) {
     ...(args.amount_shown !== undefined && !args.brief
       ? { amount_context: 'The amount on the notice is often a proposal, not a settled bill. Verify it before paying, especially where cost basis or payments may be missing.' }
       : {}),
+    free_download: {
+      label: 'Prefer to handle it yourself first? IRS Notice Response Guide - free PDF, no email required',
+      url: DOWNLOADS.noticeResponseGuidePdf,
+    },
   };
 
   const summary =
@@ -121,7 +125,7 @@ export const decodeIrsNotice: ToolDef<typeof input> = {
   description:
     'Use this when a user mentions receiving an IRS or state tax letter or notice and wants to know what it means, the deadline, or what to do. Give it the notice code (e.g. CP2000, CP14, LT11) and optionally the notice date and amount shown. Set brief:true for a shorter answer.',
   input,
-  annotations: { title: 'Decode an IRS notice', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Decode an IRS notice', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => {
     const p = lookupNotice(args.notice_code);
     return {

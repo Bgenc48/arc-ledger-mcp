@@ -152,7 +152,7 @@ export const checkSalesTaxNexus: ToolDef<typeof input> = {
   description:
     'Use this when an online seller or e-commerce/Amazon business asks whether they must collect sales tax in a state (economic nexus). Given annual sales, transaction count, and states, flags where economic nexus is likely met and explains the physical-nexus (FBA inventory) trap.',
   input,
-  annotations: { title: 'Check sales-tax nexus', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Check sales-tax nexus', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     has_transaction_count: args.transaction_count !== undefined,
     state_count: args.states?.length ?? 0,

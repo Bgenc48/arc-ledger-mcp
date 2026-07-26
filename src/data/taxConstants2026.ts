@@ -6,7 +6,7 @@
  *
  * Verified June 2026 against:
  * - IRS Rev. Proc. 2025-32 (2026 inflation adjustments incl. OBBBA amendments)
- * - IRS Notice 2026-10 (2026 standard mileage rates)
+ * - IRS Notice 2026-10 and Announcement 2026-11 (2026 standard mileage rates)
  * - One Big Beautiful Bill Act (OBBBA), signed July 4, 2025
  * - IRS standard mileage rates: https://www.irs.gov/tax-professionals/standard-mileage-rates
  * - California FTB, EDD for state-specific rates
@@ -64,8 +64,17 @@ export const LTCG_RATES = {
 } as const;
 
 // ─── Standard Mileage Rate (2026, IRS Notice 2026-10) ────────
-export const STANDARD_MILEAGE_RATE = 0.725; // 72.5 cents per mile (business, 2026)
-export const MEDICAL_MILEAGE_RATE = 0.205;  // 20.5 cents per mile (medical/moving, 2026)
+// Notice 2026-10 set the Jan. 1-June 30 rate. Announcement 2026-11 raised
+// the rate for expenses paid or incurred on or after July 1, 2026.
+export const STANDARD_MILEAGE_RATE_FIRST_HALF_2026 = 0.725; // Jan. 1-June 30
+export const STANDARD_MILEAGE_RATE_SECOND_HALF_2026 = 0.76; // July 1-Dec. 31
+/**
+ * Conservative compatibility fallback for legacy calculators that accept one
+ * annual mileage figure. Date-sensitive callers must use the two constants
+ * above and split 2026 mileage by period.
+ */
+export const STANDARD_MILEAGE_RATE = STANDARD_MILEAGE_RATE_FIRST_HALF_2026;
+export const MEDICAL_MILEAGE_RATE = 0.235;  // July 1-Dec. 31, 2026
 export const CHARITABLE_MILEAGE_RATE = 0.14; // 14 cents per mile (statutory)
 
 // ─── Home Office (Simplified Method) ─────────────────────────
@@ -110,6 +119,22 @@ export const CHARITABLE_NON_ITEMIZER_MFJ = 2_000;
 // Estate Tax
 export const ESTATE_EXEMPTION = 15_000_000; // Per person (2026)
 
+// ─── Retirement Contribution Limits (2026) ────────────────────
+// Source: IRS Notice 2025-67 and the IRS release "401(k) limit increases to
+// $24,500 for 2026, IRA limit increases to $7,500." Powers the Roth strategy
+// lead magnet. The 60-63 super catch-up (SECURE 2.0) replaces the 50+ catch-up.
+export const IRA_CONTRIBUTION_LIMIT = 7_500;        // Traditional / Roth IRA base
+export const IRA_CATCHUP_50 = 1_100;                // Age 50+ additional
+export const K401_ELECTIVE_DEFERRAL = 24_500;       // 401(k)/403(b) employee deferral
+export const K401_CATCHUP_50 = 8_000;               // Age 50+ additional
+export const K401_CATCHUP_60_63 = 11_250;           // Ages 60-63, in place of the 50+ catch-up
+export const K401_TOTAL_ADDITIONS = 72_000;         // IRC 415(c) all-sources ceiling
+export const ROTH_IRA_PHASEOUT_SINGLE_START = 153_000;
+export const ROTH_IRA_PHASEOUT_SINGLE_END = 168_000;
+export const ROTH_IRA_PHASEOUT_MFJ_START = 242_000;
+export const ROTH_IRA_PHASEOUT_MFJ_END = 252_000;
+export const ROTH_IRA_PHASEOUT_MFS_END = 10_000;    // MFS phases out $0 to $10,000
+
 // ─── Quarterly Estimated Tax ──────────────────────────────────
 export const QUARTERLY_THRESHOLD_FEDERAL = 1_000;
 export const QUARTERLY_THRESHOLD_CA = 500;
@@ -127,6 +152,25 @@ export const FAILURE_TO_PAY_RATE = 0.005;     // 0.5% per month
 export const FAILURE_TO_PAY_MAX = 0.25;       // 25% max
 export const IRS_INTEREST_RATE_ADDITION = 3;  // Federal short-term rate + 3%
 export const SERIOUSLY_DELINQUENT_THRESHOLD = 66_000; // IRC §7345 (2026), passport denial
+
+/**
+ * Annual interest rate on unpaid individual balances = federal short-term rate
+ * + 3% (IRC §6621), compounded daily, RESET QUARTERLY. Shared by the site's
+ * penalty calculator and the MCP worker's estimate_irs_penalty tool (which
+ * re-exports it via arc-ledger-mcp/src/rates.ts). Both surfaces present it as
+ * an approximation because the real rate changes each quarter.
+ */
+export const IRS_UNDERPAYMENT_ANNUAL_RATE = 0.07; // ~7% (in effect since Q2 2025); IRC §6621, set quarterly - verify the current quarter
+/**
+ * The last day of the calendar quarter the rate above was verified for.
+ * arc-ledger-mcp/test/drift.test.ts fails once this date passes, forcing a
+ * quarterly re-check against the IRS §6621 announcement (Rev. Rul., published
+ * ~1 month before each quarter). To clear: confirm or update the rate, then
+ * advance this date to the end of the current quarter.
+ */
+export const IRS_RATE_VERIFIED_THROUGH = '2026-09-30';
+/** Minimum failure-to-file penalty when a return is >60 days late: lesser of this or 100% of the tax (IRC §6651(a), 2026). */
+export const FTF_MINIMUM_OVER_60_DAYS = 525;
 
 // ─── FDAP / International ─────────────────────────────────────
 export const FDAP_DEFAULT_WITHHOLDING = 0.30;  // 30%

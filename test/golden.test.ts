@@ -70,9 +70,9 @@ describe('boundary fixtures', () => {
     expect((between.structured.form_8938 as any).status).toBe('possibly_required');
   });
 
-  it('Augusta rule qualifies at 14 days and voids at 15', () => {
-    expect(estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 14 }).structured.qualifies_for_exclusion).toBe(true);
-    expect(estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 15 }).structured.qualifies_for_exclusion).toBe(false);
+  it('Augusta day-count screen passes at 14 days and fails at 15', () => {
+    expect((estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 14 }).structured.day_count_screen as any).passes).toBe(true);
+    expect((estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 15 }).structured.day_count_screen as any).passes).toBe(false);
   });
 
   it('triage urgency: levy is act_now, a soon deadline promotes, otherwise the base level holds', () => {

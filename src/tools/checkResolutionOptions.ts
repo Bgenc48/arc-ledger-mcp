@@ -187,7 +187,7 @@ export const checkResolutionOptions: ToolDef<typeof input> = {
   description:
     'Use this when someone owes the IRS back taxes and asks how to settle, get on a payment plan, lower what they owe, or stop collection. Screens which IRS paths may fit - short-term payment plan, streamlined or financial-disclosure installment agreement, Offer in Compromise (a fit-check only, never a promise of acceptance), Currently Not Collectible hardship status, and penalty abatement - and lists the forms needed (9465, 433-F/A, 656, 843, 8821, 2848) plus collection-statute context. Never guarantees an IRS outcome. Set brief:true for a shorter answer.',
   input,
-  annotations: { title: 'Check IRS resolution options', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Check IRS resolution options', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     all_required_returns_filed: args.all_required_returns_filed ?? false,
     ability_to_pay: args.ability_to_pay,

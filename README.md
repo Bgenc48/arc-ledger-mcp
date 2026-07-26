@@ -1,155 +1,176 @@
-# Arc & Ledger Tax Help - MCP server
+# Arc & Ledger Tax Help MCP server
 
-A public, no-auth remote **MCP server** for tax problems and free tax tools,
-usable inside AI assistants (Claude, ChatGPT, and any MCP-capable client).
-Start with `triage_tax_problem` when someone does not know where to begin: it
-returns an urgency level, a this-week action plan, and which tool to run next.
-Runs as a stateless Cloudflare Worker; nothing is filed, purchased, or stored.
-Every answer is general information (not tax advice) with an optional handoff
-to an Enrolled Agent enrolled to practice before the IRS.
+A public remote Model Context Protocol server for general US tax information,
+screening tools, estimates, and firm-specific service tools. It runs as a
+stateless Cloudflare Worker and requires no Arc & Ledger account or
+authentication.
 
-- **Endpoint:** `https://mcp.arcandledger.com/mcp` (Streamable HTTP)
-- **Docs:** https://www.arcandledger.com/mcp
-- **Privacy:** https://www.arcandledger.com/mcp/privacy
+The project exposes two surfaces:
 
-## Connect it
+| Edition | Endpoint | Scope |
+|---|---|---|
+| Complete server | `https://mcp.arcandledger.com/mcp` | 21 tools, 12 prompts, 4 read-only resources, and 4 optional ChatGPT cards. Some results include first-party firm or service links. |
+| Directory edition | `https://mcp.arcandledger.com/directory/mcp` | 13 reviewed educational tools. No prompts, resources, cards, firm pricing, service matching, booking, payment, upload, purchase, or promotional handoff. |
 
-No API key, no account, no OAuth: paste the endpoint URL and go.
+- Complete docs: https://www.arcandledger.com/mcp/
+- Directory docs: https://www.arcandledger.com/mcp/directory/
+- MCP privacy policy: https://www.arcandledger.com/mcp/privacy/
+- Support: https://www.arcandledger.com/mcp/support/
 
-- **Claude (web and desktop):** Settings -> Connectors -> Add custom
-  connector -> `https://mcp.arcandledger.com/mcp` (no authentication).
-- **Claude Code:**
-  `claude mcp add --transport http arc-ledger https://mcp.arcandledger.com/mcp`
-- **ChatGPT (developer mode):** Settings -> Apps & Connectors -> enable
-  developer mode -> create a connector with the same URL, authentication
-  "None". Four tools additionally render in-chat cards (tax action plan, IRS
-  notice decoder, tax-document explainer, formation-state comparison) on
-  surfaces that support the Apps SDK.
+Every result is general information, not tax advice, and creates no
+practitioner-client relationship. The tools do not file, transmit, sign,
+certify, authorize payment, or access a taxpayer account.
 
-Menu names change between releases; the constant part is the endpoint URL and
-"no auth".
+## Connect
 
-## Tools
+No API key, OAuth flow, or Arc & Ledger account is required. For the reviewed
+educational surface, use:
 
-All 20 tools are read-only and deterministic: the same inputs always produce
-the same answer. Tax-problem tools lead the list.
-
-| Tool | Purpose |
-|---|---|
-| `triage_tax_problem` | Start here with any tax problem (a letter, back taxes, unfiled years, a levy, an audit, penalties): urgency level, this-week / this-month action plan, what not to do, which tool to run next, and the matching published-fee service. |
-| `decode_irs_notice` | Explain an IRS notice (28 covered codes), its deadline, and what to do. |
-| `check_resolution_options` | Screens IRS back-tax paths: payment plan, OIC (fit-check only), CNC, penalty abatement + forms. |
-| `estimate_irs_penalty` | Failure-to-file / failure-to-pay penalties + interest on a balance; abatement. |
-| `explain_tax_document` | Explain a tax form you received (W-2, 1099 family, K-1, 1042-S, 1095-A...): key boxes, where it goes on the return, what to check, and what to do if it is wrong or missing. |
-| `deadline_calendar` | US filing deadlines + penalties for founders (1120/5472, 1040-NR, FBAR, BOI). |
-| `get_document_checklist` | Documents to gather per engagement (1040, Schedule C, 5472, 1120-S, 1065, FBAR catch-up, ITIN). |
-| `check_fbar_fatca` | FBAR / Form 8938 obligations, thresholds, catch-up. |
-| `check_treaty_withholding` | US withholding for non-US payees: default rates, US-Turkey treaty rates, W-8BEN / W-8BEN-E / W-9 / Form 8233. |
-| `check_itin_eligibility` | ITIN eligibility, W-7 category, documents; Enrolled Agent prepares the W-7 and represents you. |
-| `compare_llc_scorp` | SE tax vs salary+distribution, CA franchise, break-even. |
-| `estimate_quarterly_taxes` | Federal + CA quarterly estimates with safe harbor. |
-| `estimate_reasonable_comp` | S-corp reasonable-compensation starting range (facts-and-circumstances caveats included). |
-| `estimate_accountable_plan` | Accountable-plan reimbursement estimate: home office, mileage, cell/internet. |
-| `estimate_augusta_rule` | Renting your home to your business under IRC 280A(g): the 14-day exclusion, documentation, limits. |
-| `estimate_rental_income` | Net rental income, depreciation, passive-loss allowance, 14-day rule. |
-| `compare_formation_states` | Wyoming vs New Mexico vs Delaware vs California for a US LLC. |
-| `check_sales_tax_nexus` | Economic + physical (FBA) sales-tax nexus by state. |
-| `get_fee_quote` | Published fee range and line items for firm services. |
-| `book_consultation` | First-party booking link + office identity. |
-
-Plus twelve prompts (six English, five Turkish, one Spanish):
-`help_with_my_tax_problem`, `decode_my_irs_notice`, `explain_my_tax_form`,
-`am_i_required_to_file_fbar`, `should_i_be_an_scorp`, `settle_my_irs_debt`,
-`vergi_sorunum_var`, `abd_sirket_vergi_takvimi`, `bu_vergi_formu_ne`,
-`itin_almali_miyim`, `irs_borc_cozumu`, `decodificar_mi_aviso_irs`.
-
-And four read-only **resources** (`arcledger://office`, `arcledger://services`,
-`arcledger://fee-catalog`, `arcledger://tool-directory`) so an assistant can
-cite the firm's identity, service directory, and fee catalog directly.
-
-## Claude plugin (Skills + Connector)
-
-`plugin/` is an installable Claude plugin that bundles two Skills with this
-MCP server (via `.mcp.json`), so one install adds both the orchestration
-methodology and the tools it drives. The marketplace manifest lives at
-`.claude-plugin/marketplace.json`:
-
+```text
+https://mcp.arcandledger.com/directory/mcp
 ```
+
+For local Claude Code testing:
+
+```bash
+claude mcp add --transport http arc-ledger-tax-reference https://mcp.arcandledger.com/directory/mcp
+```
+
+The complete endpoint remains available to users who intentionally want the
+firm-specific public tools documented on the main MCP page.
+
+## Directory tool set
+
+The directory edition is the surface proposed for the OpenAI Plugins Directory
+and Anthropic Software Directory.
+
+| Tool | General purpose |
+|---|---|
+| `decode_irs_notice` | Explain a supported IRS notice code and usual response path. |
+| `check_resolution_options` | Screen general IRS payment and collection alternatives. |
+| `estimate_irs_penalty` | Estimate selected federal late-filing, late-payment, and underpayment amounts. |
+| `explain_tax_document` | Explain the purpose and common fields of a named US tax document. |
+| `deadline_calendar` | Return common federal filing and payment dates. |
+| `check_fbar_fatca` | Screen general FBAR and Form 8938 thresholds. |
+| `check_treaty_withholding` | Explain general withholding rules and supported US-Turkey treaty rates. |
+| `check_itin_eligibility` | Screen general ITIN reason categories without treating entity ownership as automatic eligibility. |
+| `check_5472_obligation` | Screen common Form 5472 triggers. |
+| `estimate_quarterly_taxes` | Estimate federal quarterly payments and show assumptions. |
+| `estimate_accountable_plan` | Estimate potentially reimbursable expenses, including split 2026 mileage rates. |
+| `estimate_augusta_rule` | Screen the fewer-than-15-days home-rental rule and calculate conditional amounts. |
+| `estimate_rental_income` | Estimate a basic rental-income result and modeled limitations. |
+
+Each directory result:
+
+- cites an official IRS or FinCEN page;
+- includes a shared general-information limitation;
+- tells the calling model to preserve exact returned figures and dates;
+- contains no Arc & Ledger service, contact, booking, payment, or upload link.
+
+The directory edition intentionally excludes firm quotations, consultations,
+document collection, service matching, formation-state comparisons, sales-tax
+nexus screens, and reasonable-compensation ranges. Those tools either have a
+commercial purpose, rely on changing state data, or need more professional
+judgment than a short deterministic screen should imply.
+
+## Privacy and safety
+
+- Tool inputs are processed in memory to answer the request.
+- The Worker writes no tool-call inputs, outputs, tool names, or per-call
+  analytics to application logs.
+- Cloudflare Worker observability is disabled.
+- The server uses the request's network address temporarily as a rate-limit
+  key. It is not written to application storage or paired with the tool body.
+- There is no MCP request database, user history, tax-return store, or document
+  upload surface.
+- Users are instructed not to send SSNs, ITINs, EINs, tax account numbers,
+  bank details, passwords, or documents.
+- All tools carry `readOnlyHint: true`, `destructiveHint: false`, and an
+  explicit `openWorldHint`.
+
+Cloudflare still processes ordinary request metadata as the infrastructure
+provider. The public privacy policy describes that boundary.
+
+## Claude plugin
+
+`plugin/` is a Claude plugin bundle that points to the directory endpoint and
+adds two procedural Skills:
+
+- `respond-to-your-irs-notice`
+- `resolve-back-taxes`
+
+The Skills use only tools available on the directory edition. They lead with
+deadlines and filing-compliance gates, label estimates, retain official source
+links, request no sensitive identifiers or documents, and do not promote or
+sell a firm service.
+
+The repository marketplace manifest lives at
+`.claude-plugin/marketplace.json`.
+
+```text
 /plugin marketplace add Bgenc48/arc-ledger-mcp
 /plugin install arc-ledger-irs@arc-ledger
 ```
 
-- **respond-to-your-irs-notice** decodes an IRS notice, leads with the
-  deadline, sizes penalties, screens resolution options, and hands off to an
-  Enrolled Agent.
-- **resolve-back-taxes** handles tax debt and unfiled years: triage first,
-  filing compliance before any agreement, penalty sizing, the resolution paths
-  (payment plan, Offer in Compromise as a fit-check only, hardship status,
-  penalty abatement), and the Enrolled Agent handoff.
+## Architecture
 
-Both are Circular 230 safe: general information only, never a guaranteed IRS
-outcome.
+- Stateless Streamable HTTP JSON-RPC handler, with no sessions or Durable
+  Objects.
+- Official `@modelcontextprotocol/sdk` protocol types and `zod` input schemas.
+- Two registries: the complete server in `src/registry.ts` and the restricted
+  directory surface in `src/directory.ts`.
+- A 65,536-byte request-body cap, JSON content-type enforcement, batch limits,
+  CORS handling, and per-network-address rate limiting.
+- Per-tool kill switch through `DISABLED_TOOLS`.
+- Version, tax-year, and active-tool counts exposed by `GET /version`.
+- Apps SDK widgets are bound only on the complete server. The directory
+  edition exposes standard MCP results with no UI resource.
 
-## Design
-
-- **Stateless** Streamable-HTTP JSON-RPC handler (no sessions, no Durable
-  Objects). Uses the official `@modelcontextprotocol/sdk` types + `zod`.
-- **No hardcoded prices or rates.** `src/pricing.ts` is an adapter over the
-  pricing data module: the single source of truth carrying the same numbers
-  published at arcandledger.com/pricing/. `src/rates.ts` adapts the 2026 tax
-  constants and adds only server-only pieces documented with their statutory
-  source (safe harbor, CA S-corp rate, Form 8938 matrix, CA 30/40/0/30).
-- **Shared response envelope:** every tool returns the same `disclaimer`, a
-  first-party `source_url`, and one first-party `next_step` handoff. A
-  content-governance test sweeps every rendered output for banned and
-  required strings.
-- **Privacy:** inputs processed in memory; logs carry only tool name,
-  timestamp, and coarse enums (never free text or dollar amounts), retained
-  30 days.
-- **Rate limiting:** per-IP token bucket (60/min, burst 10) + the native
-  `RATE_LIMITER` binding when bound.
-
-## Endpoints
+## Routes
 
 | Route | Purpose |
 |---|---|
-| `POST /mcp` | The MCP endpoint (Streamable HTTP, JSON-RPC). |
+| `POST /mcp` | Complete MCP surface. |
+| `POST /directory/mcp` | Restricted directory MCP surface. |
 | `GET /healthz` | Liveness. |
-| `GET /version` | Server version, price set, tax year, tool/prompt counts. |
-| `GET /.well-known/mcp-registry-auth` | MCP Registry domain-ownership proof. |
+| `GET /version` | Version, tax year, tool counts, and directory endpoint. |
+| `GET /.well-known/mcp-registry-auth` | MCP Registry domain proof. |
+| `GET /.well-known/openai-apps-challenge` | Exact OpenAI domain challenge when configured. |
 
 ## Commands
 
 ```bash
-npm ci                 # install (package-lock is authoritative)
-npm test               # vitest: protocol, HTTP surface, tool correctness, determinism, schema snapshot, governance
-npm run typecheck      # tsc --noEmit (strict)
-npm run dev            # wrangler dev (local)
-npm run bundle-check   # wrangler deploy --dry-run (proves the worker bundles)
-npm run gen:products   # regenerate the products.json feed from the catalog
-node scripts/gen-examples.mjs   # regenerate docs/worked-examples.json
+npm ci
+npm run typecheck
+npm test
+npm run dev
+npm run bundle-check
+npm run gen:products
+node scripts/gen-examples.mjs
 ```
+
+`npm run bundle-check` runs a Cloudflare Worker dry deployment. The bundled
+`workerd` binary does not support every local Windows ARM64 environment, so
+the hosted CI result is the release gate when that platform limitation occurs.
 
 ## Layout
 
-```
+```text
 src/
-  index.ts            Worker entry: /mcp, /healthz, /version, /.well-known/mcp-registry-auth, CORS, rate limit
-  registry.ts         The 20 tools + 12 prompts
-  pricing.ts          Adapter over the pricing data module (SSOT for prices)
-  rates.ts            Adapter over the 2026 tax constants + server-only tax constants
-  resources.ts        The four arcledger:// resources
-  lib/                mcp (protocol), response, logging, rateLimit, tax, dates, schemas
-  tools/              one file per tool
-  ui/                 Apps SDK widgets (action plan, IRS notice, tax document, formation states)
-  data/               data modules: IRS notices, tax documents (and, in the public
-                      mirror, the vendored pricing / tax-constant / catalog /
-                      service-page snapshots)
-plugin/               the Claude plugin: two Skills + .mcp.json (see .claude-plugin/)
-test/                 vitest suites + the tool input-schema snapshot
+  index.ts            Worker routes, request limits, and registry selection
+  registry.ts         Complete 21-tool and 12-prompt registry
+  directory.ts        Restricted 13-tool directory registry and output scrubber
+  pricing.ts          Adapter over the published pricing data source
+  rates.ts            Adapter over reviewed tax-year constants
+  resources.ts        Complete-server read-only resources
+  lib/                MCP, response, rate-limit, tax, date, and schema helpers
+  tools/              One module per tool
+  ui/                 Complete-server Apps SDK widgets
+plugin/               Claude plugin bundle
+test/                 Protocol, HTTP, tax, directory, privacy, and governance tests
 ```
 
 ## License
 
-Source-available: the code is published for transparency and registry review.
-All rights reserved; see `LICENSE`.
+Source-available for transparency and directory review. All rights reserved;
+see `LICENSE`.

@@ -77,7 +77,7 @@ export const bookkeeping = {
   essentials: { price: 295, regular: 395, volume: "0-100 txns/mo", cloudSoftwareIncluded: false },
   growth: { price: 495, regular: 595, volume: "101-300 txns/mo", cloudSoftwareIncluded: true },
   enterprise: { from: 795, volume: "300+ txns / multi-entity" }, // scoped per case
-  cleanupCatchUp_from: 750,      // one-time catch-up, priced from this floor after a records review
+  cleanupCatchUp_from: 1250,     // one-time catch-up, priced from this floor after a records review
   firstYear1099Free: true,       // annual clients: first Form 1099 filed free
   promoEndDate: "2026-08-31",    // new-client promo end date
   annualPrepayDiscountPct: 10,
@@ -96,9 +96,9 @@ export const resolution = {
   amended1040X_minor: 350,
   amended1040X_full: 650,
   amended1040X_perState: 175,
-  irsHealthCheck: 299,                       // full account + transcript review
-  irsWatchdog_monthly: 29,
-  irsWatchdog_annual: 290,
+  irsHealthCheck: 249,                       // IRS Rescue entry (transcript variant), credited in full
+  irsWatchdog_monthly: 49,
+  irsWatchdog_annual: 490,
   irsWatchdogPro_monthly: 99,                // quarterly transcript pull + EA summary call
 } as const;
 
@@ -154,12 +154,12 @@ export const taxPlanning = {
 /* ------------------------------------------------------------------ */
 export const bundles = {
   newBusinessStarter: { price: 699, savings: 50 }, // EIN + S-Corp election + setup
-  annualPeaceOfMind: { price: 349, savings: 289 },
-  sCorpOwnerComplete: { value: 4524, price: 3995, monthlyPrice: 369, savings: 529 }, // 1120-S + 1040 + monthly books + payroll + CA filings
+  annualPeaceOfMind: { price: 599, savings: 239 }, // registered agent + IRS Watchdog annual + annual report
+  sCorpOwnerComplete: { value: 4524, price: 3995, monthlyPrice: 369, savings: 529 }, // 1120-S + 1040 + payroll + tax-planning snapshot
   expatAnnual: { value: 1240, price: 1095, savings: 145 },                            // 1040 + FBAR + FATCA + FTC for Americans abroad
-  foreignFounderComplianceY2: { value: 2613, price: 2295, savings: 318 },             // year-2+ foreign-owned US entity: 5472 + returns + agent + reports
+  foreignFounderComplianceY2: { value: 2813, price: 2295, savings: 518 },             // year-2+ foreign-owned US entity: 5472 + agent + annual report + BOI + IRS Watchdog
   landlordPackage: { value: 1224, price: 1095, savings: 129 },                        // 1040 + Schedule E rentals + depreciation
-  freshStart: { value: 3049, price: 2795, savings: 254, deposit: 500 },               // back-year returns + transcripts + abatement; deposit credited toward the price
+  freshStart: { value: 2999, price: 2795, savings: 204, deposit: 500 },               // back-year returns + transcripts + streamlined installment; deposit credited toward the price
   nonresidentInvestorStarter: { value: 1169, price: 1045, savings: 124 },             // 1040-NR + treaty + FIRPTA + ITIN
 } as const;
 
@@ -168,7 +168,7 @@ export const bundles = {
 /* ------------------------------------------------------------------ */
 export const consultations = {
   free15Min: 0,
-  irsNoticeReview: 199,          // single-notice triage, credited in full
+  irsNoticeReview: 249,          // IRS Rescue entry: single-notice triage, credited in full
   discoverySession_from: 297,    // standard 297 / specialist 497, both credited
   discoverySpecialist: 497,
 } as const;
@@ -236,7 +236,7 @@ export const formation = {
   salesTaxRegistration: 299,
   itinW7: 399,
   sCorpElection2553: 299,
-  additionalForm5472: 350,
+  additionalForm5472: 500,
   catchUpBookkeeping_perMonth: 250,
   amendedReturn: 500,
   penaltyAbatement_from: 750,

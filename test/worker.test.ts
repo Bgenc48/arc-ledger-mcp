@@ -14,6 +14,14 @@ function post(body: unknown, headers: Record<string, string> = {}) {
   });
 }
 
+function directoryPost(body: unknown, headers: Record<string, string> = {}) {
+  return new Request('https://mcp.arcandledger.com/directory/mcp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.17', ...headers },
+    body: JSON.stringify(body),
+  });
+}
+
 describe('Worker HTTP surface', () => {
   beforeEach(() => _resetBuckets());
 
@@ -33,6 +41,8 @@ describe('Worker HTTP surface', () => {
     expect(body.price_set).toBe(PRICE_SET);
     expect(body.tax_year).toBe(2026);
     expect(body.protocol).toBeDefined();
+    expect(body.directory_tools).toBe(13);
+    expect(body.directory_endpoint).toBe('/directory/mcp');
   });
 
   it('GET /.well-known/mcp-registry-auth serves the domain-ownership proof', async () => {
@@ -65,6 +75,36 @@ describe('Worker HTTP surface', () => {
     const res = await worker.fetch(post({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }), env);
     expect(res.status).toBe(200);
     expect((await res.json() as any).result.serverInfo.title).toBe('Arc & Ledger Tax Help');
+  });
+
+  it('POST /directory/mcp exposes the restricted directory surface', async () => {
+    const initialized = await worker.fetch(
+      directoryPost({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }),
+      env,
+    );
+    const initBody = (await initialized.json()) as any;
+    expect(initBody.result.serverInfo.title).toBe('Arc & Ledger Tax Reference');
+    expect(initBody.result.capabilities.resources).toBeUndefined();
+
+    const listed = await worker.fetch(
+      directoryPost({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
+      env,
+    );
+    expect(((await listed.json()) as any).result.tools).toHaveLength(13);
+  });
+
+  it('serves the exact OpenAI challenge token only when configured', async () => {
+    const url = 'https://mcp.arcandledger.com/.well-known/openai-apps-challenge';
+    const missing = await worker.fetch(new Request(url), env);
+    expect(missing.status).toBe(404);
+
+    const configured = await worker.fetch(
+      new Request(url),
+      { ...env, OPENAI_APPS_CHALLENGE: 'openai-test-token' },
+    );
+    expect(configured.status).toBe(200);
+    expect(configured.headers.get('content-type')).toContain('text/plain');
+    expect(await configured.text()).toBe('openai-test-token');
   });
 
   it('POST /mcp notifications/initialized returns 202 with no body', async () => {

@@ -9,7 +9,7 @@ import type { ToolDef } from '../lib/types';
 
 const input = z.object({
   fair_daily_rental_rate_usd: dollars(100_000).describe('The FAIR-MARKET daily rate to rent your home for a comparable business event (e.g. what a hotel meeting room or event space of similar size would charge). Must be supportable with a written quote or comparable.'),
-  days_rented: count(365).describe('Number of days per year you rent your home to your business. The tax-free treatment ONLY applies at 14 days or fewer.'),
+  days_rented: count(365).describe('Total number of days during the year the dwelling is rented to anyone at a fair rental price, including days rented to your business. The IRC 280A(g) income exclusion requires fewer than 15 total rental days and that the dwelling is used as a home.'),
   marginal_tax_rate_pct: z
     .number()
     .finite()
@@ -28,12 +28,9 @@ function run(args: z.infer<typeof input>) {
   const marginalRate =
     args.marginal_tax_rate_pct !== undefined ? clamp(args.marginal_tax_rate_pct, 0, 50) / 100 : DEFAULT_MARGINAL_RATE;
 
-  const qualifies = requestedDays <= AUGUSTA_MAX_DAYS;
-  // Only the first 14 days can ever be tax-free; past that the whole arrangement
-  // fails 280A(g) and the rental income becomes taxable.
-  const eligibleDays = Math.min(requestedDays, AUGUSTA_MAX_DAYS);
-  const annualDeduction = round0(rate * eligibleDays);
-  const taxSaving = round0(annualDeduction * marginalRate);
+  const passesDayCount = requestedDays <= AUGUSTA_MAX_DAYS;
+  const enteredRent = round0(rate * requestedDays);
+  const potentialTaxEffect = passesDayCount ? round0(enteredRent * marginalRate) : 0;
 
   const fields = {
     inputs: {
@@ -41,44 +38,53 @@ function run(args: z.infer<typeof input>) {
       days_requested: requestedDays,
       marginal_tax_rate: `${Math.round(marginalRate * 100)}%`,
     },
-    qualifies_for_exclusion: qualifies,
-    eligible_days: eligibleDays,
-    business_deduction: annualDeduction,
-    tax_free_to_you: qualifies ? annualDeduction : 0,
-    estimated_tax_saving: qualifies ? taxSaving : 0,
+    day_count_screen: {
+      passes: passesDayCount,
+      total_rental_days_entered: requestedDays,
+      threshold: `Fewer than 15 total rental days, or no more than ${AUGUSTA_MAX_DAYS}.`,
+      limitation:
+        'Passing the day-count screen does not establish the exclusion or a business deduction. The dwelling must be used as a home, and the business payment must separately be ordinary, necessary, and reasonable.',
+    },
+    entered_rent_amount: enteredRent,
+    potential_business_rent_expense: enteredRent,
+    potential_owner_income_exclusion: passesDayCount ? enteredRent : 0,
+    estimated_potential_income_tax_effect: potentialTaxEffect,
     how_it_works:
-      'IRC 280A(g), the "Augusta rule": if you rent your personal residence to your own business for 14 days or fewer in a year, the business deducts the rent as a legitimate expense and you exclude that rent from your personal income entirely - it is tax-free to you.',
-    the_15th_day_trap: qualifies
-      ? `You are at ${requestedDays} day(s), within the ${AUGUSTA_MAX_DAYS}-day limit.`
-      : `You entered ${requestedDays} days. At 15 days or more the exclusion is LOST and ALL of the rental income becomes taxable to you. Keep it to ${AUGUSTA_MAX_DAYS} days or fewer.`,
-    requirements_to_make_it_stick: [
-      `Keep it to ${AUGUSTA_MAX_DAYS} rental days per year or fewer.`,
-      'The rate must be FAIR MARKET value - get written quotes from comparable venues (hotel meeting room, event space), ideally more than one, and keep them.',
-      'There must be a genuine business purpose for each day (board meeting, strategy session, team offsite), with an agenda and minutes.',
-      'The business should have a written rental agreement with you and actually pay you (a real transfer, documented).',
-      'This fits a corporation or S-corp renting from the owner; a sole proprietor renting to themselves does not work (you cannot rent to yourself).',
+      'IRC 280A(g) can exclude rent received when a dwelling unit is used as a home and is rented for fewer than 15 total days during the tax year. That owner-side exclusion does not by itself establish the business-side deduction.',
+    requirements_to_review: [
+      `Count every day the dwelling is rented to anyone at a fair rental price, not only days rented to the business. The section 280A(g) screen allows no more than ${AUGUSTA_MAX_DAYS}.`,
+      'Confirm the dwelling meets the tax definition of used as a home for the year.',
+      'Support the rate with comparable, similar venues and do not use unreasonable related-party rent.',
+      'Establish that each business use is ordinary and necessary under the business expense rules.',
+      'Keep a written agreement, agenda, attendance record, proof of use, comparable-rate evidence, and proof of actual payment.',
+      'A sole proprietor cannot create a deductible rent payment by renting property to the same sole proprietorship.',
     ],
     caveats: [
-      'This estimates the income-tax benefit only, using the marginal rate you provided (or a 22% default). It does not model your full return.',
-      'Aggressive or undocumented Augusta deductions are challenged; the fair-market rate and business-purpose documentation are what make it defensible.',
-      'The Tax Court has cut inflated Augusta deductions sharply: in Sinopoli v. Commissioner (T.C. Memo 2023-105) an S-corp deducted over $290,000 of home rent and the court allowed roughly $500 per meeting, because there was no comparable-venue evidence and no meeting records. The comparables and the minutes are what survive an exam.',
+      'This is a day-count and arithmetic screen only. It does not decide whether the dwelling is used as a home, whether the business expense is deductible, or whether the entered rate is reasonable.',
+      'The potential income-tax effect uses the marginal rate entered, or a 22% default, and does not model the full return.',
+      'At 15 or more total rental days, section 280A(g) does not provide the owner-side income exclusion. Other rental reporting rules then apply.',
+      'Related-party rent and poorly documented business use receive close factual scrutiny. Obtain qualified review before reporting the transaction.',
+    ],
+    official_sources: [
+      'https://www.irs.gov/publications/p527',
+      'https://www.irs.gov/publications/p334',
     ],
   };
 
-  const summary = qualifies
-    ? `Renting your home to your business ${eligibleDays} day(s) at ${usd(rate)}/day is about ${usd(annualDeduction)} the business deducts and you receive TAX-FREE under the Augusta rule (IRC 280A(g)) - roughly ${usd(taxSaving)} in tax saved at a ${Math.round(marginalRate * 100)}% rate. Keep it to ${AUGUSTA_MAX_DAYS} days and document a fair rate plus a real business purpose.`
-    : `At ${requestedDays} days you EXCEED the ${AUGUSTA_MAX_DAYS}-day Augusta-rule limit, so the whole rent would become taxable. Keep it to ${AUGUSTA_MAX_DAYS} days or fewer: ${eligibleDays} days at ${usd(rate)}/day would be about ${usd(annualDeduction)} deductible and tax-free.`;
+  const summary = passesDayCount
+    ? `The entered ${requestedDays}-day amount is ${usd(enteredRent)}. It passes only the fewer-than-15-days screen under IRC 280A(g). The owner-side exclusion still depends on the dwelling being used as a home, and any business deduction separately depends on ordinary and necessary use plus reasonable rent. The potential income-tax effect is about ${usd(potentialTaxEffect)} at a ${Math.round(marginalRate * 100)}% rate if both treatments apply.`
+    : `The entered ${requestedDays} total rental days exceed the fewer-than-15-days screen, so IRC 280A(g) does not provide the owner-side income exclusion. The ${usd(enteredRent)} payment requires normal rental-income reporting, and any business deduction separately depends on ordinary and necessary use plus reasonable rent.`;
 
   return output(summary, fields, SOURCE.taxPlanning, NEXT_STEP);
 }
 
 export const estimateAugustaRule: ToolDef<typeof input> = {
   name: 'estimate_augusta_rule',
-  title: 'Estimate the Augusta rule (home rental to your business)',
+  title: 'Screen the 14-day home-rental rule',
   description:
-    'Use this when a business owner asks about the "Augusta rule," renting their home to their own S-corp or C-corp, or the 14-day tax-free home rental (IRC 280A(g)). Given a fair daily rate and number of days, estimates the business deduction and tax-free income, warns about the 14-day limit, and lists the documentation needed to make it defensible.',
+    'Use this when a business owner asks about the "Augusta rule," renting a home to a related business, or the fewer-than-15-day rental-income exclusion in IRC 280A(g). Screens the total rental-day limit and calculates conditional amounts while keeping the owner-side exclusion separate from the business-side deduction requirements.',
   input,
-  annotations: { title: 'Estimate the Augusta rule', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Screen the 14-day home-rental rule', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     within_limit: args.days_rented <= AUGUSTA_MAX_DAYS,
     has_marginal_rate: args.marginal_tax_rate_pct !== undefined,

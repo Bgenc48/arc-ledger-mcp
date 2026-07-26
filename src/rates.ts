@@ -92,26 +92,13 @@ export const INFO_RETURN_PENALTIES = {
 } as const;
 
 // ─── IRS underpayment interest rate (estimate_irs_penalty) ───────────────────
-/**
- * Annual interest rate on unpaid individual balances = federal short-term rate
- * + 3% (IRC §6621), compounded daily, RESET QUARTERLY. This is the recent
- * standing figure; the tool states it is an approximation and that the real
- * rate changes each quarter. Failure-to-file/pay rates come from the site
- * constants (FAILURE_TO_FILE_RATE etc.).
- */
-export const IRS_UNDERPAYMENT_ANNUAL_RATE = 0.07; // ~7% (in effect since Q2 2025); IRC §6621, set quarterly - verify the current quarter
-/**
- * The last day of the calendar quarter the rate above was verified for.
- * A CI test (drift.test.ts) fails once this date passes, forcing a quarterly
- * re-check against the IRS §6621 announcement (Rev. Rul., published ~1 month
- * before each quarter). To clear the failure: confirm or update the rate,
- * then advance this date to the end of the current quarter.
- */
-export const IRS_RATE_VERIFIED_THROUGH = '2026-09-30';
+// IRS_UNDERPAYMENT_ANNUAL_RATE, IRS_RATE_VERIFIED_THROUGH, and
+// FTF_MINIMUM_OVER_60_DAYS now live in the shared constants module (re-exported
+// by the `export *` above) so the site's penalty calculator and this worker can
+// never disagree. The quarterly re-verify discipline is unchanged:
+// drift.test.ts still fails once IRS_RATE_VERIFIED_THROUGH passes.
 /** Failure-to-file is reduced by the failure-to-pay amount in any month both apply (IRC §6651(c)). */
 export const FTF_REDUCED_BY_FTP_RATE = 0.005;
-/** Minimum failure-to-file penalty when a return is >60 days late: lesser of this or 100% of the tax (IRC §6651(a), 2026). */
-export const FTF_MINIMUM_OVER_60_DAYS = 525;
 /** Offer in Compromise application fee (Form 656 booklet, 2026); waived with the low-income certification. */
 export const OIC_APPLICATION_FEE = 205;
 
