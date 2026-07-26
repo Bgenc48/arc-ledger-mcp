@@ -124,7 +124,7 @@ export const checkFbarFatca: ToolDef<typeof input> = {
   description:
     'Use this when a user has foreign bank accounts, assets, or unfiled foreign-account reports and needs to know their US reporting obligations (FBAR / FinCEN 114 and Form 8938 / FATCA), thresholds, penalty exposure, and catch-up options.',
   input,
-  annotations: { title: 'Check FBAR and FATCA obligations', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Check FBAR and FATCA obligations', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     filing_status: args.filing_status,
     lives_abroad: args.lives_abroad,

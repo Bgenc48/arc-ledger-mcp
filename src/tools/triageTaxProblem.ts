@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { output } from '../lib/response';
-import { SOURCE, GO } from '../lib/config';
+import { SOURCE, GO, OFFICE } from '../lib/config';
 import { consultations, resolution, usd, usdRange } from '../pricing';
 import { ACTION_PLAN_WIDGET_URI } from '../ui/registry';
 import type { NextStep, ToolDef } from '../lib/types';
@@ -478,6 +478,16 @@ function run(args: Input) {
       has_deadline_soon: deadlineSoon,
     },
     urgency,
+    ...(urgency === 'act_now'
+      ? {
+          urgent_contact: {
+            note: 'A short collection window moves faster by phone than by calendar. Call or message during office hours and say an IRS deadline is running.',
+            phone: OFFICE.phone,
+            whatsapp: OFFICE.whatsapp,
+            hours: OFFICE.hours,
+          },
+        }
+      : {}),
     what_this_usually_is: p.what_this_usually_is,
     this_week: thisWeek,
     ...(balanceNote ? { balance_note: balanceNote } : {}),
@@ -494,7 +504,11 @@ function run(args: Input) {
     caveats: CAVEATS,
   };
 
-  const summary = `${URGENCY_PHRASE[urgency]} ${p.summary_line} Matching published-fee service: ${p.matching_service.service} (${p.matching_service.published_fee}). An Enrolled Agent can pull your IRS transcripts (Form 8821) and turn this into an exact plan.`;
+  const urgentLine =
+    urgency === 'act_now'
+      ? ` Short deadline: calling the office reaches an Enrolled Agent faster than a calendar slot - ${OFFICE.phone} (WhatsApp ${OFFICE.whatsapp}).`
+      : '';
+  const summary = `${URGENCY_PHRASE[urgency]} ${p.summary_line} Matching published-fee service: ${p.matching_service.service} (${p.matching_service.published_fee}). An Enrolled Agent can pull your IRS transcripts (Form 8821) and turn this into an exact plan.${urgentLine}`;
 
   return output(summary, fields, p.source_url, next);
 }
@@ -505,7 +519,7 @@ export const triageTaxProblem: ToolDef<typeof input> = {
   description:
     'Use this when someone has a tax problem and does not know where to start; call it FIRST, before the specific tools. Covers an IRS or state letter, back taxes they cannot pay, unfiled years, a levy or wage garnishment, an audit, penalties, an identity-verification letter, and payroll tax trouble. Returns an urgency level, a this-week and this-month action plan, what not to do, which tool to run next for the specifics, and the matching published-fee service. General information only; never a guaranteed IRS outcome. Set brief:true for a shorter answer.',
   input,
-  annotations: { title: 'Triage a tax problem', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Triage a tax problem', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     problem: args.problem,
     band: args.amount_band ?? 'not_provided',

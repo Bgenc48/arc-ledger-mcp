@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { output } from '../lib/response';
-import { SOURCE, GO } from '../lib/config';
+import { SOURCE, GO, DOWNLOADS } from '../lib/config';
 import type { NextStep, ToolDef } from '../lib/types';
 
 const SERVICES = [
@@ -151,6 +151,10 @@ function run(args: z.infer<typeof input>) {
     documents: list.documents,
     ...(firstYear ? { first_year_additions: FIRST_YEAR_ADDITIONS } : {}),
     how_to_send: FORMAT_TIPS,
+    free_download: {
+      label: 'Prefer a printable version? Tax Document Checklist (free PDF, no email required)',
+      url: DOWNLOADS.documentChecklistPdf,
+    },
     caveats: [
       'This is the standard list; your situation may need more (or less). Missing items do not have to block the start - send what you have and note the gaps.',
     ],
@@ -167,7 +171,7 @@ export const getDocumentChecklist: ToolDef<typeof input> = {
   description:
     'Use this when someone asks what documents, statements, or records to gather for a US tax filing or engagement: an individual return, a self-employed Schedule C return, a foreign-owned single-member LLC (Form 5472) filing, an S-corp or partnership return, an FBAR/Streamlined offshore catch-up, or an ITIN application. Returns the service-specific document list, first-year onboarding extras, and how to send files securely.',
   input,
-  annotations: { title: 'Get a document checklist', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Get a document checklist', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     service: args.service,
     first_year_client: args.first_year_client ?? false,

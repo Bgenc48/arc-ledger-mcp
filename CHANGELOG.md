@@ -6,6 +6,96 @@ as Arc & Ledger Tax Tools; technical identifiers unchanged). Bump
 `GET /version` and every tool response's `server_version` expose the running
 release.
 
+## 0.15.0
+
+Directory-submission safety release and midyear mileage correction.
+
+### Added
+- `POST /directory/mcp`, a separate submission surface with 13 reviewed
+  educational tools. It has no fee quote, booking, firm catalog, marketing
+  prompt, UI handoff, service CTA, first-party conversion link, or per-call
+  analytics. Every result links to the relevant IRS or FinCEN authority.
+- `destructiveHint: false` on every tool, alongside the existing
+  `readOnlyHint` and `openWorldHint` annotations required by current directory
+  review.
+- `/.well-known/openai-apps-challenge`, which serves the exact portal token
+  only when `OPENAI_APPS_CHALLENGE` is configured.
+- Directory regression tests covering the registry, annotations, resources,
+  prompts, representative output branches, first-party-link exclusion, contact
+  detail exclusion, and zero per-call logging.
+
+### Fixed
+- `estimate_accountable_plan` now applies the two IRS business mileage rates
+  for 2026: 72.5 cents before July 1 and 76 cents on or after July 1
+  (Announcement 2026-11). When the caller omits the period, the tool returns a
+  range instead of silently choosing a rate.
+- Accountable-plan copy now reflects the permanent disallowance of
+  miscellaneous itemized deductions for unreimbursed employee business
+  expenses.
+- `check_itin_eligibility` no longer treats foreign ownership of a US LLC as
+  automatic personal ITIN eligibility. It identifies the Form 5472 reference
+  ID alternative, returns reason-specific statuses, and correctly distinguishes
+  a Certifying Acceptance Agent from an ordinary Acceptance Agent.
+- `estimate_augusta_rule` now labels its result as a conditional day-count
+  screen. It separates the owner-side IRC 280A(g) income exclusion from the
+  business-side ordinary, necessary, and reasonable-rent requirements.
+- Directory output filtering preserves decimals, removes references to tools
+  that are unavailable on the restricted surface, removes direct payment
+  links, and omits unrelated state and BOI fields from the federal deadline
+  tool.
+- The Claude plugin manifest no longer claims an MIT license. The public
+  repository's source-available license is the controlling license.
+
+### Changed
+- Removed application-level tool-call and rate-limit event logging from the
+  entire Worker and disabled Workers observability. Inputs remain in memory
+  only for the request. An IP-derived key is processed transiently only to
+  enforce the abuse limit.
+- The directory surface intentionally excludes commercial tools and tools that
+  need a separate neutral redesign or a complete state-law table before review:
+  tax-problem triage, document intake, LLC/S-corp comparison, reasonable
+  compensation, formation-state comparison, sales-tax nexus, fee quotes, and
+  consultation booking.
+
+## 0.14.0
+
+Adds a dedicated Form 5472 obligation checker (18 -> 19 tools).
+
+### Added
+- `check_5472_obligation`: answers whether a foreign-owned US entity must file
+  Form 5472 with a pro-forma Form 1120, the reportable-transaction rule, the
+  deadline and Form 7004 extension, the annual compliance set (registered
+  agent, state annual report, BOI where it applies, FBAR when foreign accounts
+  cross the threshold), and the penalty for not filing. Distinguishes a
+  single-member LLC (files 5472) from a default multi-member LLC (a partnership
+  that files Form 1065 instead) and from a US corporation with a 25%+ foreign
+  owner. Penalty from `INFO_RETURN_PENALTIES.form5472`; no inlined figures.
+  Advertised in the international cluster after `check_itin_eligibility`.
+  Clock-free and deterministic.
+
+## 0.13.0
+
+Conversion-design release: urgency-matched contact for act-now situations, a
+no-commitment free-download second step on four tools, and factual
+penalty-vs-fee context on the fee quote. No schema or price changes.
+
+### Added
+- `triage_tax_problem`: when the situation resolves to `act_now` urgency, the
+  response now carries an `urgent_contact` block (office phone, WhatsApp,
+  hours) and the summary says a call reaches an Enrolled Agent faster than a
+  calendar slot. Booking `next_step` unchanged.
+- `free_download` field on four tools, each pointing at an existing
+  first-party asset in `public/downloads/` (plain links; no email is
+  collected): `deadline_calendar` (the 2026 deadlines .ics),
+  `decode_irs_notice` (IRS Notice Response Guide PDF),
+  `estimate_quarterly_taxes` (quarterly worksheet PDF), and
+  `get_document_checklist` (printable checklist PDF). New `DOWNLOADS`
+  constant block in `lib/config.ts`.
+- `get_fee_quote`: the `formation` and `international_form` quotes now state
+  the Form 5472 penalty ($25,000 per form per year, from
+  `INFO_RETURN_PENALTIES`) next to the preparation line items, as factual
+  stakes context.
+
 ## 0.12.0
 
 Tax-problem front door release: the server now leads with help for people in
@@ -48,6 +138,18 @@ repository.
   `triage_tax_problem` first when someone has a tax problem and does not know
   where to start, and note that tools and prompts work in English, Turkish,
   and Spanish.
+
+## 0.11.1
+
+Constants re-home (no value or behavior changes).
+
+### Changed
+- `IRS_UNDERPAYMENT_ANNUAL_RATE`, `IRS_RATE_VERIFIED_THROUGH`, and
+  `FTF_MINIMUM_OVER_60_DAYS` moved from `src/rates.ts` into the shared
+  constants module (`taxConstants2026`), which `src/rates.ts` re-exports.
+  Values are unchanged; the website's penalty calculator now imports the same
+  figures, so the two surfaces cannot drift apart. The quarterly re-verify
+  gate in `test/drift.test.ts` is unchanged.
 
 ## 0.11.0
 

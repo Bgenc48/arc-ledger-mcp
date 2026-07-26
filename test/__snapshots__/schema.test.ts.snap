@@ -4,6 +4,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
 {
   "book_consultation": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": true,
       "readOnlyHint": true,
       "title": "Book a consultation",
@@ -35,8 +36,56 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
     },
     "title": "Book a consultation",
   },
+  "check_5472_obligation": {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Check Form 5472 obligation",
+    },
+    "description": "Use this when a non-US person who owns a US company (especially a single-member US LLC or a US corporation) asks whether they must file Form 5472, what the penalty is, or what a foreign-owned US entity owes each year. Returns whether Form 5472 with a pro-forma Form 1120 is required, the reportable-transaction rule, the deadline and extension, the annual compliance set, and the penalty for not filing. Distinguishes a single-member LLC (files 5472) from a multi-member LLC (a partnership that files Form 1065 instead).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_type": {
+          "description": "The US entity. single_member_llc = a US LLC with ONE owner (a disregarded entity); multi_member_llc = a US LLC with two or more owners (a partnership by default); us_corporation = a US C-corporation; not_sure = you do not know. Form 5472 is filed by foreign-owned disregarded entities and by corporations with 25%+ foreign owners, but NOT by a default partnership.",
+          "enum": [
+            "single_member_llc",
+            "multi_member_llc",
+            "us_corporation",
+            "not_sure",
+          ],
+          "type": "string",
+        },
+        "foreign_owned": {
+          "description": "Whether 25% or more of the entity is owned, directly or indirectly, by a non-US person or foreign company. Form 5472 is triggered by 25% foreign ownership.",
+          "type": "boolean",
+        },
+        "formed_in_us": {
+          "description": "Whether the entity was formed in the US (a Wyoming or Delaware LLC is US-formed). Relevant only to the separate BOI report, from which US-formed companies are now exempt.",
+          "type": "boolean",
+        },
+        "had_reportable_transaction": {
+          "description": "Whether there was a reportable transaction with the foreign owner during the year. Reportable transactions include forming or funding the company, capital contributions, distributions, loans in either direction, and sales or payments between you and the company. Defaults to not_sure.",
+          "enum": [
+            "yes",
+            "no",
+            "not_sure",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "entity_type",
+        "foreign_owned",
+      ],
+      "type": "object",
+    },
+    "title": "Check Form 5472 obligation",
+  },
   "check_fbar_fatca": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Check FBAR and FATCA obligations",
@@ -83,11 +132,12 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "check_itin_eligibility": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
-      "title": "Check ITIN eligibility",
+      "title": "Screen an ITIN reason",
     },
-    "description": "Use this when someone (typically a non-US person, a foreign business owner, or the spouse/dependent of a US filer) asks whether they need or qualify for an ITIN, or what documents an ITIN application requires. Returns eligibility, the W-7 reason category, whether a tax return must be attached, and the documents needed. Notes that an Enrolled Agent prepares the Form W-7 and represents the applicant, and how documents are submitted.",
+    "description": "Use this when someone asks whether a federal tax purpose may support an ITIN application or what a Form W-7 path generally requires. Returns a reason-specific screen, whether a return is commonly attached, current document-handling cautions, and official sources. Entity ownership or a bank request alone does not establish personal ITIN eligibility.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
@@ -100,7 +150,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
           "type": "boolean",
         },
         "reason": {
-          "description": "Why you need a US taxpayer ID. file_us_tax_return = you must file a US return; owner_of_us_llc = foreign owner of a US LLC/corp needing an ID for filings; claim_treaty_benefit = reduce withholding under a tax treaty; spouse_or_dependent = of a US filer; third_party_withholding = a payer/bank needs your ID (W-8BEN); open_us_bank_or_other = other reason.",
+          "description": "Why you think a US taxpayer ID may be needed. file_us_tax_return = you must file a US return; owner_of_us_llc = you own a US LLC or corporation, which does not by itself establish a personal ITIN need; claim_treaty_benefit = a treaty claim may require a TIN; spouse_or_dependent = a US return may need a spouse or dependent TIN; third_party_withholding = a payer has a reporting or withholding requirement; open_us_bank_or_other = another reason.",
           "enum": [
             "file_us_tax_return",
             "owner_of_us_llc",
@@ -118,10 +168,11 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
       ],
       "type": "object",
     },
-    "title": "Check ITIN eligibility",
+    "title": "Screen an ITIN reason and application path",
   },
   "check_resolution_options": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Check IRS resolution options",
@@ -167,6 +218,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "check_sales_tax_nexus": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Check sales-tax nexus",
@@ -202,6 +254,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "check_treaty_withholding": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Check US withholding and treaty rates",
@@ -249,6 +302,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "compare_formation_states": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Compare US formation states",
@@ -281,6 +335,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "compare_llc_scorp": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Compare LLC vs S-Corp",
@@ -316,6 +371,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "deadline_calendar": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "US filing deadlines for founders",
@@ -363,6 +419,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "decode_irs_notice": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Decode an IRS notice",
@@ -399,16 +456,26 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "estimate_accountable_plan": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Estimate accountable-plan reimbursements",
     },
-    "description": "Use this when an S-corp or C-corp owner asks how to deduct home office, mileage, cell phone, or other out-of-pocket business expenses, or asks about an "accountable plan." Totals the tax-free reimbursement, estimates the tax saving, and explains the three requirements (business connection, substantiation, return of excess) and why owner-employees get no deduction without one.",
+    "description": "Use this when an S-corp or C-corp owner asks how an accountable plan handles substantiated home-office, mileage, cell-phone, or other out-of-pocket business expenses. Estimates the reimbursement and tax effect, applies the two separate 2026 mileage rates by date, and explains the three requirements: business connection, substantiation, and return of excess.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
+        "business_mileage_period": {
+          "description": "When the business miles occurred. Defaults to mixed_or_unknown, which returns a reimbursement range rather than inventing a single rate. For miles in both 2026 periods, call the tool once per period and add the results.",
+          "enum": [
+            "before_july_1_2026",
+            "on_or_after_july_1_2026",
+            "mixed_or_unknown",
+          ],
+          "type": "string",
+        },
         "business_miles": {
-          "description": "Business miles you drive per year in your personal vehicle. Reimbursed at the IRS standard mileage rate.",
+          "description": "Business miles driven in your personal vehicle. For 2026, also identify whether the miles were before July 1, on or after July 1, or span both periods because the IRS changed the rate midyear.",
           "type": "number",
         },
         "cell_internet_usd": {
@@ -434,16 +501,17 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "estimate_augusta_rule": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
-      "title": "Estimate the Augusta rule",
+      "title": "Screen the 14-day home-rental rule",
     },
-    "description": "Use this when a business owner asks about the "Augusta rule," renting their home to their own S-corp or C-corp, or the 14-day tax-free home rental (IRC 280A(g)). Given a fair daily rate and number of days, estimates the business deduction and tax-free income, warns about the 14-day limit, and lists the documentation needed to make it defensible.",
+    "description": "Use this when a business owner asks about the "Augusta rule," renting a home to a related business, or the fewer-than-15-day rental-income exclusion in IRC 280A(g). Screens the total rental-day limit and calculates conditional amounts while keeping the owner-side exclusion separate from the business-side deduction requirements.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
         "days_rented": {
-          "description": "Number of days per year you rent your home to your business. The tax-free treatment ONLY applies at 14 days or fewer.",
+          "description": "Total number of days during the year the dwelling is rented to anyone at a fair rental price, including days rented to your business. The IRC 280A(g) income exclusion requires fewer than 15 total rental days and that the dwelling is used as a home.",
           "type": "number",
         },
         "fair_daily_rental_rate_usd": {
@@ -461,10 +529,11 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
       ],
       "type": "object",
     },
-    "title": "Estimate the Augusta rule (home rental to your business)",
+    "title": "Screen the 14-day home-rental rule",
   },
   "estimate_irs_penalty": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Estimate IRS penalties and interest",
@@ -496,6 +565,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "estimate_quarterly_taxes": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Estimate quarterly taxes",
@@ -547,6 +617,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "estimate_reasonable_comp": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Estimate S-corp reasonable compensation",
@@ -578,6 +649,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "estimate_rental_income": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Estimate rental property taxes",
@@ -644,6 +716,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "explain_tax_document": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Explain a tax document",
@@ -672,6 +745,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "get_document_checklist": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Get a document checklist",
@@ -707,6 +781,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "get_fee_quote": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Get a fixed-fee quote",
@@ -779,6 +854,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
   },
   "triage_tax_problem": {
     "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true,
       "title": "Triage a tax problem",

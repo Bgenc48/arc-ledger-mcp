@@ -1,10 +1,10 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.arcandledger/tax-tools",
-  "title": "Arc & Ledger Tax Help",
-  "description": "Tax-problem help and free tax tools from an Enrolled Agent firm: triage a tax problem, decode IRS notices, screen back-tax resolution paths, FBAR, LLC vs S-Corp, fee quotes.",
-  "version": "0.12.0",
-  "websiteUrl": "https://www.arcandledger.com/mcp",
+  "title": "Arc & Ledger Tax Reference",
+  "description": "Read-only US tax reference tools for IRS notices, tax documents, filing screens, official deadlines, and clearly labeled estimates. No account, filing, payment, upload, booking, or service purchase.",
+  "version": "0.15.0",
+  "websiteUrl": "https://www.arcandledger.com/mcp/directory/",
   "repository": {
     "url": "https://github.com/Bgenc48/arc-ledger-mcp",
     "source": "github"
@@ -12,7 +12,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://mcp.arcandledger.com/mcp"
+      "url": "https://mcp.arcandledger.com/directory/mcp"
     }
   ]
 }

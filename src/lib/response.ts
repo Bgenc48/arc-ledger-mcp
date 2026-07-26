@@ -51,7 +51,7 @@ const ENVELOPE_OUTPUT_PROPERTIES = {
   source_url: { type: 'string', description: 'The arcandledger.com page that backs this answer.' },
   next_step: {
     type: 'object',
-    description: 'A single human handoff to the firm.',
+    description: 'A single review link appropriate to this server surface.',
     properties: {
       label: { type: 'string' },
       url: { type: 'string' },
@@ -70,6 +70,24 @@ const ENVELOPE_OUTPUT_PROPERTIES = {
 export const ENVELOPE_OUTPUT_SCHEMA = {
   type: 'object',
   properties: ENVELOPE_OUTPUT_PROPERTIES,
+  required: ['disclaimer', 'relay', 'source_url', 'next_step'],
+  additionalProperties: true,
+} as const;
+
+/**
+ * The directory surface cites only official government authority. Keep that
+ * contract visible in tools/list without advertising the complete server's
+ * first-party source description.
+ */
+export const DIRECTORY_ENVELOPE_OUTPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    ...ENVELOPE_OUTPUT_PROPERTIES,
+    source_url: {
+      type: 'string',
+      description: 'Official IRS or FinCEN authority to review before relying on the result.',
+    },
+  },
   required: ['disclaimer', 'relay', 'source_url', 'next_step'],
   additionalProperties: true,
 } as const;

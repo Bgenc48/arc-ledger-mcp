@@ -20,7 +20,6 @@ import {
   RELAY_NOTE,
   GO,
 } from './config';
-import { logToolCall } from './logging';
 import { toToolResult, ENVELOPE_OUTPUT_SCHEMA } from './response';
 import { sanitizeText } from './sanitize';
 import { resourceList, readResource } from '../resources';
@@ -39,6 +38,16 @@ export interface Registry {
   tools: AnyToolDef[];
   prompts: PromptDef[];
   version: string;
+  /** Override the initialize instructions for a restricted server surface. */
+  instructions?: string;
+  /** Override the human-readable initialize title for a restricted surface. */
+  serverTitle?: string;
+  /** Limit resources for surfaces that must not expose firm catalogs. */
+  resourceMode?: 'all' | 'ui-only' | 'none';
+  /** Neutral fallback used when a kill-switched tool is called. */
+  disabledSourceUrl?: string;
+  /** Neutral fallback used when a kill-switched tool is called. */
+  disabledNextStep?: { label: string; url: string };
   /**
    * Tool names currently switched off via the DISABLED_TOOLS kill switch. They
    * are excluded from `tools`; tools/call for one of these names returns a
@@ -49,9 +58,14 @@ export interface Registry {
 
 /** Fixed response for a kill-switched tool (never interpolates the tool name). */
 const TOOL_DISABLED_TEXT =
-  'This tool is temporarily offline while a rate or rule it depends on is re-verified. Every other tool remains available, or an Enrolled Agent can answer directly.';
+  'This tool is temporarily offline while a rate or rule it depends on is re-verified. Every other available tool remains online; verify the underlying rule against the cited official authority before acting.';
 
-function disabledToolResult(version: string) {
+function disabledToolResult(reg: Registry) {
+  const sourceUrl = reg.disabledSourceUrl ?? DOCS_URL;
+  const nextStep = reg.disabledNextStep ?? {
+    label: 'Ask an Enrolled Agent directly - free 15-minute call',
+    url: GO.book15min,
+  };
   return {
     content: [{ type: 'text' as const, text: `${TOOL_DISABLED_TEXT}\n\n${DISCLAIMER}` }],
     structuredContent: {
@@ -59,9 +73,9 @@ function disabledToolResult(version: string) {
       detail: TOOL_DISABLED_TEXT,
       disclaimer: DISCLAIMER,
       relay: RELAY_NOTE,
-      source_url: DOCS_URL,
-      next_step: { label: 'Ask an Enrolled Agent directly - free 15-minute call', url: GO.book15min },
-      server_version: version,
+      source_url: sourceUrl,
+      next_step: nextStep,
+      server_version: reg.version,
     },
   };
 }
@@ -104,7 +118,7 @@ function toolListEntry(tool: AnyToolDef) {
     // ChatGPT's Apps SDK requires an outputSchema per tool. Every response is
     // built through envelope(), so the shared envelope schema is truthful for
     // all tools; additionalProperties admits the tool-specific fields.
-    outputSchema: ENVELOPE_OUTPUT_SCHEMA,
+    outputSchema: tool.outputSchema ?? ENVELOPE_OUTPUT_SCHEMA,
     annotations: tool.annotations,
     // Apps SDK: advertise the widget template so ChatGPT pre-fetches it. The
     // `openai/*` keys are namespaced and ignored by clients that don't render
@@ -193,10 +207,16 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
         capabilities: {
           tools: { listChanged: false },
           prompts: { listChanged: false },
-          resources: { listChanged: false, subscribe: false },
+          ...(reg.resourceMode === 'none'
+            ? {}
+            : { resources: { listChanged: false, subscribe: false } }),
         },
-        serverInfo: { name: SERVER_SLUG, title: SERVER_NAME, version: reg.version },
-        instructions: INSTRUCTIONS,
+        serverInfo: {
+          name: SERVER_SLUG,
+          title: reg.serverTitle ?? SERVER_NAME,
+          version: reg.version,
+        },
+        instructions: reg.instructions ?? INSTRUCTIONS,
       });
     }
 
@@ -214,12 +234,24 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
       return ok(id, { prompts: reg.prompts.map(promptListEntry) });
 
     case 'resources/list':
-      return ok(id, { resources: [...resourceList(), ...uiResourceList()] });
+      return ok(id, {
+        resources:
+          reg.resourceMode === 'none'
+            ? []
+            : reg.resourceMode === 'ui-only'
+              ? uiResourceList()
+              : [...resourceList(), ...uiResourceList()],
+      });
 
     case 'resources/read': {
       if (isNotification) return null;
       const uri = msg.params?.uri as string | undefined;
-      const result = uri ? (readResource(uri) ?? readUiResource(uri)) : null;
+      const result =
+        !uri || reg.resourceMode === 'none'
+          ? null
+          : reg.resourceMode === 'ui-only'
+            ? readUiResource(uri)
+            : (readResource(uri) ?? readUiResource(uri));
       if (!result) return fail(id, ErrorCode.InvalidParams, 'Unknown resource URI');
       return ok(id, result);
     }
@@ -229,7 +261,7 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
       const name = msg.params?.name as string | undefined;
       const tool = reg.tools.find((t) => t.name === name);
       if (!tool) {
-        if (name && reg.disabled?.has(name)) return ok(id, disabledToolResult(reg.version));
+        if (name && reg.disabled?.has(name)) return ok(id, disabledToolResult(reg));
         return fail(id, ErrorCode.InvalidParams, 'Unknown tool');
       }
 
@@ -239,7 +271,6 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
       }
       try {
         const out = tool.run(parsed.data);
-        logToolCall(tool.name, tool.logEnums(parsed.data));
         const result = toToolResult(out, reg.version);
         // Bind the result to its widget template so ChatGPT renders the
         // structuredContent in-chat. Omitted for tools without a widget.
@@ -250,9 +281,9 @@ function handleOne(msg: JsonRpcRequest, reg: Registry): JsonRpcResponse | null {
       } catch (err) {
         // Tool-execution failure -> isError result (not a protocol error). The
         // message is a FIXED string: runtime error text can leak internals, so
-        // it goes to the server log only. The disclaimer still ships (the
-        // directory rule is "every response carries it").
-        console.error(`tool_error tool=${tool.name}`, err instanceof Error ? err.message : err);
+        // it is neither returned nor written to application logs. The
+        // disclaimer still ships (the directory rule is "every response
+        // carries it").
         const text = `This tool could not complete the request. Please adjust the inputs and try again.\n\n${DISCLAIMER}`;
         return ok(id, {
           content: [{ type: 'text', text }],

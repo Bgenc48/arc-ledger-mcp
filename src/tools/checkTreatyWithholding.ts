@@ -136,7 +136,7 @@ export const checkTreatyWithholding: ToolDef<typeof input> = {
   description:
     'Use this when a non-US person or company receiving US-source income (dividends, interest, royalties, freelance/personal services, or a scholarship) asks how much US tax will be withheld, whether a tax treaty reduces it, or which form to give the payer (W-8BEN, W-8BEN-E, W-9, Form 8233). Returns the default statutory rate, the US-Turkey treaty rate where one applies, the documentation a treaty claim needs (including a TIN/ITIN), and how refunds of over-withholding work.',
   input,
-  annotations: { title: 'Check US withholding and treaty rates', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Check US withholding and treaty rates', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     income_type: args.income_type,
     payee_country: args.payee_country,

@@ -5,6 +5,7 @@ export const serviceSubPages: ServiceCategory[] = [
   {
     category: 'Tax Returns',
     items: [
+      { name: 'Get an Instant Quote', path: '/get-quote/' },
       { name: 'Individual Tax Services', path: '/services/individual-tax/' },
       { name: 'Business Tax & Compliance', path: '/services/business-tax/' },
       { name: 'Tax Preparation Overview', path: '/services/tax-preparation/' },
@@ -19,8 +20,9 @@ export const serviceSubPages: ServiceCategory[] = [
       { name: 'Tax Resolution', path: '/services/tax-resolution/' },
       { name: 'IRS Health Check', path: '/services/irs-health-check/' },
       { name: 'IRS Watchdog', path: '/services/irs-watchdog/' },
-      { name: 'Notice Rescue (Secure Upload)', path: '/services/notice-rescue/' },
+      { name: 'IRS Rescue (Secure Upload)', path: '/services/notice-rescue/' },
       { name: 'Return Checkup (Secure Upload)', path: '/services/return-checkup/' },
+      { name: '1099-DA Reconciliation', path: '/services/1099-da-reconciliation/' },
       { name: 'S-Corp Health Check', path: '/services/s-corp-health-check/' },
       { name: 'Accountable Plan Setup', path: '/services/accountable-plan/' },
       { name: 'R&D Tax Credit Review', path: '/services/rd-tax-credit/' },
@@ -51,10 +53,13 @@ export const serviceSubPages: ServiceCategory[] = [
   {
     category: 'International & Specialty',
     items: [
+      { name: 'Foreign-Owned LLC Compliance Membership', path: '/services/compliance-membership/' },
       { name: 'Cross-Border & International Tax', path: '/services/international-tax/' },
+      { name: 'Form 5472 + Pro-Forma 1120', path: '/services/form-5472/' },
       { name: 'E-2 Visa Financial Compliance', path: '/services/e2-visa/' },
       { name: 'ITIN Application', path: '/services/itin-application/' },
       { name: 'Cost Segregation', path: '/services/cost-segregation/' },
+      { name: 'Rental Depreciation Correction (Form 3115)', path: '/services/form-3115-depreciation-correction/' },
     ],
   },
 ];
@@ -108,6 +113,7 @@ export const turkishServiceSubPages: ServiceCategory[] = [
   {
     category: 'Uluslararas\u0131 ve \u00d6zel',
     items: [
+      { name: 'Yabanc\u0131 Sahipli LLC Uyum \u00dcyeli\u011fi', path: '/tr/hizmetler/uyum-uyeligi/' },
       { name: 'Uluslararas\u0131 Vergi', path: '/tr/hizmetler/uluslararasi-vergi/' },
       { name: 'E-2 Vize Mali Uyum', path: '/tr/hizmetler/e2-vize/' },
       { name: 'ITIN Başvurusu', path: '/tr/hizmetler/itin-basvurusu/' },

@@ -5,14 +5,14 @@
     "url": "https://www.arcandledger.com"
   },
   "metadata": {
-    "description": "Arc & Ledger Tax Help: free tax tools plus IRS-notice and back-tax resolution Skills from an Enrolled Agent firm (est. 2016, enrolled to practice before the IRS).",
-    "version": "0.2.0"
+    "description": "Read-only US tax reference tools plus procedural Skills for understanding IRS notices and general back-tax resolution paths.",
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "arc-ledger-irs",
       "source": "./plugin",
-      "description": "Triage a tax problem, respond to an IRS notice, or resolve back taxes: decode the notice, compute the deadline, estimate penalties, and screen resolution options, with an Enrolled Agent handoff. Bundles the Arc & Ledger Tax Help MCP server. General information, never a guaranteed IRS outcome.",
+      "description": "Explain an IRS notice, compute a supported deadline, estimate selected penalties, and screen general resolution paths with official source links. General information only.",
       "category": "finance"
     }
   ]

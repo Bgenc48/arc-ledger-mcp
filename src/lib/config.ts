@@ -49,6 +49,19 @@ export const GO = {
   noticeRescue: `${SITE}/go/notice-rescue`,
 } as const;
 
+/**
+ * First-party free downloads offered as a no-commitment second step on tools
+ * where a matching asset exists (site registry: src/data/leadMagnets.ts; the
+ * assistant worker's drift test asserts those files exist in public/downloads).
+ * Plain links only: the server never collects an email address.
+ */
+export const DOWNLOADS = {
+  deadlinesIcs: `${SITE}/downloads/us-tax-deadlines-2026.ics`,
+  documentChecklistPdf: `${SITE}/downloads/tax-document-checklist-2026.pdf`,
+  quarterlyWorksheetPdf: `${SITE}/downloads/quarterly-estimated-tax-worksheet-2026.pdf`,
+  noticeResponseGuidePdf: `${SITE}/downloads/irs-notice-response-guide.pdf`,
+} as const;
+
 /** First-party pages that back tool answers (used as source_url). */
 export const SOURCE = {
   noticesHub: `${SITE}/irs-notices/`,
@@ -68,6 +81,7 @@ export const SOURCE = {
   rental: `${SITE}/services/airbnb-tax/`,
   resolution: `${SITE}/services/tax-resolution/`,
   ecommerce: `${SITE}/services/ecommerce/`,
+  complianceMembership: `${SITE}/services/compliance-membership/`,
 } as const;
 
 /**
@@ -86,7 +100,7 @@ export const OFFICE = {
   whatsapp: '(310) 627-8169',
   email: SUPPORT_EMAIL,
   languages: ['English', 'Turkish', 'Spanish'],
-  hours: 'Monday-Friday, 9:00 AM to 5:00 PM Pacific',
+  hours: 'Monday-Friday, 10:00 AM to 6:00 PM Pacific',
   boutiqueNote:
     'Boutique practice. Expect a response within 1-2 business days; you work directly with the Enrolled Agent, not a call center.',
 } as const;

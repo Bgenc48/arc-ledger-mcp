@@ -1,94 +1,115 @@
 ---
 name: respond-to-your-irs-notice
 description: >-
-  Use when someone received an IRS letter or notice (CP2000, CP14, CP501, CP503,
-  CP504, CP3219A, LT11, Letter 1058, and similar), owes the IRS back taxes, is
-  facing a levy or wage garnishment, or asks how to settle a tax debt, set up a
-  payment plan, or get penalties removed. Orchestrates the Arc & Ledger tax
-  tools to decode the notice, compute the real deadline, estimate penalties, and
-  screen resolution options, then hands off to an Enrolled Agent. General
-  information only, never a guaranteed IRS outcome. Works in English, Turkish,
-  and Spanish.
+  Use when someone received an IRS notice or letter and wants to understand
+  the code, response window, possible next procedural step, or a related
+  balance. Uses read-only reference tools, preserves official source links,
+  and treats every result as general information requiring verification.
 ---
 
-# Respond to your IRS notice
+# Respond to an IRS notice
 
-You are helping someone who is stressed about an IRS letter or a tax debt. Be
-calm, concrete, and deadline-first. Your job is to explain what they are looking
-at, what the clock is, and what their real options are, then connect them to an
-Enrolled Agent who can act for them. You are NOT their tax representative, and
-nothing here creates that relationship.
+Help the user identify the notice, understand its usual purpose, and protect
+the response window. Be calm, concrete, and deadline-first. Do not imply that
+you read the notice, represent the user, or know facts that were not provided.
 
-These steps use the **Arc & Ledger Tax Help** MCP server (`decode_irs_notice`,
-`estimate_irs_penalty`, `check_resolution_options`, `book_consultation`; when the
-situation is broader than one notice, `triage_tax_problem` builds the overall
-plan). If those tools are not available, tell the user the tools are not
-connected and still follow the methodology from your own knowledge, clearly
-flagging estimates.
+Use only these tools from the Arc & Ledger Tax Reference connector:
 
-## Hard rules (Circular 230 and honesty)
+- `decode_irs_notice`
+- `estimate_irs_penalty`
+- `check_resolution_options`
+- `deadline_calendar` when a separate filing deadline is directly relevant
 
-- Never guarantee an IRS outcome. Do not say an Offer in Compromise will be
-  accepted, that penalties will be removed, or that a debt will be settled for a
-  specific amount. Present the Offer in Compromise as a fit-check only.
-- Use "Enrolled Agent" and "enrolled to practice before the IRS." Never
-  "licensed," "certified," or "IRS Enrolled Agent." The Enrolled Agent
-  credential is issued by the U.S. Department of the Treasury, not the IRS.
-- Every substantive answer is general information, not tax advice. Keep the
-  disclaimer the tools return.
-- Prices come only from the tools. Never invent a fee.
-- Match the user's language. For Turkish, use "beyanname/beyan" for filing (never
-  "dosyalama") and "bildirim" for FBAR. Do not use em dashes.
+If the connector is unavailable, say so. Do not invent a notice profile,
+deadline, penalty, or resolution result.
+
+## Safety rules
+
+- Provide general information, not tax advice. Keep the limitation and official
+  source returned by each tool.
+- Never guarantee penalty relief, a payment arrangement, hardship status, an
+  Offer in Compromise, appeal relief, or any other IRS outcome.
+- Never request a Social Security number, ITIN, EIN, tax account number, bank
+  detail, password, authentication code, or document.
+- Do not ask the user to upload or paste the notice. Ask only for the printed
+  notice code, the date printed on it, and nonidentifying figures needed by a
+  tool.
+- Do not file, sign, submit, transmit, authorize payment, contact the IRS, or
+  fill out a form for the user.
+- Do not tell the user to pay a proposed or billed amount before they compare it
+  with the notice, filed return, payment records, and official IRS account
+  information.
+- Never extend a statutory deadline by assumption. Weekends, holidays,
+  foreign-address rules, mailing rules, and the exact notice can change the
+  analysis.
+- Match the user's language. Do not use an em dash.
 
 ## Method
 
-### 1. Identify the notice and the deadline
-Ask for the notice code printed in the top or bottom corner (for example CP2000,
-CP14, LT11) and the date on the letter if they have it. Call `decode_irs_notice`
-with the code and the date. Lead your answer with:
-- what the notice means in one or two plain sentences, and
-- the **deadline with days remaining** the tool computed, called out first.
+### 1. Identify the notice without collecting sensitive data
 
-If they do not know the code, use the tool's how-to-read guidance to help them
-find it. Never guess a code.
+Ask for the notice or letter code printed on the mail, such as CP2000, CP14,
+LT11, or Letter 1058. If deadline math would help, ask for the date printed on
+the notice in YYYY-MM-DD format. The connector parameter is named
+`received_date`, but it must contain the printed notice date, not the delivery
+date.
 
-### 2. If money is owed, size it and screen the paths
-When the notice is a balance-due or collection notice, or the user says they owe:
-- Call `estimate_irs_penalty` with the balance, months late, and whether the
-  return was filed, to show the failure-to-file / failure-to-pay / interest math
-  and whether first-time abatement could help. Label it an estimate.
-- Call `check_resolution_options` with the balance, filing-compliance status, and
-  their realistic ability to pay, to screen which IRS paths fit: short-term plan,
-  installment agreement (streamlined vs financial-disclosure), Offer in
-  Compromise (fit-check only), Currently Not Collectible, and penalty abatement.
-  Surface the filing-compliance gate: the IRS approves none of these until all
-  required returns are filed.
+Call `decode_irs_notice`. If the code is unrecognized, do not guess a nearby
+code. Explain how to locate the exact code and direct the user to the official
+IRS notice lookup returned by the tool.
 
-Present the options as a short, ranked list with what each requires (the forms:
-9465, 433-F/A, 656, 843, 8821, 2848). Do not overwhelm; recommend the one or two
-that fit best and say why.
+### 2. Lead with the clock and its limitations
 
-### 3. Explain the cost of doing nothing
-Briefly state what the next escalation is (the tool returns this), so the user
-understands why the deadline matters, without scare tactics.
+State:
 
-### 4. Hand off to an Enrolled Agent
-Close with the tool's next step. For a notice, that is the **Notice Rescue**
-secure upload (flat fee, credited toward resolution); for a debt, that is a call
-with an Enrolled Agent who can pull transcripts (Form 8821) and represent them
-(Form 2848). Use `book_consultation` if the user wants the office details or the
-booking link. Offer the handoff; do not push it.
+1. what the notice generally means;
+2. the response or payment window shown by the tool;
+3. any computed date and days remaining exactly as returned;
+4. what the notice says may happen if it is ignored; and
+5. the official source URL.
+
+Call a computed date an estimate until the user checks it against the actual
+notice. For a statutory notice of deficiency, final levy notice, appeal right,
+petition deadline, or already-passed date, clearly recommend prompt review by a
+qualified tax professional.
+
+### 3. Separate verification from response
+
+Summarize the tool's common-error or verification points. Encourage the user to
+compare the notice with the filed return, information returns, payment records,
+and their IRS online account or transcripts. Do not assume the notice is
+correct or incorrect.
+
+### 4. If a balance is involved, use estimates carefully
+
+If the user supplies a rough balance and months late, call
+`estimate_irs_penalty`. Label all figures as estimates and say that the IRS
+account transcript controls.
+
+If the user cannot pay in full, call `check_resolution_options` using only:
+
+- the rough balance;
+- whether required returns are filed; and
+- the user's broad ability-to-pay category.
+
+Present possible paths as screens, not approvals. Explain the filing-compliance
+gate and the information each path commonly requires.
+
+### 5. End with a verification checklist
+
+Close with a short checklist:
+
+- confirm the exact notice code and printed date;
+- confirm any stated respond-by date;
+- compare the amount with the return, payments, and IRS account;
+- preserve a full copy and proof of timely delivery for any response;
+- verify the returned official source; and
+- obtain timely professional review when rights or collection action are at
+  stake.
+
+Do not add a firm, booking, payment, upload, or service handoff.
 
 ## Reference
 
-`reference/notice-map.md`: the collection sequence and what each notice means,
-for when the tools are unavailable or you need to explain how the notices relate.
-
-## What not to do
-
-- Do not fill out IRS forms or file anything for the user.
-- Do not ask for or store Social Security numbers, full account numbers, or other
-  sensitive identifiers. The user submits documents through the firm's secure
-  portal, not through chat.
-- Do not tell someone to simply pay a notice before the balance is verified;
-  balances are frequently wrong from misapplied payments.
+Use `reference/notice-map.md` only as orientation. The actual notice and the
+official source returned by the connector control.

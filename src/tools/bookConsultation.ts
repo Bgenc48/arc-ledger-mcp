@@ -100,7 +100,7 @@ export const bookConsultation: ToolDef<typeof input> = {
   description:
     'Use this when a user wants to talk to, hire, or get a consultation with Arc & Ledger. Returns the correct first-party booking link, what happens next, the office identity (Enrolled Agent, address, languages EN/TR/ES), and what to expect.',
   input,
-  annotations: { title: 'Book a consultation', readOnlyHint: true, openWorldHint: true },
+  annotations: { title: 'Book a consultation', readOnlyHint: true, openWorldHint: true, destructiveHint: false },
   logEnums: (args) => ({ type: args.type, has_topic: !!args.topic }),
   run,
 };

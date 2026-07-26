@@ -17,6 +17,7 @@ import { getDocumentChecklist } from './tools/getDocumentChecklist';
 import { checkFbarFatca } from './tools/checkFbarFatca';
 import { checkTreatyWithholding } from './tools/checkTreatyWithholding';
 import { checkItinEligibility } from './tools/checkItinEligibility';
+import { check5472Obligation } from './tools/check5472Obligation';
 import { compareLlcScorp } from './tools/compareLlcScorp';
 import { estimateQuarterlyTaxes } from './tools/estimateQuarterlyTaxes';
 import { estimateReasonableComp } from './tools/estimateReasonableComp';
@@ -42,6 +43,7 @@ export const TOOLS: AnyToolDef[] = [
   checkFbarFatca,
   checkTreatyWithholding,
   checkItinEligibility,
+  check5472Obligation,
   // Business and planning.
   compareLlcScorp,
   estimateQuarterlyTaxes,

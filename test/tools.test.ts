@@ -30,7 +30,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
   it('advertises every tool with title + readOnlyHint + object inputSchema', () => {
     const res = dispatch({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, reg()) as any;
     const tools = res.result.tools;
-    expect(tools).toHaveLength(20);
+    expect(tools).toHaveLength(21);
     for (const t of tools) {
       expect(t.title).toBeTruthy();
       expect(t.annotations.readOnlyHint).toBe(true);
@@ -45,6 +45,7 @@ describe('tools/list + prompts/list (directory requirements)', () => {
     expect(tools.map((t: any) => t.name).sort()).toEqual(
       [
         'book_consultation',
+        'check_5472_obligation',
         'check_fbar_fatca',
         'check_itin_eligibility',
         'check_resolution_options',
@@ -546,17 +547,20 @@ describe('deadline_calendar', () => {
 describe('check_itin_eligibility', () => {
   it('tells an SSN holder they are not eligible', () => {
     const out = checkItinEligibility.run({ has_ssn: true, reason: 'file_us_tax_return' });
-    expect(out.structured.eligible).toBe(false);
+    expect(out.structured.eligibility_status).toBe('not_eligible_ssn_available');
   });
 
-  it('qualifies a foreign LLC owner without an SSN and describes EA-led document handling (no CAA claim)', () => {
+  it('does not treat foreign LLC ownership as automatic personal ITIN eligibility', () => {
     const out = checkItinEligibility.run({ has_ssn: false, reason: 'owner_of_us_llc' });
-    expect(out.structured.eligible).toBe(true);
+    expect(out.structured.eligibility_status).toBe('not_established_by_entity_ownership');
+    expect(out.summary).toContain('reference ID');
     const note = out.structured.document_handling as string;
     expect(note).toContain('Enrolled Agent');
     expect(note).toContain('Form W-7');
-    // The firm is NOT an approved CAA - the tool must not claim it is one.
-    expect(note).not.toContain('Certified Acceptance Agent');
+    expect(note).toContain('Certifying Acceptance Agent');
+    // The firm is not represented as a CAA. The CAA reference is a third-party
+    // document-handling option.
+    expect(note).not.toContain('Arc & Ledger is a Certifying Acceptance Agent');
     expect(out.structured).not.toHaveProperty('certified_acceptance_agent');
   });
 
@@ -567,7 +571,7 @@ describe('check_itin_eligibility', () => {
 
   it('does not confirm eligibility for a bank-account-only reason (no tax purpose)', () => {
     const out = checkItinEligibility.run({ has_ssn: false, reason: 'open_us_bank_or_other' });
-    expect(out.structured.eligible).toBe(false);
+    expect(out.structured.eligibility_status).toBe('not_eligible_on_reason_alone');
   });
 });
 
@@ -768,41 +772,59 @@ describe('estimate_reasonable_comp', () => {
 });
 
 describe('estimate_augusta_rule', () => {
-  it('computes the tax-free rent and saving within the 14-day limit', () => {
+  it('computes conditional amounts within the 14-day screen', () => {
     const out = estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 10, marginal_tax_rate_pct: 30 });
-    expect(out.structured.qualifies_for_exclusion).toBe(true);
-    expect(out.structured.business_deduction).toBe(10000); // 1000 x 10
-    expect(out.structured.tax_free_to_you).toBe(10000);
-    expect(out.structured.estimated_tax_saving).toBe(3000); // 10000 x 30%
+    expect((out.structured.day_count_screen as any).passes).toBe(true);
+    expect(out.structured.potential_business_rent_expense).toBe(10000); // 1000 x 10
+    expect(out.structured.potential_owner_income_exclusion).toBe(10000);
+    expect(out.structured.estimated_potential_income_tax_effect).toBe(3000); // 10000 x 30%
+    expect(out.summary).toContain('passes only');
   });
 
-  it('caps eligible days at 14 and flags loss of exclusion past the limit', () => {
+  it('flags loss of the owner-side exclusion past the limit without denying a possible business expense', () => {
     const out = estimateAugustaRule.run({ fair_daily_rental_rate_usd: 1000, days_rented: 20 });
-    expect(out.structured.qualifies_for_exclusion).toBe(false);
-    expect(out.structured.eligible_days).toBe(14);
-    expect(out.structured.tax_free_to_you).toBe(0); // over the limit -> nothing excluded
+    expect((out.structured.day_count_screen as any).passes).toBe(false);
+    expect(out.structured.potential_business_rent_expense).toBe(20000);
+    expect(out.structured.potential_owner_income_exclusion).toBe(0);
+    expect(out.structured.estimated_potential_income_tax_effect).toBe(0);
   });
 
   it('defaults the marginal rate when none is given', () => {
     const out = estimateAugustaRule.run({ fair_daily_rental_rate_usd: 500, days_rented: 14 });
-    // 500 x 14 = 7000 deduction; default 22% -> 1540 saving.
-    expect(out.structured.business_deduction).toBe(7000);
-    expect(out.structured.estimated_tax_saving).toBe(1540);
+    // 500 x 14 = 7000 conditional amount; default 22% -> 1540 potential effect.
+    expect(out.structured.potential_business_rent_expense).toBe(7000);
+    expect(out.structured.estimated_potential_income_tax_effect).toBe(1540);
   });
 });
 
 describe('estimate_accountable_plan', () => {
-  it('totals reimbursements including mileage at the standard rate', () => {
+  it('uses the 76-cent rate for miles on or after July 1, 2026', () => {
     const out = estimateAccountablePlan.run({
       home_office_expense_usd: 3000,
       business_miles: 10000,
+      business_mileage_period: 'on_or_after_july_1_2026',
       cell_internet_usd: 1200,
       other_business_expense_usd: 800,
       marginal_tax_rate_pct: 25,
     });
-    // mileage 10000 x 0.725 = 7250; total = 3000 + 7250 + 1200 + 800 = 12250.
-    expect(out.structured.total_annual_reimbursement).toBe(12250);
-    expect(out.structured.estimated_annual_tax_saving).toBe(round(12250 * 0.25));
+    // mileage 10000 x 0.76 = 7600; total = 3000 + 7600 + 1200 + 800 = 12600.
+    expect(out.structured.total_annual_reimbursement).toBe(12600);
+    expect(out.structured.estimated_annual_tax_saving).toBe(round(12600 * 0.25));
+  });
+
+  it('uses the 72.5-cent rate for miles before July 1, 2026', () => {
+    const out = estimateAccountablePlan.run({
+      business_miles: 10000,
+      business_mileage_period: 'before_july_1_2026',
+    });
+    expect(out.structured.total_annual_reimbursement).toBe(7250);
+  });
+
+  it('returns a range rather than inventing one rate when the mileage period is unknown', () => {
+    const out = estimateAccountablePlan.run({ business_miles: 10000 });
+    expect(out.structured.total_annual_reimbursement).toBeUndefined();
+    expect(out.structured.total_annual_reimbursement_range).toEqual({ low: 7250, high: 7600 });
+    expect(out.summary).toContain('false precision');
   });
 
   it('handles a call with no amounts (prompts for input)', () => {

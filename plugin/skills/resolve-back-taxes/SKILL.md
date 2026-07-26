@@ -1,104 +1,112 @@
 ---
 name: resolve-back-taxes
 description: >-
-  Use when someone owes the IRS back taxes, has unfiled tax returns, cannot pay
-  a tax bill, is facing a levy or wage garnishment, or asks about payment plans,
-  an Offer in Compromise, hardship status, or getting penalties removed.
-  Orchestrates the Arc & Ledger tax tools to triage the situation, restore
-  filing compliance first, size the penalties, and screen the IRS resolution
-  paths, then hands off to an Enrolled Agent. General information only, never a
-  guaranteed IRS outcome. Works in English, Turkish, and Spanish.
+  Use when someone owes federal tax, has unfiled returns, cannot pay a tax
+  balance, or asks about general IRS payment, hardship, compromise, or penalty
+  relief paths. Uses read-only tools to check filing compliance, label
+  estimates, and screen options without promising an outcome.
 ---
 
-# Resolve back taxes
+# Understand general back-tax resolution paths
 
-You are helping someone who owes the IRS money they cannot pay, is behind on
-filings, or both. Be calm, concrete, and sequence-first: the order of steps
-matters more than any single step. Your job is to show them the path the IRS
-actually runs (compliance, then resolution), then connect them to an Enrolled
-Agent who can act for them. You are NOT their tax representative, and nothing
-here creates that relationship.
+Help the user organize a federal tax-balance problem in the order it is
+normally addressed: urgent notices, filing compliance, verified balances, and
+then possible collection alternatives. Be calm and factual. Do not imply that
+you represent the user or can secure a result.
 
-These steps use the **Arc & Ledger Tax Help** MCP server (`triage_tax_problem`,
-`check_resolution_options`, `estimate_irs_penalty`, `deadline_calendar`,
-`get_document_checklist`, `book_consultation`). If those tools are not
-available, tell the user the tools are not connected and still follow the
-methodology from your own knowledge, clearly flagging estimates.
+Use only these tools from the Arc & Ledger Tax Reference connector:
 
-## Hard rules (Circular 230 and honesty)
+- `decode_irs_notice` when a notice code is known;
+- `estimate_irs_penalty` for a labeled rough estimate;
+- `check_resolution_options` for a general fit screen; and
+- `deadline_calendar` for a directly relevant filing date.
 
-- Never guarantee an IRS outcome. Do not say an Offer in Compromise will be
-  accepted, that penalties will be removed, or that a debt will settle for a
-  specific amount. Present the Offer in Compromise as a fit-check only.
-- Use "Enrolled Agent" and "enrolled to practice before the IRS." Never
-  "licensed," "certified," or "IRS Enrolled Agent." The Enrolled Agent
-  credential is issued by the U.S. Department of the Treasury, not the IRS.
-- Every substantive answer is general information, not tax advice. Keep the
-  disclaimer the tools return.
-- Prices come only from the tools. Never invent a fee.
-- Match the user's language. For Turkish, use "beyanname/beyan" for filing
-  (never "dosyalama") and "bildirim" for FBAR. Do not use em dashes.
+If the connector is unavailable, say so. Do not invent figures, eligibility, or
+deadlines.
+
+## Safety rules
+
+- Provide general information, not tax advice. Preserve each tool's limitation
+  and official source URL.
+- Never guarantee an installment agreement, Offer in Compromise, Currently Not
+  Collectible status, penalty abatement, collection pause, levy release, or any
+  other IRS action.
+- Never request or process an SSN, ITIN, EIN, account number, bank detail,
+  password, authentication code, transcript, tax return, or other document.
+- Do not file, submit, sign, transmit, authorize payment, contact the IRS, or
+  complete a tax or collection form.
+- Do not recommend a specific payment amount beyond what a tool clearly labels
+  as an estimate.
+- Do not use fear, urgency marketing, or a commercial handoff.
+- Match the user's language. Do not use an em dash.
 
 ## Method
 
-### 1. Triage before anything else
-Call `triage_tax_problem` with the closest problem category
-(`back_taxes_owed`, `unfiled_returns`, `levy_or_garnishment`, `penalties`) and,
-if known, the rough `amount_band` and `years_behind`. Lead your answer with the
-urgency level and the this-week actions it returns. If a levy, garnishment, or
-a final notice (LT11, Letter 1058) is involved, treat it as act-now: the
-Collection Due Process window is short and preserves rights.
+### 1. Check for an urgent notice first
 
-### 2. Gate on filing compliance
-Ask whether every required return has been filed. The IRS approves no
-installment agreement, Offer in Compromise, or hardship status until the
-required returns are in. If years are unfiled:
-- Call `get_document_checklist` for what to gather per return.
-- Call `deadline_calendar` where entity filings (1120, 1120-S, 1065, Form 5472)
-  are involved.
-- Explain that IRS wage-and-income transcripts rebuild missing W-2s and 1099s,
-  and that an Enrolled Agent can pull them with Form 8821.
+Ask whether the user has a final levy notice, wage or bank levy, garnishment,
+Tax Court notice, appeal notice, or another printed response deadline. If a
+notice code and printed date are available, use `decode_irs_notice` and lead
+with the tool's window and verification warning.
 
-### 3. Size the debt honestly
-Call `estimate_irs_penalty` with the balance, months late, and filing status of
-the return, so the user sees how much is tax versus penalty versus interest,
-and whether first-time abatement could shrink it. Label every figure an
-estimate; the real numbers live on their transcripts.
+For an already-passed date, active collection action, statutory notice of
+deficiency, or appeal right, recommend prompt review of the actual notice by a
+qualified tax professional.
 
-### 4. Screen the resolution paths
-Call `check_resolution_options` with the balance, filing-compliance status, and
-their realistic ability to pay. Present the paths as a short ranked list with
-what each requires (forms 9465, 433-F/A, 656, 843): short-term plan,
-installment agreement (streamlined at or under the $50,000 line, financial
-disclosure above it), Offer in Compromise (fit-check only), Currently Not
-Collectible, and penalty abatement. Recommend the one or two that fit and say
-why. Never present the Offer in Compromise as likely without the tool's
-fit-check supporting it, and even then only as worth exploring.
+### 2. Establish filing compliance
 
-### 5. Explain the cost of waiting
-Interest compounds daily and failure-to-pay penalties accrue monthly; collection
-letters escalate on their own schedule. State this once, factually, without
-scare tactics.
+Ask only whether all required federal returns are filed. Do not collect the
+returns. Explain that the IRS generally requires current filing compliance
+before granting a collection alternative, while the exact required years and
+returns depend on the account and facts.
 
-### 6. Hand off to an Enrolled Agent
-Close with the tool's next step: a free 15-minute call where an Enrolled Agent
-can pull transcripts (Form 8821) to see the real balances and years, and
-represent them before the IRS (Form 2848). Use `book_consultation` if the user
-wants office details or the booking link. Offer the handoff; do not push it.
+If returns are missing, identify filing compliance as the first workstream.
+Use `deadline_calendar` only when a supported current filing date is directly
+relevant. Do not infer income or prepare missing returns.
+
+### 3. Separate assessed tax from estimates
+
+Ask for a rough total balance and, if the user wants a penalty illustration,
+rough months late and whether the return was filed. Call
+`estimate_irs_penalty`. Explain that:
+
+- the output is not an account payoff;
+- interest changes over time;
+- the IRS transcript and current payoff amount control; and
+- abatement eligibility requires separate review.
+
+### 4. Screen general alternatives
+
+Call `check_resolution_options` with the rough balance, filing-compliance
+status, and broad ability-to-pay category. Present only the paths returned by
+the tool. Typical categories may include:
+
+- short-term payment;
+- installment agreement;
+- an agreement requiring financial disclosure;
+- Offer in Compromise as a fit screen only;
+- Currently Not Collectible as a hardship screen; and
+- first-time or reasonable-cause penalty relief.
+
+For each path, state what general facts and forms the tool identifies. Never
+call a screen an approval or a recommendation based on a complete financial
+analysis.
+
+### 5. Give a noncommercial next-step checklist
+
+Close with:
+
+- verify filed and missing years from the IRS account or transcripts;
+- verify assessed balances and current payoff figures;
+- preserve and review every active notice and deadline;
+- compare the tool's paths with current IRS eligibility rules;
+- keep current filings and payments from falling behind; and
+- obtain professional review before choosing a path when collection action,
+  hardship, business payroll taxes, bankruptcy, or a large balance is involved.
+
+Do not add a firm, booking, payment, upload, or service link.
 
 ## Reference
 
-`reference/resolution-map.md`: the resolution paths, the forms, and the
-collection sequence, for when the tools are unavailable or you need to explain
-how the pieces relate.
-
-## What not to do
-
-- Do not fill out IRS forms or file anything for the user.
-- Do not ask for or store Social Security numbers, full account numbers, or
-  other sensitive identifiers. Documents go through the firm's secure portal,
-  not through chat.
-- Do not advise draining retirement accounts or taking high-interest debt to
-  pay the IRS before the payment-plan paths have been compared.
-- Do not skip the filing-compliance gate; a resolution request with unfiled
-  years is dead on arrival.
+Use `reference/resolution-map.md` only as orientation. Current official IRS
+guidance and the user's account facts control.

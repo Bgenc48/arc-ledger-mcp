@@ -16,6 +16,7 @@ import {
   usd,
   usdRange,
 } from '../pricing';
+import { INFO_RETURN_PENALTIES } from '../rates';
 import type { ToolDef, NextStep } from '../lib/types';
 
 const details = z
@@ -99,6 +100,7 @@ function buildFormation(d: Details): Built {
   let from: number = formation.starter;
   const extra: string[] = [
     `Higher tiers: E-commerce ${usd(formation.ecommerce)}, Business ${usd(formation.business)}/yr, Investor ${usd(formation.investor)}/yr.`,
+    `Non-US founders: a foreign-owned single-member US LLC files Form 5472 every year, and the penalty for a missed filing is ${usd(INFO_RETURN_PENALTIES.form5472)} per form per year. Use the deadline_calendar tool for the exact dates.`,
   ];
   if (d.foreign_accounts !== undefined || d.entity_type) {
     lines.push({ item: 'ITIN via W-7 (optional add-on)', amount: formation.itinW7 });
@@ -169,6 +171,9 @@ function buildInternational(d: Details): Built {
     included: ['Cross-border scoping', 'The specific international forms your facts require'],
     crossBorder: true,
     multiYear: (d.unfiled_years ?? 0) > 0,
+    extra: [
+      `Context on stakes: a missed Form 5472 carries a ${usd(INFO_RETURN_PENALTIES.form5472)} penalty per form per year - the preparation fee in the line items above is a small fraction of one missed filing.`,
+    ],
   };
 }
 
@@ -247,7 +252,7 @@ export const getFeeQuote: ToolDef<typeof input> = {
   description:
     'Use this when a user asks what Arc & Ledger charges, or wants a price estimate for tax preparation, bookkeeping, business formation, or IRS help. Returns a published price range and line items, never a single committed number, plus what is included and the next step by complexity.',
   input,
-  annotations: { title: 'Get a fixed-fee quote', readOnlyHint: true, openWorldHint: false },
+  annotations: { title: 'Get a fixed-fee quote', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     service: args.service,
     cross_border: (args.details?.foreign_accounts ?? 0) > 0 || args.service === 'international_form',

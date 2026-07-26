@@ -23,11 +23,11 @@ routes = [
 ]
 
 [observability]
-enabled = true
+enabled = false
 
 [vars]
 # Bumped manually alongside package.json "version". Surfaced by GET /version.
-SERVER_VERSION = "0.12.0"
+SERVER_VERSION = "0.15.0"
 
 # Per-tool kill switch: comma-separated tool names to switch off instantly
 # when a rate or rule changes overnight (they leave tools/list; tools/call
