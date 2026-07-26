@@ -280,9 +280,25 @@ describe('directory-safe MCP registry', () => {
     expect(resolution.structured.official_sources).toContain(
       'https://www.irs.gov/irm/part5/irm_05-014-001r',
     );
+    expect(resolution.structured.official_sources).toContain(
+      'https://www.irs.gov/payments/administrative-penalty-relief',
+    );
     expect(resolutionRendered).toContain('Simple Payment Plan');
+    expect(resolutionRendered).toContain('Automatic Exemption from Penalty');
     expect(resolutionRendered).not.toContain('72 months');
     expect(resolutionRendered).not.toContain('Streamlined installment');
+
+    const penalty = DIRECTORY_TOOLS.find((tool) => tool.name === 'estimate_irs_penalty')!.run({
+      balance_owed_usd: 5_000,
+      months_late: 2,
+      return_filed: true,
+    });
+    expect(penalty.structured.official_sources).toContain(
+      'https://www.irs.gov/payments/quarterly-interest-rates',
+    );
+    expect(penalty.structured.official_sources).toContain(
+      'https://www.irs.gov/newsroom/if-youve-filed-but-havent-paid',
+    );
   });
 
   it('does not write per-call analytics', () => {

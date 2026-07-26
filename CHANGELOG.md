@@ -8,7 +8,7 @@ release.
 
 ## 0.15.1
 
-Current IRS payment-plan terminology and screening correction.
+Current IRS payment-plan and administrative penalty-relief corrections.
 
 ### Fixed
 - Replaced the former streamlined-installment and blanket 72-month language
@@ -20,10 +20,19 @@ Current IRS payment-plan terminology and screening correction.
   possible-fit screen instead of a likely-fit statement.
 - Updated the directory result to cite the current IRS Online Payment Agreement
   page and the current Internal Revenue Manual.
+- Updated penalty-relief guidance for the IRS transition from requested First
+  Time Abate to Automatic Exemption from Penalty beginning in summer 2026.
+  Eligible 2025 annual returns and 2026 quarterly returns are screened for AEP,
+  while periods not considered for AEP may still require FTA or
+  reasonable-cause review.
+- Removed remaining outcome labels that called an IRS collection alternative
+  likely without the proposed payment or the actual collection-expiration
+  date.
 
 ### Changed
 - Updated the Claude resolution Skill to pass the coarse account type when
-  known and bumped the plugin package to 0.3.1.
+  known, explain the AEP transition, and keep every IRS outcome a screen.
+- Bumped the plugin package to 0.3.1.
 
 ## 0.15.0
 

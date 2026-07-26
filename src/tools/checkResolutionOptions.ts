@@ -114,7 +114,7 @@ function run(args: z.infer<typeof input>) {
       ability !== 'can_pay_in_full_soon'
         ? 'not_a_fit'
         : individualOnlineShortTerm
-          ? 'likely'
+          ? 'possible'
           : 'possible',
     what_it_is: `The IRS individual online short-term plan generally covers balances below ${usd(SHORT_TERM_ONLINE_CEILING)} that can be paid in ${SHORT_TERM_PLAN_DAYS} days or less. It has no setup fee, but penalties and interest accrue until paid. Other account types or balances require direct IRS confirmation.`,
     what_is_needed:
@@ -129,9 +129,7 @@ function run(args: z.infer<typeof input>) {
   const simplePlanFit: Path['fits'] =
     ability === 'cannot_pay_basic_living'
       ? 'not_a_fit'
-      : ability === 'can_make_monthly_payments' && accountTypeKnown
-        ? 'likely'
-        : 'possible';
+      : 'possible';
 
   const simplePlanDescription =
     accountType === 'individual_income_tax'
@@ -161,7 +159,7 @@ function run(args: z.infer<typeof input>) {
   });
 
   // 3. Offer in Compromise - a FIT-CHECK only. Never a promise of acceptance.
-  const oicFit = ability === 'can_pay_little' || ability === 'cannot_pay_basic_living' ? 'possible' : 'not_a_fit';
+  const oicFit = ability === 'can_pay_in_full_soon' ? 'not_a_fit' : 'possible';
   paths.push({
     path: 'Offer in Compromise (fit-check only)',
     fits: oicFit,
@@ -173,7 +171,7 @@ function run(args: z.infer<typeof input>) {
   // 4. Currently Not Collectible - hardship pause.
   paths.push({
     path: 'Currently Not Collectible (hardship)',
-    fits: ability === 'cannot_pay_basic_living' ? 'likely' : 'not_a_fit',
+    fits: ability === 'cannot_pay_basic_living' ? 'possible' : 'not_a_fit',
     what_it_is:
       'If paying anything would leave you unable to meet basic living expenses, the IRS may temporarily delay collection. Penalties and interest keep accruing, and the IRS may still file a Notice of Federal Tax Lien.',
     what_is_needed: 'Form 433-F collection information statement showing income and necessary expenses.',
@@ -182,11 +180,12 @@ function run(args: z.infer<typeof input>) {
   // 5. Penalty abatement - a parallel path that shrinks the balance itself.
   if (hasPenalties) {
     paths.push({
-      path: 'Penalty abatement',
+      path: 'Penalty relief (AEP, FTA, or reasonable cause)',
       fits: 'possible',
       what_it_is:
-        'First-time abatement (clean prior 3-year history) or reasonable-cause abatement can remove failure-to-file and failure-to-pay penalties. Interest is removed only if the underlying penalty is removed.',
-      what_is_needed: 'Requested by phone or on Form 843, with the reasonable-cause facts documented.',
+        'Starting in summer 2026, the IRS is transitioning eligible returns from requested First Time Abate (FTA) to Automatic Exemption from Penalty (AEP). AEP begins with eligible 2025 annual returns and 2026 quarterly returns and is applied automatically when IRS records show the required timely-compliance history. Periods not considered for AEP may still be reviewed under FTA, and reasonable-cause relief may also apply. Related interest is automatically reduced or removed when a penalty is reduced or removed.',
+      what_is_needed:
+        'First check the IRS notice or account to see whether AEP was applied automatically. If the period was not considered for AEP or other relief may apply, contact the IRS or use a written request or Form 843 as applicable, with the tax period, penalty, compliance history, and reasonable-cause facts.',
     });
   }
 
@@ -201,7 +200,7 @@ function run(args: z.infer<typeof input>) {
       balance_includes_penalties: hasPenalties,
     },
     filing_compliance_gate: filed
-      ? 'All required returns filed - that is the precondition for every path below.'
+      ? 'All required returns are reported as filed. Filing and current-payment compliance are generally required before the IRS formalizes a collection alternative; the exact account requirements control.'
       : 'FIRST STEP: identify and address every required return. The IRS generally requires filing compliance before formalizing a payment plan, Offer in Compromise, or hardship status.',
     options,
     ...(args.brief
@@ -221,25 +220,25 @@ function run(args: z.infer<typeof input>) {
 
   const recommended =
     !filed
-      ? 'file any missing returns first, then choose a path'
+      ? 'the first step is to file any missing returns, then choose a path'
       : ability === 'can_pay_in_full_soon'
-        ? 'a short-term payment plan is usually the simplest fit'
+        ? 'a short-term payment plan is the first path to screen'
         : ability === 'can_make_monthly_payments'
           ? withinSimplePlanBalance
             ? accountTypeKnown
               ? `the ${simplePlanName} is the first path to screen, subject to the required payment and CSED`
               : 'a Simple Payment Plan may fit after the account type, required payment, and CSED are confirmed'
-            : 'an installment agreement with a financial review'
+            : 'an installment agreement with financial review is one path to screen'
           : ability === 'can_pay_little'
-            ? 'an installment agreement, with an Offer in Compromise worth a fit-check'
-            : 'Currently Not Collectible status, with an Offer in Compromise worth a fit-check';
+            ? 'an installment agreement is one path to screen, with an Offer in Compromise also worth a fit-check'
+            : 'Currently Not Collectible status is one path to screen, with an Offer in Compromise also worth a fit-check';
 
   const summary = `On about ${usd(balance)} owed, ${recommended}. ${
     filed
       ? ''
       : 'Note: the IRS generally requires filing compliance before formalizing a collection alternative. '
   }${
-    hasPenalties ? 'Penalty abatement may also shrink the balance itself. ' : ''
+    hasPenalties ? 'Current IRS penalty relief may also shrink the balance itself. ' : ''
   }An Enrolled Agent can pull your transcripts (Form 8821) to confirm the real balance and your options.`;
 
   return output(summary, fields, SOURCE.resolution, nextStep(filed));

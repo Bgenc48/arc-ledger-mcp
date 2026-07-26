@@ -88,7 +88,8 @@ include:
 - an agreement requiring financial disclosure;
 - Offer in Compromise as a fit screen only;
 - Currently Not Collectible as a hardship screen; and
-- first-time or reasonable-cause penalty relief.
+- Automatic Exemption from Penalty, First Time Abate, or reasonable-cause
+  penalty relief as the period and current IRS rules support.
 
 For each path, state what general facts and forms the tool identifies. Never
 call a screen an approval or a recommendation based on a complete financial

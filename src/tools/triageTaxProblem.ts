@@ -270,13 +270,13 @@ const PROFILES: Record<Problem, Profile> = {
   },
   penalties: {
     base_urgency: 'plan_this_month',
-    summary_line: 'Itemize the penalties on the account, then check first-time and reasonable-cause abatement before paying.',
+    summary_line: 'Itemize the penalties on the account, then check current automatic, first-time, and reasonable-cause relief before paying.',
     what_this_usually_is:
-      'IRS penalties (late filing, late payment, estimated tax) are often reducible: first-time abatement rewards a clean prior three-year history, and reasonable-cause relief exists for events outside your control. Interest comes off only when the penalty it rides on is removed.',
+      'Some IRS failure-to-file, failure-to-pay, and failure-to-deposit penalties may qualify for relief. Starting in summer 2026, Automatic Exemption from Penalty applies automatically to eligible periods when the IRS records show the required timely-compliance history. Periods not considered for AEP may still be reviewed under First Time Abate, and reasonable-cause relief exists for qualifying facts outside the taxpayer’s control. Related interest is reduced or removed when the penalty is reduced or removed.',
     this_week: [
       'Identify which penalties are on the account; the notice or your transcripts itemize them by type and year.',
       'Run the estimate_irs_penalty tool to size the exposure and see how the pieces interact.',
-      'Check the first-time abatement profile: no penalties in the prior three years, all returns filed, current on payments or a plan.',
+      'Check whether AEP applied automatically. If the period was not considered for AEP, review the current FTA criteria and reasonable-cause facts.',
     ],
     this_month: [
       'Request abatement by phone or on Form 843 with the facts documented.',

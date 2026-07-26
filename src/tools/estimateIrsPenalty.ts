@@ -34,7 +34,7 @@ const ABATEMENT_WORTHWHILE_FROM = 500;
 function nextStep(totalPenalty: number) {
   return totalPenalty >= ABATEMENT_WORTHWHILE_FROM
     ? {
-        label: 'Penalties this size can often be reduced. An Enrolled Agent can assess first-time and reasonable-cause abatement - free 15-minute call',
+        label: 'Penalties this size can often be reduced. An Enrolled Agent can assess automatic, first-time, and reasonable-cause relief - free 15-minute call',
         url: GO.book15min,
       }
     : { label: 'Questions about your balance? Free 15-minute call with an Enrolled Agent', url: GO.book15min };
@@ -92,16 +92,19 @@ function run(args: z.infer<typeof input>) {
       failure_to_pay: 'Failure-to-pay is 0.5% of the unpaid tax per month, capped at 25%.',
       interest: `Interest is the federal short-term rate + 3% (about ${Math.round(IRS_UNDERPAYMENT_ANNUAL_RATE * 100)}% recently), compounded daily and RESET QUARTERLY, so this is an approximation.`,
     },
-    good_news: 'First-time penalty abatement can remove the failure-to-file and failure-to-pay penalties if you have a clean prior-3-year history. Interest is only removed if the underlying penalty is removed.',
+    penalty_relief:
+      'Starting in summer 2026, the IRS is transitioning eligible returns from requested First Time Abate (FTA) to Automatic Exemption from Penalty (AEP). AEP begins with eligible 2025 annual returns and 2026 quarterly returns and is applied automatically when IRS records show the required timely-compliance history. Periods not considered for AEP may still be reviewed under FTA, and reasonable-cause relief may also apply. Related interest is automatically reduced or removed when a penalty is reduced or removed.',
     caveats: [
       'This is an estimate. The exact figures depend on the daily-compounded interest and the precise dates on your notice.',
+      `The interest illustration applies the current third-quarter 2026 standard underpayment rate of ${Math.round(IRS_UNDERPAYMENT_ANNUAL_RATE * 100)}% across the stated months. Actual rates vary by quarter, so the IRS notice or account payoff controls.`,
+      'The failure-to-pay estimate uses the general 0.5% monthly rate. It does not model the reduced 0.25% rate that can apply while an approved installment agreement is in effect or other account-specific adjustments.',
       `Returns more than 60 days late carry a minimum failure-to-file penalty (the lesser of ${usd(FTF_MINIMUM_OVER_60_DAYS)} or 100% of the tax); this estimate applies that floor.`,
     ],
   };
 
   const summary = filed
-    ? `On a ${usd(balance)} balance ${months} month(s) late (return filed): about ${usd(ftp)} failure-to-pay penalty plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. First-time abatement may remove the penalty.`
-    : `On a ${usd(balance)} balance ${months} month(s) late (not filed): about ${usd(ftf)} failure-to-file + ${usd(ftp)} failure-to-pay penalties plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. File now to stop the 5%/month clock.`;
+    ? `On a ${usd(balance)} balance ${months} month(s) late (return filed): about ${usd(ftp)} failure-to-pay penalty plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. Check whether Automatic Exemption from Penalty applied before requesting First Time Abate or reasonable-cause relief.`
+    : `On a ${usd(balance)} balance ${months} month(s) late (not filed): about ${usd(ftf)} failure-to-file + ${usd(ftp)} failure-to-pay penalties plus roughly ${usd(int)} interest (approximate: it compounds daily and the rate resets quarterly), for about ${usd(grandTotal)} total. File now to stop the 5%/month clock, then check the current AEP, FTA, and reasonable-cause rules for the period.`;
 
   return output(summary, fields, SOURCE.resolution, nextStep(totalPenalty));
 }
@@ -110,7 +113,7 @@ export const estimateIrsPenalty: ToolDef<typeof input> = {
   name: 'estimate_irs_penalty',
   title: 'Estimate IRS penalties and interest',
   description:
-    'Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains first-time penalty abatement.',
+    'Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains the current Automatic Exemption from Penalty, First Time Abate, and reasonable-cause relief paths.',
   input,
   annotations: { title: 'Estimate IRS penalties and interest', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({

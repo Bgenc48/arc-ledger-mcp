@@ -548,7 +548,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
       "readOnlyHint": true,
       "title": "Estimate IRS penalties and interest",
     },
-    "description": "Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains first-time penalty abatement.",
+    "description": "Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains the current Automatic Exemption from Penalty, First Time Abate, and reasonable-cause relief paths.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {

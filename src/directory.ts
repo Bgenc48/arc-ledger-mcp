@@ -87,9 +87,20 @@ const OFFICIAL_SOURCES: Record<DirectoryToolName, string> = {
 };
 
 const SUPPLEMENTARY_OFFICIAL_SOURCES: Partial<Record<DirectoryToolName, string[]>> = {
+  decode_irs_notice: [
+    'https://www.irs.gov/individuals/understanding-your-irs-notice-or-letter',
+    'https://www.irs.gov/payments/administrative-penalty-relief',
+  ],
   check_resolution_options: [
     'https://www.irs.gov/payments/online-payment-agreement-application',
     'https://www.irs.gov/irm/part5/irm_05-014-001r',
+    'https://www.irs.gov/payments/administrative-penalty-relief',
+  ],
+  estimate_irs_penalty: [
+    'https://www.irs.gov/payments/penalties',
+    'https://www.irs.gov/payments/quarterly-interest-rates',
+    'https://www.irs.gov/newsroom/if-youve-filed-but-havent-paid',
+    'https://www.irs.gov/payments/administrative-penalty-relief',
   ],
   check_fbar_fatca: [
     'https://www.irs.gov/businesses/comparison-of-form-8938-and-fbar-requirements',

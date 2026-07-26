@@ -602,6 +602,17 @@ describe('estimate_irs_penalty', () => {
     const out = estimateIrsPenalty.run({ balance_owed_usd: 400, months_late: 3, return_filed: false });
     expect(out.structured.failure_to_file_penalty).toBe(400);
   });
+
+  it('explains the current AEP transition without promising relief', () => {
+    const out = estimateIrsPenalty.run({ balance_owed_usd: 5000, months_late: 2, return_filed: true });
+    const rendered = `${out.summary}\n${JSON.stringify(out.structured)}`;
+    expect(rendered).toContain('Automatic Exemption from Penalty');
+    expect(rendered).toContain('First Time Abate');
+    expect(rendered).toContain('reasonable-cause');
+    expect(rendered).toContain('third-quarter 2026');
+    expect(rendered).toContain('0.25%');
+    expect(rendered).not.toMatch(/will (?:receive|qualify for|be granted)/i);
+  });
 });
 
 describe('check_resolution_options', () => {
@@ -617,10 +628,12 @@ describe('check_resolution_options', () => {
     });
     const ia = optionNames(out).find((o) => o.path.startsWith('Simple Payment Plan'));
     expect(ia).toBeDefined();
-    expect(ia!.fits).toBe('likely');
+    expect(ia!.fits).toBe('possible');
+    expect(optionNames(out).every((option) => option.fits !== 'likely')).toBe(true);
     expect(optionNames(out).some((o) => o.path.includes('financial review'))).toBe(false);
     expect(JSON.stringify(out.structured)).not.toContain('72 months');
     expect(JSON.stringify(out.structured)).not.toContain('Streamlined installment');
+    expect(JSON.stringify(out.structured)).toContain('Automatic Exemption from Penalty');
   });
 
   it('does not call the simple-plan path likely when the account type is unknown', () => {
@@ -674,7 +687,7 @@ describe('check_resolution_options', () => {
       all_required_returns_filed: true,
       tax_account_type: 'individual_income_tax',
     });
-    expect(optionNames(under).find((o) => o.path === 'Short-term payment plan')?.fits).toBe('likely');
+    expect(optionNames(under).find((o) => o.path === 'Short-term payment plan')?.fits).toBe('possible');
     expect(optionNames(at).find((o) => o.path === 'Short-term payment plan')?.fits).toBe('possible');
   });
 
@@ -705,7 +718,7 @@ describe('check_resolution_options', () => {
       all_required_returns_filed: true,
     });
     const cnc = optionNames(out).find((o) => o.path.startsWith('Currently Not Collectible'));
-    expect(cnc!.fits).toBe('likely');
+    expect(cnc!.fits).toBe('possible');
     const oic = optionNames(out).find((o) => o.path.startsWith('Offer in Compromise'));
     expect(oic!.fits).toBe('possible');
   });
