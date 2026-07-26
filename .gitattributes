@@ -1,0 +1,5 @@
+# Keep ESM sources parser-stable across Windows and Linux checkouts.
+*.mjs text eol=lf
+
+# Vitest snapshots are written with LF. Preserve a clean Windows worktree.
+*.snap text eol=lf
