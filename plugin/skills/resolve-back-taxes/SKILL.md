@@ -78,15 +78,18 @@ rough months late and whether the return was filed. Call
 ### 4. Screen general alternatives
 
 Call `check_resolution_options` with the rough balance, filing-compliance
-status, and broad ability-to-pay category. Present only the paths returned by
-the tool. Typical categories may include:
+status, broad ability-to-pay category, and the coarse tax-account type when the
+user knows it. Treat an omitted or uncertain account type as `unknown`; do not
+guess. Present only the paths returned by the tool. Typical categories may
+include:
 
 - short-term payment;
 - installment agreement;
 - an agreement requiring financial disclosure;
 - Offer in Compromise as a fit screen only;
 - Currently Not Collectible as a hardship screen; and
-- first-time or reasonable-cause penalty relief.
+- Automatic Exemption from Penalty, First Time Abate, or reasonable-cause
+  penalty relief as the period and current IRS rules support.
 
 For each path, state what general facts and forms the tool identifies. Never
 call a screen an approval or a recommendation based on a complete financial

@@ -9,7 +9,7 @@ import {
 
 const MCP_ORIGIN = 'https://mcp.arcandledger.com';
 const SITE_ORIGIN = 'https://www.arcandledger.com';
-const EXPECTED_VERSION = '0.15.0';
+const EXPECTED_VERSION = '0.15.1';
 const CHALLENGE = 'openai-directory-verifier-test-token';
 
 function fakePng(width = 512, height = 512) {
@@ -87,7 +87,7 @@ describe('live directory release verifier', () => {
     expect(report.negativeCapabilitiesVerified).toBe(3);
     expect(report.pagesVerified).toBe(4);
     expect(report.challengeChecked).toBe(true);
-    expect(report.checksRun).toBe(1142);
+    expect(report.checksRun).toBe(1160);
     expect(getDirectoryPosts()).toBe(1);
   });
 
@@ -106,9 +106,9 @@ describe('live directory release verifier', () => {
       throw new Error('Expected verification to fail.');
     } catch (error) {
       expect(error).toBeInstanceOf(DirectoryVerificationError);
-      expect(error.failures).toContain('GET /version must report 0.15.0.');
-      expect(error.failures).toContain('Initialize version must be 0.15.0.');
-      expect(error.failures).toContain('decode_irs_notice server_version must be 0.15.0.');
+      expect(error.failures).toContain('GET /version must report 0.15.1.');
+      expect(error.failures).toContain('Initialize version must be 0.15.1.');
+      expect(error.failures).toContain('decode_irs_notice server_version must be 0.15.1.');
     }
   });
 

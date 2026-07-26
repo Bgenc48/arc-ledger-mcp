@@ -96,7 +96,7 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Verify the balance against your return and payment records before paying',
       'Check your IRS account transcript for payments applied to the wrong year or spouse',
       'Set up a short-term plan (up to 180 days) or an installment agreement if you cannot pay in full',
-      'Ask about first-time penalty abatement or reasonable-cause relief',
+      'Check current penalty relief: AEP may apply automatically to eligible periods; FTA or reasonable-cause relief may apply when it does not',
     ],
     commonErrors: [
       'Estimated or extension payment credited to the wrong tax year',
@@ -243,7 +243,7 @@ export const NOTICES: Record<string, NoticeProfile> = {
     options: [
       'Pull your account transcript to confirm the balance and how payments posted',
       'Pay in full, set up an installment agreement, or request currently-not-collectible status',
-      'Ask about first-time penalty abatement',
+      'Check whether AEP applied automatically, then review FTA or reasonable-cause relief if needed',
     ],
     commonErrors: [
       'Assuming a paused-reminder balance was forgiven',
@@ -269,7 +269,7 @@ export const NOTICES: Record<string, NoticeProfile> = {
     ],
     commonErrors: [
       'A federal tax deposit or payment applied to the wrong quarter',
-      'A penalty that qualifies for first-time abatement',
+      'A penalty that may qualify for Automatic Exemption from Penalty or First Time Abate',
     ],
     urgency: 'moderate',
     hasLandingPage: false,
@@ -583,7 +583,7 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Verify the adjustment against what you actually submitted before paying',
       'Pay online, or set up a short-term plan or installment agreement if you cannot pay in full',
       'If the change is not what you requested, respond with your documentation immediately',
-      'Ask about first-time penalty abatement if you have a clean compliance history',
+      'Check whether AEP applied automatically, then review FTA or reasonable-cause relief if needed',
     ],
     commonErrors: [
       'An amendment keyed differently than submitted (transposed figures)',
@@ -684,7 +684,7 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Watch the collection statute: the IRS generally has 10 years from assessment to collect',
     ],
     commonErrors: [
-      'Penalties in the balance that qualify for first-time abatement and were never requested',
+      'Penalties in the balance that may qualify for AEP or FTA relief but were not removed',
       'Assuming the annual reminder means a levy is imminent (it is a statement, not a final notice)',
     ],
     urgency: 'low',
@@ -707,7 +707,7 @@ export const NOTICES: Record<string, NoticeProfile> = {
       'Identify the exact penalty code and form behind it (the notice states the Internal Revenue Code section)',
       'File the missing or corrected form immediately if it is still outstanding; relief is rarely available while the form is missing',
       'Request abatement with a documented reasonable-cause statement (illness, disaster, reliance on wrong professional advice, first year of a new obligation)',
-      'First-time abatement can apply to late-filing penalties on income returns (1120, 1120-S, 1065) but generally NOT to international information-return penalties like the 5472; those need reasonable cause',
+      'AEP or FTA can apply to eligible late-filing penalties on income returns, but generally not to international information-return penalties such as Form 5472; those generally require reasonable cause',
       'These penalties are routinely contested: an Enrolled Agent can prepare the abatement case and represent the entity before the IRS',
     ],
     commonErrors: [

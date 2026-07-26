@@ -177,7 +177,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
       "readOnlyHint": true,
       "title": "Check IRS resolution options",
     },
-    "description": "Use this when someone owes the IRS back taxes and asks how to settle, get on a payment plan, lower what they owe, or stop collection. Screens which IRS paths may fit - short-term payment plan, streamlined or financial-disclosure installment agreement, Offer in Compromise (a fit-check only, never a promise of acceptance), Currently Not Collectible hardship status, and penalty abatement - and lists the forms needed (9465, 433-F/A, 656, 843, 8821, 2848) plus collection-statute context. Never guarantees an IRS outcome. Set brief:true for a shorter answer.",
+    "description": "Use this when someone owes the IRS back taxes and asks how to settle, get on a payment plan, lower what they owe, or stop collection. Screens which IRS paths may fit - short-term payment plan, current Simple Payment Plan or an installment agreement with financial review, Offer in Compromise (a fit-check only, never a promise of acceptance), Currently Not Collectible hardship status, and penalty abatement - and lists the forms needed (9465, 433-F/A/B, 656, 843, 8821, 2848) plus collection-statute context. A coarse tax_account_type improves the screen without identifying the taxpayer. Never guarantees an IRS outcome. Set brief:true for a shorter answer.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
@@ -192,7 +192,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
           "type": "string",
         },
         "all_required_returns_filed": {
-          "description": "Whether every required tax return has actually been FILED (even if the tax was not paid). The IRS will not approve any installment agreement, Offer in Compromise, or hardship status until you are filing-compliant. Defaults to false.",
+          "description": "Whether every required tax return has actually been FILED (even if the tax was not paid). Filing compliance is generally required before the IRS formalizes a collection alternative, but the exact account requirements control. Defaults to false.",
           "type": "boolean",
         },
         "balance_includes_penalties": {
@@ -206,6 +206,16 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
         "brief": {
           "description": "Set true for a shorter answer: options come back as path + fit only, without the descriptions.",
           "type": "boolean",
+        },
+        "tax_account_type": {
+          "description": "Coarse, nonidentifying IRS account type. individual_income_tax includes Form 1040 income-tax balances, including a sole proprietor whose balance is on Form 1040. business_non_trust_fund_or_out_of_business covers non-trust-fund business tax or an out-of-business sole proprietor account. business_trust_fund covers in-business payroll or other trust-fund tax. Use unknown when unsure. Defaults to unknown.",
+          "enum": [
+            "individual_income_tax",
+            "business_non_trust_fund_or_out_of_business",
+            "business_trust_fund",
+            "unknown",
+          ],
+          "type": "string",
         },
       },
       "required": [
@@ -538,7 +548,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
       "readOnlyHint": true,
       "title": "Estimate IRS penalties and interest",
     },
-    "description": "Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains first-time penalty abatement.",
+    "description": "Use this when someone owes the IRS and asks how much the penalties and interest will be, or what late filing/paying costs. Estimates the failure-to-file (5%/mo) and failure-to-pay (0.5%/mo) penalties and interest on a balance, and explains the current Automatic Exemption from Penalty, First Time Abate, and reasonable-cause relief paths.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
@@ -864,7 +874,7 @@ exports[`tool definition contract > matches the committed snapshot (on a diff: b
       "additionalProperties": false,
       "properties": {
         "amount_band": {
-          "description": "Roughly how much is at stake, if known. Bands only, never an exact figure. The $50,000 line matters: streamlined IRS installment agreements stop there.",
+          "description": "Roughly how much is at stake, if known. Bands only, never an exact figure. Current IRS Simple Payment Plan balance criteria generally use a $50,000 ceiling for eligible individual and non-trust-fund accounts and a $25,000 ceiling for eligible business trust-fund accounts.",
           "enum": [
             "under_10k",
             "from_10k_to_50k",

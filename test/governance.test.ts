@@ -72,7 +72,7 @@ const TOOL_INPUTS: Record<string, Array<Record<string, unknown>>> = {
   ],
   get_fee_quote: [{ service: 'individual_return' }],
   book_consultation: [{ type: 'free_15min' }, { type: 'discovery_specialist_497' }],
-  check_resolution_options: [{ balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments' }],
+  check_resolution_options: [{ balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments', tax_account_type: 'individual_income_tax' }],
 };
 
 /** Rendered text (summary + structured JSON) for every tool/input pair. */

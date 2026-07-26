@@ -42,7 +42,7 @@ const DIRECTORY_DESCRIPTIONS: Record<DirectoryToolName, string> = {
   decode_irs_notice:
     'Use when a user provides the code from an IRS notice or letter and wants a general explanation, the usual response window, or the next procedural step. Do not request the notice itself or any taxpayer identifier.',
   check_resolution_options:
-    'Use to screen general IRS payment and collection alternatives from a rough balance, filing-compliance status, and ability-to-pay category. This is an educational fit screen, not a promise that the IRS will approve an option.',
+    'Use to screen general IRS payment and collection alternatives from a rough balance, filing-compliance status, ability-to-pay category, and coarse tax-account type when known. This is an educational fit screen, not a promise that the IRS will approve an option.',
   estimate_irs_penalty:
     'Use to estimate selected federal failure-to-file, failure-to-pay, and underpayment amounts from nonidentifying figures. The result is an estimate and does not replace an IRS account transcript.',
   explain_tax_document:
@@ -69,7 +69,7 @@ const DIRECTORY_DESCRIPTIONS: Record<DirectoryToolName, string> = {
 
 const OFFICIAL_SOURCES: Record<DirectoryToolName, string> = {
   decode_irs_notice: 'https://www.irs.gov/individuals/understanding-your-irs-notice-or-letter',
-  check_resolution_options: 'https://www.irs.gov/payments',
+  check_resolution_options: 'https://www.irs.gov/payments/online-payment-agreement-application',
   estimate_irs_penalty: 'https://www.irs.gov/payments/penalties',
   explain_tax_document: 'https://www.irs.gov/forms-instructions',
   deadline_calendar: 'https://www.irs.gov/filing',
@@ -87,6 +87,21 @@ const OFFICIAL_SOURCES: Record<DirectoryToolName, string> = {
 };
 
 const SUPPLEMENTARY_OFFICIAL_SOURCES: Partial<Record<DirectoryToolName, string[]>> = {
+  decode_irs_notice: [
+    'https://www.irs.gov/individuals/understanding-your-irs-notice-or-letter',
+    'https://www.irs.gov/payments/administrative-penalty-relief',
+  ],
+  check_resolution_options: [
+    'https://www.irs.gov/payments/online-payment-agreement-application',
+    'https://www.irs.gov/irm/part5/irm_05-014-001r',
+    'https://www.irs.gov/payments/administrative-penalty-relief',
+  ],
+  estimate_irs_penalty: [
+    'https://www.irs.gov/payments/penalties',
+    'https://www.irs.gov/payments/quarterly-interest-rates',
+    'https://www.irs.gov/newsroom/if-youve-filed-but-havent-paid',
+    'https://www.irs.gov/payments/administrative-penalty-relief',
+  ],
   check_fbar_fatca: [
     'https://www.irs.gov/businesses/comparison-of-form-8938-and-fbar-requirements',
     'https://www.fincen.gov/report-foreign-bank-and-financial-accounts',

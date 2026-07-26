@@ -43,7 +43,7 @@ const REPRESENTATIVE: Array<[string, Record<string, unknown>]> = [
   ['get_document_checklist', { service: 'foreign_owned_llc_5472', first_year_client: true }],
   ['get_fee_quote', { service: 'individual_return' }],
   ['book_consultation', { type: 'free_15min' }],
-  ['check_resolution_options', { balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments' }],
+  ['check_resolution_options', { balance_owed_usd: 25000, ability_to_pay: 'can_make_monthly_payments', tax_account_type: 'individual_income_tax' }],
 ];
 
 describe('determinism: identical inputs -> byte-identical output (20x)', () => {

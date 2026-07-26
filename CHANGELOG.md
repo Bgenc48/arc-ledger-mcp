@@ -6,6 +6,34 @@ as Arc & Ledger Tax Tools; technical identifiers unchanged). Bump
 `GET /version` and every tool response's `server_version` expose the running
 release.
 
+## 0.15.1
+
+Current IRS payment-plan and administrative penalty-relief corrections.
+
+### Fixed
+- Replaced the former streamlined-installment and blanket 72-month language
+  with the IRS's current Simple Payment Plan rules. Qualifying plans must
+  full-pay, including accruals, by the Collection Statute Expiration Date.
+- Added an optional, nonidentifying `tax_account_type` input so the tool can
+  distinguish the general $50,000 Simple Payment Plan ceiling from the $25,000
+  business trust-fund ceiling. An unknown account type now produces a cautious
+  possible-fit screen instead of a likely-fit statement.
+- Updated the directory result to cite the current IRS Online Payment Agreement
+  page and the current Internal Revenue Manual.
+- Updated penalty-relief guidance for the IRS transition from requested First
+  Time Abate to Automatic Exemption from Penalty beginning in summer 2026.
+  Eligible 2025 annual returns and 2026 quarterly returns are screened for AEP,
+  while periods not considered for AEP may still require FTA or
+  reasonable-cause review.
+- Removed remaining outcome labels that called an IRS collection alternative
+  likely without the proposed payment or the actual collection-expiration
+  date.
+
+### Changed
+- Updated the Claude resolution Skill to pass the coarse account type when
+  known, explain the AEP transition, and keep every IRS outcome a screen.
+- Bumped the plugin package to 0.3.1.
+
 ## 0.15.0
 
 Directory-submission safety release and midyear mileage correction.

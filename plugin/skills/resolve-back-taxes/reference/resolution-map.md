@@ -8,6 +8,7 @@ Official starting points:
 - Payments and payment plans: https://www.irs.gov/payments
 - Offer in Compromise: https://www.irs.gov/payments/offer-in-compromise
 - Penalties: https://www.irs.gov/payments/penalties
+- Administrative penalty relief: https://www.irs.gov/payments/administrative-penalty-relief
 - Collection process: https://www.irs.gov/pub/irs-pdf/p594.pdf
 
 ## Typical sequence
@@ -32,7 +33,7 @@ account and facts. Do not turn a general rule of thumb into a fixed result.
 | Financial-disclosure agreement | The balance or proposed payment requires a collection financial statement | Form 433-F, 433-A, or 433-B as applicable |
 | Offer in Compromise | A full facts-and-circumstances screen may show a recognized basis for compromise | Form 656 and the applicable OIC financial statement |
 | Currently Not Collectible | Paying would prevent necessary living expenses | Collection financial statement and supporting records |
-| Penalty relief | First-time criteria or documented reasonable cause may apply | IRS request channel or Form 843 where applicable |
+| Penalty relief | AEP may apply automatically to an eligible period; FTA or documented reasonable cause may apply when it does not | Check the IRS notice or account first, then use the IRS request channel or Form 843 where applicable |
 
 These are categories, not promises. Thresholds, fees, forms, and procedures
 change. Use the official source returned by the connector.

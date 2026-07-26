@@ -11,7 +11,7 @@ import { COVERED_DOCUMENTS } from '../src/data/taxDocuments';
 const reg = () => ({
   tools: DIRECTORY_TOOLS,
   prompts: [],
-  version: '0.15.0',
+  version: '0.15.1',
   instructions: DIRECTORY_INSTRUCTIONS,
   serverTitle: DIRECTORY_NAME,
   resourceMode: 'none' as const,
@@ -27,6 +27,7 @@ const CASES: Record<string, Array<Record<string, unknown>>> = {
       balance_owed_usd: 30_000,
       ability_to_pay: 'can_make_monthly_payments',
       all_required_returns_filed: true,
+      tax_account_type: 'individual_income_tax',
     },
     {
       balance_owed_usd: 75_000,
@@ -265,6 +266,39 @@ describe('directory-safe MCP registry', () => {
     });
     expect(`${mileage.summary}\n${JSON.stringify(mileage.structured)}`).toContain('72.5');
     expect(`${mileage.summary}\n${JSON.stringify(mileage.structured)}`).not.toContain('72. 5');
+
+    const resolution = DIRECTORY_TOOLS.find((tool) => tool.name === 'check_resolution_options')!.run({
+      balance_owed_usd: 25_000,
+      ability_to_pay: 'can_make_monthly_payments',
+      all_required_returns_filed: true,
+      tax_account_type: 'individual_income_tax',
+    });
+    const resolutionRendered = `${resolution.summary}\n${JSON.stringify(resolution.structured)}`;
+    expect(resolution.structured.source_url).toBe(
+      'https://www.irs.gov/payments/online-payment-agreement-application',
+    );
+    expect(resolution.structured.official_sources).toContain(
+      'https://www.irs.gov/irm/part5/irm_05-014-001r',
+    );
+    expect(resolution.structured.official_sources).toContain(
+      'https://www.irs.gov/payments/administrative-penalty-relief',
+    );
+    expect(resolutionRendered).toContain('Simple Payment Plan');
+    expect(resolutionRendered).toContain('Automatic Exemption from Penalty');
+    expect(resolutionRendered).not.toContain('72 months');
+    expect(resolutionRendered).not.toContain('Streamlined installment');
+
+    const penalty = DIRECTORY_TOOLS.find((tool) => tool.name === 'estimate_irs_penalty')!.run({
+      balance_owed_usd: 5_000,
+      months_late: 2,
+      return_filed: true,
+    });
+    expect(penalty.structured.official_sources).toContain(
+      'https://www.irs.gov/payments/quarterly-interest-rates',
+    );
+    expect(penalty.structured.official_sources).toContain(
+      'https://www.irs.gov/newsroom/if-youve-filed-but-havent-paid',
+    );
   });
 
   it('does not write per-call analytics', () => {

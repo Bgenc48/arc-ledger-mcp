@@ -11,9 +11,11 @@ import type { NextStep, ToolDef } from '../lib/types';
  * pricing.ts). These are tax-law figures, kept as literals like the penalty
  * rates in estimateIrsPenalty.ts.
  */
-const STREAMLINED_IA_CEILING = 50_000; // balance at/under which a streamlined installment agreement needs no financial-disclosure statement
-const SHORT_TERM_PLAN_DAYS = 180;      // IRS short-term payment plan window (no setup fee)
-const CSED_YEARS = 10;                 // Collection Statute Expiration Date - IRS generally has 10 years from assessment to collect (IRC 6502)
+const SIMPLE_PLAN_CEILING = 50_000;                // current IRS Simple Payment Plan ceiling for eligible IMF and BMF non-trust-fund accounts
+const BUSINESS_TRUST_FUND_SIMPLE_CEILING = 25_000; // current IRS Simple Payment Plan (Business Trust Fund) ceiling
+const SHORT_TERM_ONLINE_CEILING = 100_000;          // individual online short-term plan requires a balance below this amount
+const SHORT_TERM_PLAN_DAYS = 180;                  // IRS short-term payment plan window (no setup fee)
+const CSED_YEARS = 10;                             // Collection Statute Expiration Date - IRS generally has 10 years from assessment to collect (IRC 6502)
 
 const input = z.object({
   balance_owed_usd: dollars().describe(
@@ -23,7 +25,18 @@ const input = z.object({
     .boolean()
     .optional()
     .describe(
-      'Whether every required tax return has actually been FILED (even if the tax was not paid). The IRS will not approve any installment agreement, Offer in Compromise, or hardship status until you are filing-compliant. Defaults to false.',
+      'Whether every required tax return has actually been FILED (even if the tax was not paid). Filing compliance is generally required before the IRS formalizes a collection alternative, but the exact account requirements control. Defaults to false.',
+    ),
+  tax_account_type: z
+    .enum([
+      'individual_income_tax',
+      'business_non_trust_fund_or_out_of_business',
+      'business_trust_fund',
+      'unknown',
+    ])
+    .optional()
+    .describe(
+      'Coarse, nonidentifying IRS account type. individual_income_tax includes Form 1040 income-tax balances, including a sole proprietor whose balance is on Form 1040. business_non_trust_fund_or_out_of_business covers non-trust-fund business tax or an out-of-business sole proprietor account. business_trust_fund covers in-business payroll or other trust-fund tax. Use unknown when unsure. Defaults to unknown.',
     ),
   ability_to_pay: z
     .enum([
@@ -76,32 +89,77 @@ function run(args: z.infer<typeof input>) {
   const filed = args.all_required_returns_filed ?? false;
   const hasPenalties = args.balance_includes_penalties ?? true;
   const ability = args.ability_to_pay;
-  const streamlined = balance <= STREAMLINED_IA_CEILING;
+  const accountType = args.tax_account_type ?? 'unknown';
+  const simplePlanCeiling =
+    accountType === 'business_trust_fund'
+      ? BUSINESS_TRUST_FUND_SIMPLE_CEILING
+      : SIMPLE_PLAN_CEILING;
+  const withinSimplePlanBalance = balance <= simplePlanCeiling;
+  const accountTypeKnown = accountType !== 'unknown';
+  const simplePlanName =
+    accountType === 'business_trust_fund'
+      ? 'Simple Payment Plan (Business Trust Fund)'
+      : 'Simple Payment Plan';
 
   const paths: Path[] = [];
 
-  // 1. Short-term full pay (up to 180 days) - only when they can clear it soon.
+  // 1. Short-term full pay (up to 180 days). The public online threshold is
+  // for individual accounts below $100,000; other accounts need confirmation.
+  const individualOnlineShortTerm =
+    accountType === 'individual_income_tax' &&
+    balance < SHORT_TERM_ONLINE_CEILING;
   paths.push({
     path: 'Short-term payment plan',
-    fits: ability === 'can_pay_in_full_soon' ? 'likely' : 'not_a_fit',
-    what_it_is: `Pay in full within ${SHORT_TERM_PLAN_DAYS} days. No setup fee; penalties and interest accrue until paid.`,
-    what_is_needed: 'Set up online or by phone once all returns are filed. No financial-disclosure form.',
+    fits:
+      ability !== 'can_pay_in_full_soon'
+        ? 'not_a_fit'
+        : individualOnlineShortTerm
+          ? 'possible'
+          : 'possible',
+    what_it_is: `The IRS individual online short-term plan generally covers balances below ${usd(SHORT_TERM_ONLINE_CEILING)} that can be paid in ${SHORT_TERM_PLAN_DAYS} days or less. It has no setup fee, but penalties and interest accrue until paid. Other account types or balances require direct IRS confirmation.`,
+    what_is_needed:
+      individualOnlineShortTerm
+        ? 'All required returns filed, then use the IRS Online Payment Agreement or call the IRS. No Collection Information Statement is generally required.'
+        : 'Confirm the account type, balance, filing compliance, and available short-term channel with the IRS before relying on this path.',
   });
 
-  // 2. Installment agreement - streamlined vs. financial-disclosure track.
+  // 2. Installment agreement - current Simple Payment Plan vs. financial-review track.
+  // The IRS replaced the former blanket 72-month streamlined calculation. A
+  // qualifying simple plan must now full-pay, including accruals, by the CSED.
+  const simplePlanFit: Path['fits'] =
+    ability === 'cannot_pay_basic_living'
+      ? 'not_a_fit'
+      : 'possible';
+
+  const simplePlanDescription =
+    accountType === 'individual_income_tax'
+      ? `For an eligible individual income-tax account with an unpaid balance of assessment of ${usd(SIMPLE_PLAN_CEILING)} or less, a monthly plan that must fully pay the balance, including accruals, by the Collection Statute Expiration Date. A qualifying plan generally requires no Collection Information Statement or mandatory direct debit.`
+      : accountType === 'business_non_trust_fund_or_out_of_business'
+        ? `For an eligible non-trust-fund business or out-of-business sole proprietor account with an unpaid balance of assessment of ${usd(SIMPLE_PLAN_CEILING)} or less, a monthly plan that must fully pay the balance, including accruals, by the Collection Statute Expiration Date. A qualifying plan generally requires no Collection Information Statement.`
+        : accountType === 'business_trust_fund'
+          ? `For an eligible business trust-fund account with an unpaid balance of assessment of ${usd(BUSINESS_TRUST_FUND_SIMPLE_CEILING)} or less, a monthly plan that must fully pay the balance, including accruals, by the Collection Statute Expiration Date. A qualifying plan generally requires no Collection Information Statement, subject to IRS exceptions.`
+          : `Current IRS Simple Payment Plan criteria generally use a ${usd(SIMPLE_PLAN_CEILING)} ceiling for eligible individual and non-trust-fund accounts and a ${usd(BUSINESS_TRUST_FUND_SIMPLE_CEILING)} ceiling for eligible business trust-fund accounts. A qualifying plan must fully pay, including accruals, by the Collection Statute Expiration Date and generally requires no Collection Information Statement. Confirm the account type before relying on this screen.`;
+
+  const simplePlanRequirements =
+    accountType === 'individual_income_tax'
+      ? 'All required returns filed, current payment compliance, and a proposed payment sufficient to full-pay by the CSED. Use the IRS Online Payment Agreement or Form 9465.'
+      : accountType === 'unknown'
+        ? 'First confirm the IRS account type, unpaid balance of assessment, CSED, and required monthly payment. Individuals may apply online; business accounts use the IRS contact or form channel that applies to the account.'
+        : 'All required returns and required current tax deposits or payments must be current, with a proposed payment sufficient to full-pay by the CSED. Business accounts cannot use the individual online application.';
+
   paths.push({
-    path: streamlined ? 'Streamlined installment agreement' : 'Installment agreement (with financial disclosure)',
-    fits: ability === 'can_make_monthly_payments' || ability === 'can_pay_little' ? 'likely' : 'possible',
-    what_it_is: streamlined
-      ? `A monthly plan for balances of ${usd(STREAMLINED_IA_CEILING)} or less, generally paid within 72 months. No detailed financial disclosure.`
-      : `A monthly plan for balances above ${usd(STREAMLINED_IA_CEILING)}. The IRS reviews income, expenses, and assets to set the payment; can be partial-pay if the statute runs out first.`,
-    what_is_needed: streamlined
-      ? 'Form 9465 (or the IRS online application) and all returns filed.'
-      : 'Form 433-F or 433-A collection information statement, plus all returns filed.',
+    path: withinSimplePlanBalance ? simplePlanName : 'Installment agreement with financial review',
+    fits: withinSimplePlanBalance ? simplePlanFit : 'possible',
+    what_it_is: withinSimplePlanBalance
+      ? simplePlanDescription
+      : `A monthly plan outside the current Simple Payment Plan balance criteria. The IRS generally reviews income, expenses, and assets to set the payment. A partial-payment agreement may be considered when full payment before the CSED is not feasible.`,
+    what_is_needed: withinSimplePlanBalance
+      ? simplePlanRequirements
+      : 'A Collection Information Statement, generally Form 433-F, 433-A, or 433-B as applicable, plus filing and current-payment compliance.',
   });
 
   // 3. Offer in Compromise - a FIT-CHECK only. Never a promise of acceptance.
-  const oicFit = ability === 'can_pay_little' || ability === 'cannot_pay_basic_living' ? 'possible' : 'not_a_fit';
+  const oicFit = ability === 'can_pay_in_full_soon' ? 'not_a_fit' : 'possible';
   paths.push({
     path: 'Offer in Compromise (fit-check only)',
     fits: oicFit,
@@ -113,20 +171,21 @@ function run(args: z.infer<typeof input>) {
   // 4. Currently Not Collectible - hardship pause.
   paths.push({
     path: 'Currently Not Collectible (hardship)',
-    fits: ability === 'cannot_pay_basic_living' ? 'likely' : 'not_a_fit',
+    fits: ability === 'cannot_pay_basic_living' ? 'possible' : 'not_a_fit',
     what_it_is:
-      'If paying anything would leave you unable to meet basic living expenses, the IRS can pause active collection. Penalties and interest keep accruing, but levies stop while it is in place.',
+      'If paying anything would leave you unable to meet basic living expenses, the IRS may temporarily delay collection. Penalties and interest keep accruing, and the IRS may still file a Notice of Federal Tax Lien.',
     what_is_needed: 'Form 433-F collection information statement showing income and necessary expenses.',
   });
 
   // 5. Penalty abatement - a parallel path that shrinks the balance itself.
   if (hasPenalties) {
     paths.push({
-      path: 'Penalty abatement',
+      path: 'Penalty relief (AEP, FTA, or reasonable cause)',
       fits: 'possible',
       what_it_is:
-        'First-time abatement (clean prior 3-year history) or reasonable-cause abatement can remove failure-to-file and failure-to-pay penalties. Interest is removed only if the underlying penalty is removed.',
-      what_is_needed: 'Requested by phone or on Form 843, with the reasonable-cause facts documented.',
+        'Starting in summer 2026, the IRS is transitioning eligible returns from requested First Time Abate (FTA) to Automatic Exemption from Penalty (AEP). AEP begins with eligible 2025 annual returns and 2026 quarterly returns and is applied automatically when IRS records show the required timely-compliance history. Periods not considered for AEP may still be reviewed under FTA, and reasonable-cause relief may also apply. Related interest is automatically reduced or removed when a penalty is reduced or removed.',
+      what_is_needed:
+        'First check the IRS notice or account to see whether AEP was applied automatically. If the period was not considered for AEP or other relief may apply, contact the IRS or use a written request or Form 843 as applicable, with the tax period, penalty, compliance history, and reasonable-cause facts.',
     });
   }
 
@@ -136,12 +195,13 @@ function run(args: z.infer<typeof input>) {
     inputs: {
       balance_owed: balance,
       all_required_returns_filed: filed,
+      tax_account_type: accountType,
       ability_to_pay: ability,
       balance_includes_penalties: hasPenalties,
     },
     filing_compliance_gate: filed
-      ? 'All required returns filed - that is the precondition for every path below.'
-      : 'FIRST STEP: the IRS will not approve any installment agreement, Offer in Compromise, or hardship status until all required returns are filed.',
+      ? 'All required returns are reported as filed. Filing and current-payment compliance are generally required before the IRS formalizes a collection alternative; the exact account requirements control.'
+      : 'FIRST STEP: identify and address every required return. The IRS generally requires filing compliance before formalizing a payment plan, Offer in Compromise, or hardship status.',
     options,
     ...(args.brief
       ? {}
@@ -153,29 +213,32 @@ function run(args: z.infer<typeof input>) {
         }),
     caveats: [
       'This screens which IRS paths may fit; it does not apply for anything or guarantee the IRS will accept any particular resolution.',
+      'Simple Payment Plan eligibility depends on the IRS account type, unpaid balance of assessment, the CSED, and current compliance. Current IRS guidance does not use a blanket 72-month payment calculation.',
       'Keep current-year filings and estimated payments up to date, or the IRS can default an approved agreement.',
     ],
   };
 
   const recommended =
     !filed
-      ? 'file any missing returns first, then choose a path'
+      ? 'the first step is to file any missing returns, then choose a path'
       : ability === 'can_pay_in_full_soon'
-        ? 'a short-term payment plan is usually the simplest fit'
+        ? 'a short-term payment plan is the first path to screen'
         : ability === 'can_make_monthly_payments'
-          ? streamlined
-            ? 'a streamlined installment agreement is usually the simplest fit'
-            : 'an installment agreement with a financial-disclosure review'
+          ? withinSimplePlanBalance
+            ? accountTypeKnown
+              ? `the ${simplePlanName} is the first path to screen, subject to the required payment and CSED`
+              : 'a Simple Payment Plan may fit after the account type, required payment, and CSED are confirmed'
+            : 'an installment agreement with financial review is one path to screen'
           : ability === 'can_pay_little'
-            ? 'an installment agreement, with an Offer in Compromise worth a fit-check'
-            : 'Currently Not Collectible status, with an Offer in Compromise worth a fit-check';
+            ? 'an installment agreement is one path to screen, with an Offer in Compromise also worth a fit-check'
+            : 'Currently Not Collectible status is one path to screen, with an Offer in Compromise also worth a fit-check';
 
   const summary = `On about ${usd(balance)} owed, ${recommended}. ${
     filed
       ? ''
-      : 'Note: the IRS requires all returns filed before it approves any resolution. '
+      : 'Note: the IRS generally requires filing compliance before formalizing a collection alternative. '
   }${
-    hasPenalties ? 'Penalty abatement may also shrink the balance itself. ' : ''
+    hasPenalties ? 'Current IRS penalty relief may also shrink the balance itself. ' : ''
   }An Enrolled Agent can pull your transcripts (Form 8821) to confirm the real balance and your options.`;
 
   return output(summary, fields, SOURCE.resolution, nextStep(filed));
@@ -185,11 +248,12 @@ export const checkResolutionOptions: ToolDef<typeof input> = {
   name: 'check_resolution_options',
   title: 'Check IRS resolution options',
   description:
-    'Use this when someone owes the IRS back taxes and asks how to settle, get on a payment plan, lower what they owe, or stop collection. Screens which IRS paths may fit - short-term payment plan, streamlined or financial-disclosure installment agreement, Offer in Compromise (a fit-check only, never a promise of acceptance), Currently Not Collectible hardship status, and penalty abatement - and lists the forms needed (9465, 433-F/A, 656, 843, 8821, 2848) plus collection-statute context. Never guarantees an IRS outcome. Set brief:true for a shorter answer.',
+    'Use this when someone owes the IRS back taxes and asks how to settle, get on a payment plan, lower what they owe, or stop collection. Screens which IRS paths may fit - short-term payment plan, current Simple Payment Plan or an installment agreement with financial review, Offer in Compromise (a fit-check only, never a promise of acceptance), Currently Not Collectible hardship status, and penalty abatement - and lists the forms needed (9465, 433-F/A/B, 656, 843, 8821, 2848) plus collection-statute context. A coarse tax_account_type improves the screen without identifying the taxpayer. Never guarantees an IRS outcome. Set brief:true for a shorter answer.',
   input,
   annotations: { title: 'Check IRS resolution options', readOnlyHint: true, openWorldHint: false, destructiveHint: false },
   logEnums: (args) => ({
     all_required_returns_filed: args.all_required_returns_filed ?? false,
+    tax_account_type: args.tax_account_type ?? 'unknown',
     ability_to_pay: args.ability_to_pay,
     balance_includes_penalties: args.balance_includes_penalties ?? true,
   }),
