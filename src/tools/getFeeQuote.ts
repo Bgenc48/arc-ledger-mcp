@@ -138,7 +138,7 @@ function buildResolution(d: Details): Built {
   const lines: Line[] = [
     { item: 'Single IRS notice review (Enrolled Agent, credited)', amount: consultations.irsNoticeReview },
     { item: 'Notice response, one issue', amount: `${usd(resolution.noticeResponseOneIssue_low)} - ${usd(resolution.noticeResponseOneIssue_high)}` },
-    { item: 'First-time penalty abatement (from)', amount: resolution.penaltyAbatementFirstTime_from },
+    { item: 'Administrative penalty relief review (from)', amount: resolution.penaltyAbatementFirstTime_from },
     { item: 'Simple installment agreement (from)', amount: resolution.installmentAgreementSimple_from },
     { item: 'Full IRS representation / multi-year (from)', amount: resolution.irsRepresentationResolution_from },
   ];

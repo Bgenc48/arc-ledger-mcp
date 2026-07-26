@@ -140,11 +140,11 @@ const PROFILES: Record<Problem, Profile> = {
     this_week: [
       'Confirm the real balance: an IRS online account or transcripts show tax, penalties, and interest by year.',
       'Run the check_resolution_options tool with your rough balance and ability to pay to see which paths fit.',
-      'Confirm every required return is filed; the IRS approves no agreement until you are filing-compliant.',
+      'Confirm every required return is filed. Filing and current-payment compliance are generally required before the IRS formalizes a collection alternative; the exact account requirements control.',
     ],
     this_month: [
-      'Pick a resolution path and start it; many payment plans can be set up online once returns are filed.',
-      'Ask about penalty abatement if the balance includes failure-to-file or failure-to-pay penalties.',
+      'Pick a resolution path and start it. Qualifying individuals may be able to request a plan online once required returns are filed; business accounts currently use the notice phone number or IRS business line.',
+      'Review the current penalty-relief path if the balance includes failure-to-file or failure-to-pay penalties.',
       'Keep current-year withholding or estimated payments on track so new debt does not undo the plan.',
     ],
     what_not_to_do: [
