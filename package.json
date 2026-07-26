@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify:directory:live": "node scripts/verify-directory-live.mjs",
     "gen:products": "node scripts/gen-products-feed.mjs"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "wrangler": "^4.114.0"
   },
   "overrides": {
+    "@hono/node-server": "2.0.12",
     "fast-uri": "3.1.4"
   }
 }
