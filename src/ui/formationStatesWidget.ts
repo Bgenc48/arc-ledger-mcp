@@ -132,6 +132,26 @@ export const FORMATION_STATES_WIDGET_HTML = /* html */ `<!doctype html>
   .disclaimer { margin: 10px 0 0; font-size: 11px; color: var(--muted); font-style: italic; }
   .empty { padding: 28px; text-align: center; color: var(--muted); }
   @media (prefers-reduced-motion: no-preference) { .card { transition: none; } }
+
+  /* Brand band + trust footer (visual refresh 2026-07) */
+  .brandbar {
+    display: flex; align-items: center; gap: 10px;
+    margin: -18px -18px 16px; padding: 12px 18px;
+    background: linear-gradient(135deg, #07203F 0%, #0B1B2B 55%, #014BAE 135%);
+    color: #fff;
+  }
+  .brand-name { font-family: ui-serif, Georgia, serif; font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+  .brand-name .amp { color: #C9A227; }
+  .brand-label {
+    margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: 10.5px;
+    letter-spacing: .14em; text-transform: uppercase; color: #d3a866;
+  }
+  .trustbar {
+    display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    margin: 14px 0 0; padding: 10px 2px 0; border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--muted);
+  }
+  .trust-domain { font-family: ui-monospace, Menlo, monospace; letter-spacing: .06em; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -144,6 +164,18 @@ export const FORMATION_STATES_WIDGET_HTML = /* html */ `<!doctype html>
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  /* Brand band + trust footer helpers (visual refresh 2026-07) */
+  var BRAND_MARK = '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="26" height="26" rx="6" fill="#C9A227"/><text x="13" y="17.5" text-anchor="middle" font-family="Georgia, serif" font-size="10.5" font-weight="700" fill="#07203F">A&amp;L</text></svg>';
+  function brandBar(label) {
+    return '<div class="brandbar">' + BRAND_MARK +
+      '<span class="brand-name">Arc <span class="amp">&amp;</span> Ledger</span>' +
+      '<span class="brand-label">' + esc(label) + "</span></div>";
+  }
+  function trustBar() {
+    return '<div class="trustbar"><span>Read-only &middot; No account &middot; No data stored &middot; Sources: IRS.gov &amp; FinCEN</span>' +
+      '<span class="trust-domain">arcandledger.com</span></div>';
   }
 
   function applyTheme() {
@@ -187,14 +219,14 @@ export const FORMATION_STATES_WIDGET_HTML = /* html */ `<!doctype html>
     var ctaUrl = typeof next.url === "string" && next.url.indexOf("https://") === 0 ? esc(next.url) : "";
 
     root.innerHTML =
-      '<p class="kicker">&sect; US Formation</p>' +
+      brandBar("US Formation") +
       "<h1>" + esc(data.recommended_state || "State comparison") + " looks best for you</h1>" +
       '<p class="sub">Government fees only - our formation service fee is separate.</p>' +
       '<div class="grid">' + cards + "</div>" +
       (data.why ? '<div class="why"><b>Why:</b> ' + esc(data.why) + "</div>" : "") +
       (data.note ? '<p class="note">' + esc(data.note) + "</p>" : "") +
       (ctaUrl ? '<a class="cta" href="' + ctaUrl + '" target="_blank" rel="noopener noreferrer">' + ctaLabel + "</a>" : "") +
-      (data.disclaimer ? '<p class="disclaimer">' + esc(data.disclaimer) + "</p>" : "");
+      (data.disclaimer ? '<p class="disclaimer">' + esc(data.disclaimer) + "</p>" : "") + trustBar();
   }
 
   applyTheme();
