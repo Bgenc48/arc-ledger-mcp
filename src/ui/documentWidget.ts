@@ -134,6 +134,26 @@ export const TAX_DOCUMENT_WIDGET_HTML = /* html */ `<!doctype html>
   .cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .disclaimer { margin: 10px 0 0; font-size: 11px; color: var(--muted); font-style: italic; }
   .empty { padding: 28px; text-align: center; color: var(--muted); }
+
+  /* Brand band + trust footer (visual refresh 2026-07) */
+  .brandbar {
+    display: flex; align-items: center; gap: 10px;
+    margin: -18px -18px 16px; padding: 12px 18px;
+    background: linear-gradient(135deg, #07203F 0%, #0B1B2B 55%, #014BAE 135%);
+    color: #fff;
+  }
+  .brand-name { font-family: ui-serif, Georgia, serif; font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+  .brand-name .amp { color: #C9A227; }
+  .brand-label {
+    margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: 10.5px;
+    letter-spacing: .14em; text-transform: uppercase; color: #d3a866;
+  }
+  .trustbar {
+    display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    margin: 14px 0 0; padding: 10px 2px 0; border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--muted);
+  }
+  .trust-domain { font-family: ui-monospace, Menlo, monospace; letter-spacing: .06em; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -146,6 +166,18 @@ export const TAX_DOCUMENT_WIDGET_HTML = /* html */ `<!doctype html>
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  /* Brand band + trust footer helpers (visual refresh 2026-07) */
+  var BRAND_MARK = '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="26" height="26" rx="6" fill="#C9A227"/><text x="13" y="17.5" text-anchor="middle" font-family="Georgia, serif" font-size="10.5" font-weight="700" fill="#07203F">A&amp;L</text></svg>';
+  function brandBar(label) {
+    return '<div class="brandbar">' + BRAND_MARK +
+      '<span class="brand-name">Arc <span class="amp">&amp;</span> Ledger</span>' +
+      '<span class="brand-label">' + esc(label) + "</span></div>";
+  }
+  function trustBar() {
+    return '<div class="trustbar"><span>Read-only &middot; No account &middot; No data stored &middot; Sources: IRS.gov &amp; FinCEN</span>' +
+      '<span class="trust-domain">arcandledger.com</span></div>';
   }
 
   function applyTheme() {
@@ -182,7 +214,7 @@ export const TAX_DOCUMENT_WIDGET_HTML = /* html */ `<!doctype html>
       var boxes = data.key_boxes || [];
       var checks = data.check_before_filing || [];
       root.innerHTML =
-        '<p class="kicker">&sect; Tax Document</p>' +
+        brandBar("Tax Document") +
         '<span class="code-chip">' + esc(data.document) + "</span>" +
         "<h1>" + esc(data.title || data.document) + "</h1>" +
         (data.who_sends_it_and_when ? '<p class="meta"><b>Who sends it:</b> ' + esc(data.who_sends_it_and_when) + "</p>" : "") +
@@ -193,10 +225,10 @@ export const TAX_DOCUMENT_WIDGET_HTML = /* html */ `<!doctype html>
         (data.if_wrong_or_missing ? '<div class="flag"><h2>If it is wrong or missing</h2><p>' + esc(data.if_wrong_or_missing) + "</p></div>" : "") +
         (data.how_the_irs_uses_it ? '<div class="card"><h2>How the IRS uses it</h2><p>' + esc(data.how_the_irs_uses_it) + "</p></div>" : "") +
         ctaHtml(data) +
-        (data.disclaimer ? '<p class="disclaimer">' + esc(data.disclaimer) + "</p>" : "");
+        (data.disclaimer ? '<p class="disclaimer">' + esc(data.disclaimer) + "</p>" : "") + trustBar();
     } else {
       root.innerHTML =
-        '<p class="kicker">&sect; Tax Document</p>' +
+        brandBar("Tax Document") +
         '<span class="code-chip">' + esc(data.document) + "</span>" +
         "<h1>How to read your tax document</h1>" +
         (data.message ? '<div class="card"><p>' + esc(data.message) + "</p></div>" : "") +
@@ -204,7 +236,7 @@ export const TAX_DOCUMENT_WIDGET_HTML = /* html */ `<!doctype html>
           ? '<div class="card"><h2>Step by step</h2>' + list(data.how_to_read_any_tax_form, true) + "</div>"
           : "") +
         ctaHtml(data) +
-        (data.disclaimer ? '<p class="disclaimer">' + esc(data.disclaimer) + "</p>" : "");
+        (data.disclaimer ? '<p class="disclaimer">' + esc(data.disclaimer) + "</p>" : "") + trustBar();
     }
   }
 
